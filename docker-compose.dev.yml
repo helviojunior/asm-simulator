@@ -1,0 +1,62 @@
+# Docker-compose for development/testing
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: asm-simulator-backend-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8001"
+    extra_hosts:
+      - "proxy.local:host-gateway"
+    volumes:
+      - asm_simulator_data_dev:/app/data
+      - ./backend:/app
+    env_file:
+      - .env
+    environment:
+      TZ: "America/Sao_Paulo"
+      DEBUG: "True"
+      EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8001"]
+    networks:
+      - asm-simulator-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_BACKEND_URL: "${REACT_APP_BACKEND_URL:-http://localhost:8000}"
+    container_name: asm-simulator-frontend-dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    environment:
+      TZ: "America/Sao_Paulo"
+      REACT_APP_BACKEND_URL: "${REACT_APP_BACKEND_URL:-http://localhost:8000}"
+      REACT_APP_BRAND_NAME: "${REACT_APP_BRAND_NAME:-ASMSimulator}"
+      REACT_APP_MEDIA_BASE: "${REACT_APP_MEDIA_BASE:-https://media.sec4us.com.br}"
+      REACT_APP_BRAND_LOGO: "${REACT_APP_BRAND_LOGO:-https://media.sec4us.com.br/logo/sec4us-light-mode.svg}"
+      REACT_APP_BRAND_LOGO_DARK: "${REACT_APP_BRAND_LOGO_DARK:-https://media.sec4us.com.br/logo/sec4us-dark-mode.svg}"
+      REACT_APP_BRAND_CONTACT_EMAIL: "${REACT_APP_BRAND_CONTACT_EMAIL:-contato@asmsimulator.com.br}"
+    depends_on:
+      - backend
+    networks:
+      - asm-simulator-net
+
+volumes:
+  # Dados (SQLite + segredos) num volume do Docker. Os bind-mounts que
+  # restam abaixo sao apenas do codigo-fonte, para o hot reload do dev.
+  asm_simulator_data_dev:
+
+networks:
+  asm-simulator-net:
+    driver: bridge

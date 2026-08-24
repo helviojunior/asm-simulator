@@ -1,0 +1,71 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: asm-simulator-backend
+    restart: unless-stopped
+    extra_hosts:
+      - "proxy.local:host-gateway"
+    volumes:
+      - asm_simulator_data:/app/data
+    env_file:
+      - .env
+    environment:
+      TZ: "America/Sao_Paulo"
+      DEBUG: "False"
+    command:
+      - uwsgi
+      - --http
+      - 0.0.0.0:8001
+      - --http-buffer-size=32768
+      - --buffer-size=32768
+      - --module
+      - core.wsgi
+      - --env
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - --reload-mercy=1
+      - --worker-reload-mercy=1
+      - --req-logger
+      - file:/dev/null
+      - --touch-reload
+      - ./core/settings.py
+    networks:
+      - asm-simulator-net
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+      args:
+        REACT_APP_BACKEND_URL: ""
+        REACT_APP_BRAND_NAME: "${REACT_APP_BRAND_NAME:-ASMSimulator}"
+        REACT_APP_MEDIA_BASE: "${REACT_APP_MEDIA_BASE:-https://media.sec4us.com.br}"
+        REACT_APP_BRAND_LOGO: "${REACT_APP_BRAND_LOGO:-https://media.sec4us.com.br/logo/sec4us-light-mode.svg}"
+        REACT_APP_BRAND_LOGO_DARK: "${REACT_APP_BRAND_LOGO_DARK:-https://media.sec4us.com.br/logo/sec4us-dark-mode.svg}"
+        REACT_APP_BRAND_CONTACT_EMAIL: "${REACT_APP_BRAND_CONTACT_EMAIL:-contato@asmsimulator.local}"
+    container_name: asm-simulator-nginx
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    environment:
+      TZ: "America/Sao_Paulo"
+      # Mesmo valor que o backend usa em settings.ADMIN_URL.
+      ADMIN_URL: "${ADMIN_URL:-admin}"
+      USE_REAL_IP: "${USE_REAL_IP:-true}"
+      REAL_IP_FROM: "${REAL_IP_FROM:-192.168.0.0/16,10.0.0.0/8,172.16.0.0/12}"
+      REAL_IP_HEADER: "${REAL_IP_HEADER:-SC-Connecting-IP}"
+      REAL_IP_RECURSIVE: "${REAL_IP_RECURSIVE:-on}"
+    depends_on:
+      - backend
+    networks:
+      - asm-simulator-net
+
+volumes:
+  # Volume gerenciado pelo Docker (sem bind-mount): o banco SQLite e os
+  # segredos gerados no primeiro boot vivem em asm_simulator_data.
+  asm_simulator_data:
+
+networks:
+  asm-simulator-net:
+    driver: bridge
