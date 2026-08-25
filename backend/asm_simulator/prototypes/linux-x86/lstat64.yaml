@@ -1,11 +1,18 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 lstat (a pagina do syscall `lstat64` esta sob esse nome)
 function_name: lstat64
 ssn: 196
-summary: ""
-input_args: {}
+summary: "Como stat64, mas sobre o proprio link simbolico, sem segui-lo."
+input_args:
+  arg0:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho do arquivo, terminado em nulo."
+  arg1:
+    type: "struct stat *"
+    name: "statbuf"
+    description: "Recebe a struct stat com os metadados do arquivo."
 output_data:
   type: "long"
   name: "result"

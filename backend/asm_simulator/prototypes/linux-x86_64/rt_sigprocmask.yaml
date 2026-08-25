@@ -1,11 +1,26 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 rt_sigprocmask
 function_name: rt_sigprocmask
 ssn: 14
-summary: ""
-input_args: {}
+summary: "Bloqueia ou desbloqueia sinais na thread. Versao real da syscall, com o tamanho do conjunto."
+input_args:
+  arg0:
+    type: "int"
+    name: "how"
+    description: "SIG_BLOCK 0 acrescenta, SIG_UNBLOCK 1 retira, SIG_SETMASK 2 substitui."
+  arg1:
+    type: "const kernel_sigset_t *"
+    name: "set"
+    description: "Conjunto de sinais da operacao."
+  arg2:
+    type: "kernel_sigset_t *"
+    name: "oldset"
+    description: "Recebe o conjunto anterior. NULL descarta."
+  arg3:
+    type: "size_t"
+    name: "sigsetsize"
+    description: "Tamanho em bytes do conjunto de sinais (8 no x86-64, 8 no i386). E o argumento que a versao rt_ tem a mais que o wrapper da libc."
 output_data:
   type: "long"
   name: "result"

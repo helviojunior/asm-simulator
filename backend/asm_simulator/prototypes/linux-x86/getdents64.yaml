@@ -1,11 +1,22 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 getdents64
 function_name: getdents64
 ssn: 220
-summary: ""
-input_args: {}
+summary: "Le entradas de um diretorio aberto. E o motor de readdir()."
+input_args:
+  arg0:
+    type: "int"
+    name: "fd"
+    description: "Descritor de arquivo aberto. 0 stdin, 1 stdout, 2 stderr."
+  arg1:
+    type: "void *"
+    name: "dirp"
+    description: "Recebe as entradas do diretorio: cada uma traz o tamanho da proxima, e e assim que se anda pelo buffer."
+  arg2:
+    type: "size_t"
+    name: "count"
+    description: "Quantidade de bytes."
 output_data:
   type: "long"
   name: "result"

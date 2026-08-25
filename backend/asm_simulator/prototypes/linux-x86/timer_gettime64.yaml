@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 timer_gettime (a pagina do syscall `timer_gettime64` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: timer_gettime64
 ssn: 408
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "timer_t"
+    name: "timerid"
+    description: "Identificador do timer, vindo de timer_create."
+  arg1:
+    type: "struct itimerspec *"
+    name: "curr_value"
+    description: "Recebe quanto falta para o timer disparar e o intervalo de repeticao."
 output_data:
   type: "long"
   name: "result"

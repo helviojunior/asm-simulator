@@ -1,11 +1,31 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 process_madvise
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: process_madvise
 ssn: 440
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "int"
+    name: "pidfd"
+    description: "Descritor que representa um processo (de pidfd_open), estavel mesmo se o PID for reciclado."
+  arg1:
+    type: "const struct iovec *"
+    name: "iovec"
+    description: "Vetor de blocos (base e tamanho) no espaco do processo alvo."
+  arg2:
+    type: "size_t"
+    name: "vlen"
+    description: "Quantos elementos o vetor tem."
+  arg3:
+    type: "int"
+    name: "advice"
+    description: "Conselho de uso: POSIX_FADV_NORMAL 0, SEQUENTIAL 2, WILLNEED 3, DONTNEED 4."
+  arg4:
+    type: "unsigned int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

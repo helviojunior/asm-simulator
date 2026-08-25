@@ -1,11 +1,31 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 name_to_handle_at
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: name_to_handle_at
 ssn: 341
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "int"
+    name: "dirfd"
+    description: "Diretorio de referencia para um caminho relativo. AT_FDCWD (-100) usa o diretorio atual."
+  arg1:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho do arquivo, terminado em nulo."
+  arg2:
+    type: "struct file_handle *"
+    name: "handle"
+    description: "struct file_handle * handle."
+  arg3:
+    type: "int *"
+    name: "mount_id"
+    description: "int * mount_id."
+  arg4:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

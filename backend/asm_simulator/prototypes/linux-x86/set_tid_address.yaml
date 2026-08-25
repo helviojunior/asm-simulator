@@ -1,11 +1,14 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 set_tid_address
 function_name: set_tid_address
 ssn: 258
-summary: ""
-input_args: {}
+summary: "Diz ao kernel qual endereco zerar quando a thread morrer."
+input_args:
+  arg0:
+    type: "int *"
+    name: "tidptr"
+    description: "Endereco que o kernel ZERA quando a thread termina, acordando quem espera nele. E como a libc implementa join."
 output_data:
   type: "long"
   name: "result"

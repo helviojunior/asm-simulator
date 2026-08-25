@@ -1,11 +1,31 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 mq_timedsend (a pagina do syscall `mq_timedsend_time64` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: mq_timedsend_time64
 ssn: 418
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "mqd_t"
+    name: "mqdes"
+    description: "Descritor da fila de mensagens."
+  arg1:
+    type: "const char *"
+    name: "msg_ptr"
+    description: "Bloco com o corpo da mensagem."
+  arg2:
+    type: "size_t"
+    name: "msg_len"
+    description: "Tamanho da mensagem, em bytes."
+  arg3:
+    type: "unsigned int"
+    name: "msg_prio"
+    description: "Prioridade da mensagem."
+  arg4:
+    type: "const struct timespec *"
+    name: "abs_timeout"
+    description: "Instante ABSOLUTO em que a espera desiste (nao e duracao)."
 output_data:
   type: "long"
   name: "result"

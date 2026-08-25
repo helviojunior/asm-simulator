@@ -1,15 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
 # Assinatura: man 2 reboot
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Argumentos da SYSCALL crua, da secao "C library/kernel differences".
 function_name: reboot
 ssn: 88
-summary: ""
+summary: "Reinicia, desliga ou controla o comportamento do Ctrl-Alt-Del. Exige os dois numeros magicos."
 input_args:
   arg0:
     type: "int"
+    name: "magic"
+    description: "Numero magico LINUX_REBOOT_MAGIC1 (0xFEE1DEAD). Sem ele o kernel ignora a chamada."
+  arg1:
+    type: "int"
+    name: "magic2"
+    description: "Segundo numero magico: 672274793, 85072278, 369367448 ou 537993216."
+  arg2:
+    type: "int"
     name: "cmd"
-    description: "int cmd."
+    description: "LINUX_REBOOT_CMD_RESTART 0x01234567, POWER_OFF 0x4321FEDC, HALT 0xCDEF0123, CAD_ON 0x89ABCDEF."
+  arg3:
+    type: "void *"
+    name: "arg"
+    description: "Argumento da operacao; o significado depende do comando."
 output_data:
   type: "int"
   name: "result"

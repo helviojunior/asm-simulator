@@ -1,11 +1,26 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 tee
 function_name: tee
 ssn: 276
-summary: ""
-input_args: {}
+summary: "Duplica o conteudo de um pipe em outro sem consumir a origem."
+input_args:
+  arg0:
+    type: "int"
+    name: "fd_in"
+    description: "Descritor de origem dos dados."
+  arg1:
+    type: "int"
+    name: "fd_out"
+    description: "Descritor de destino dos dados."
+  arg2:
+    type: "size_t"
+    name: "len"
+    description: "Quantos bytes copiar entre os dois pipes, sem consumir a origem."
+  arg3:
+    type: "unsigned int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

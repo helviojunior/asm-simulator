@@ -1,11 +1,22 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 dup3
 function_name: dup3
 ssn: 330
-summary: ""
-input_args: {}
+summary: "Duplica um descritor para um numero escolhido, com flags na mesma chamada."
+input_args:
+  arg0:
+    type: "int"
+    name: "oldfd"
+    description: "Descritor existente, a ser duplicado."
+  arg1:
+    type: "int"
+    name: "newfd"
+    description: "Numero do descritor novo. Se ja estiver aberto, e fechado antes."
+  arg2:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

@@ -1,11 +1,20 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 sigsuspend (a pagina do syscall `rt_sigsuspend` esta sob esse nome)
+# Argumentos da SYSCALL crua, da secao "C library/kernel differences".
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: rt_sigsuspend
 ssn: 130
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "const sigset_t *"
+    name: "mask"
+    description: "Mascara de sinais a usar enquanto a chamada espera."
+  arg1:
+    type: "size_t"
+    name: "sigsetsize"
+    description: "Tamanho em bytes do conjunto de sinais (8 no x86-64, 8 no i386). E o argumento que a versao rt_ tem a mais que o wrapper da libc."
 output_data:
   type: "long"
   name: "result"

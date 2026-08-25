@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 capset
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: capset
 ssn: 126
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "cap_user_header_t"
+    name: "hdrp"
+    description: "Versao da interface e PID alvo (0 = a thread atual)."
+  arg1:
+    type: "const cap_user_data_t"
+    name: "datap"
+    description: "Novos conjuntos de capacidades."
 output_data:
   type: "long"
   name: "result"

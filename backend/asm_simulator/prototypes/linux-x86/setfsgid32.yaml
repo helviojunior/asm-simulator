@@ -1,11 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 setfsgid (a pagina do syscall `setfsgid32` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: setfsgid32
 ssn: 216
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "gid_t"
+    name: "fsgid"
+    description: "GID usado nas checagens do sistema de arquivos."
 output_data:
   type: "long"
   name: "result"

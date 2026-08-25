@@ -1,11 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 landlock_add_rule
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: landlock_add_rule
 ssn: 445
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "int"
+    name: "ruleset_fd"
+    description: "Descritor do conjunto de regras Landlock."
+  arg1:
+    type: "enum landlock_rule_type"
+    name: "rule_type"
+    description: "enum landlock_rule_type rule_type."
+  arg2:
+    type: "const void *"
+    name: "rule_attr"
+    description: "const void * rule_attr."
+  arg3:
+    type: "uint32_t"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

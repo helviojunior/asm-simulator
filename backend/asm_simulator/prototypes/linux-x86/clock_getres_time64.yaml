@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 clock_getres (a pagina do syscall `clock_getres_time64` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: clock_getres_time64
 ssn: 406
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "clockid_t"
+    name: "clockid"
+    description: "Qual relogio: CLOCK_REALTIME 0, CLOCK_MONOTONIC 1, CLOCK_PROCESS_CPUTIME_ID 2."
+  arg1:
+    type: "struct timespec *"
+    name: "res"
+    description: "Recebe a resolucao do relogio."
 output_data:
   type: "long"
   name: "result"

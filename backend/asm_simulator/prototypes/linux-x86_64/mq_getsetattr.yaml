@@ -1,11 +1,23 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 mq_getsetattr
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: mq_getsetattr
 ssn: 245
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "mqd_t"
+    name: "mqdes"
+    description: "Descritor da fila de mensagens."
+  arg1:
+    type: "const struct mq_attr *"
+    name: "newattr"
+    description: "const struct mq_attr * newattr."
+  arg2:
+    type: "struct mq_attr *"
+    name: "oldattr"
+    description: "struct mq_attr * oldattr."
 output_data:
   type: "long"
   name: "result"

@@ -1,10 +1,18 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 socketcall
 function_name: socketcall
 ssn: 102
-summary: "Porta unica para toda a API de sockets em 32 bits. Em 64 bits cada operacao tem sua propria syscall."
-input_args: {}
+summary: "Porta unica das operacoes de socket no i386: o primeiro argumento diz QUAL operacao, o segundo aponta para os argumentos dela."
+input_args:
+  arg0:
+    type: "int"
+    name: "call"
+    description: "Qual operacao de socket: SYS_SOCKET 1, SYS_BIND 2, SYS_CONNECT 3, SYS_LISTEN 4, SYS_ACCEPT 5."
+  arg1:
+    type: "unsigned long *"
+    name: "args"
+    description: "Vetor com os argumentos daquela operacao, na ordem em que a funcao original os recebe."
 output_data:
   type: "int"
   name: "result"

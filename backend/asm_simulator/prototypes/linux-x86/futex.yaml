@@ -1,11 +1,34 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 futex
 function_name: futex
 ssn: 240
-summary: ""
-input_args: {}
+summary: "Dorme ou acorda numa palavra de 32 bits da memoria. E a primitiva sobre a qual mutex e semaforo de usuario sao construidos."
+input_args:
+  arg0:
+    type: "uint32_t *"
+    name: "uaddr"
+    description: "Endereco da palavra de 32 bits que serve de futex. Precisa estar alinhado."
+  arg1:
+    type: "int"
+    name: "futex_op"
+    description: "FUTEX_WAIT 0 (dorme se o valor bater), FUTEX_WAKE 1 (acorda `val` esperando)."
+  arg2:
+    type: "uint32_t"
+    name: "val"
+    description: "Valor esperado no WAIT; quantas threads acordar no WAKE."
+  arg3:
+    type: "const struct timespec *"
+    name: "timeout"
+    description: "Tempo limite. NULL espera sem limite."
+  arg4:
+    type: "uint32_t *"
+    name: "uaddr2"
+    description: "Segundo futex, nas operacoes que mexem em dois (REQUEUE, WAKE_OP)."
+  arg5:
+    type: "uint32_t"
+    name: "val3"
+    description: "Terceiro valor, usado por CMP_REQUEUE e WAKE_OP."
 output_data:
   type: "long"
   name: "result"

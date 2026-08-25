@@ -1,11 +1,18 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 tkill
 function_name: tkill
 ssn: 238
-summary: ""
-input_args: {}
+summary: "Envia um sinal a UMA thread, pelo TID."
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "tid"
+    description: "TID da thread alvo — nao o PID. E o que permite sinalizar UMA thread."
+  arg1:
+    type: "int"
+    name: "sig"
+    description: "Numero do sinal. SIGKILL 9, SIGTERM 15."
 output_data:
   type: "long"
   name: "result"

@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 getcpu
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: getcpu
 ssn: 309
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "unsigned int *"
+    name: "cpu"
+    description: "Recebe o numero do processador em que a thread esta rodando."
+  arg1:
+    type: "unsigned int *"
+    name: "node"
+    description: "Recebe o no NUMA correspondente. NULL descarta."
 output_data:
   type: "long"
   name: "result"

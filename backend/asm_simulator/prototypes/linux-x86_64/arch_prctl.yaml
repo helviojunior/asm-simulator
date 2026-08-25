@@ -1,11 +1,18 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 arch_prctl
 function_name: arch_prctl
 ssn: 158
-summary: ""
-input_args: {}
+summary: "Le ou escreve a base dos segmentos FS e GS. E por aqui que o TLS do x86-64 e instalado."
+input_args:
+  arg0:
+    type: "int"
+    name: "code"
+    description: "ARCH_SET_FS 0x1002 e ARCH_SET_GS 0x1001 escrevem a base do segmento; ARCH_GET_FS 0x1003 le."
+  arg1:
+    type: "unsigned long"
+    name: "addr"
+    description: "Valor da base do segmento (ou, no GET, endereco que recebe o valor)."
 output_data:
   type: "long"
   name: "result"

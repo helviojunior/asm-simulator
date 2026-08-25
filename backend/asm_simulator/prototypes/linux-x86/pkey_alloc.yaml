@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 pkey_alloc
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: pkey_alloc
 ssn: 381
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "unsigned int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+  arg1:
+    type: "unsigned int"
+    name: "access_rights"
+    description: "Valor sem sinal de 32 bits."
 output_data:
   type: "long"
   name: "result"

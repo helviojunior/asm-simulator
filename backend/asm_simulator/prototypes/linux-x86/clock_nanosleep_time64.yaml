@@ -1,11 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 clock_nanosleep (a pagina do syscall `clock_nanosleep_time64` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: clock_nanosleep_time64
 ssn: 407
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "clockid_t"
+    name: "clockid"
+    description: "Qual relogio: CLOCK_REALTIME 0, CLOCK_MONOTONIC 1, CLOCK_PROCESS_CPUTIME_ID 2."
+  arg1:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+  arg2:
+    type: "const struct timespec *"
+    name: "request"
+    description: "Tempo pedido para a espera."
+  arg3:
+    type: "struct timespec *"
+    name: "remain"
+    description: "Recebe o tempo que faltava, quando a espera e interrompida por sinal."
 output_data:
   type: "long"
   name: "result"

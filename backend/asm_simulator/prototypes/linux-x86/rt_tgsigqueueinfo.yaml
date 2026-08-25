@@ -1,11 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 rt_tgsigqueueinfo
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: rt_tgsigqueueinfo
 ssn: 335
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "tgid"
+    description: "Identificador do grupo de threads — o PID do processo."
+  arg1:
+    type: "pid_t"
+    name: "tid"
+    description: "Identificador da thread."
+  arg2:
+    type: "int"
+    name: "sig"
+    description: "Numero do sinal. SIGKILL 9, SIGTERM 15."
+  arg3:
+    type: "siginfo_t *"
+    name: "info"
+    description: "Informacao do sinal (siginfo_t): origem, causa e dado enviado junto."
 output_data:
   type: "long"
   name: "result"

@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 landlock_restrict_self
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: landlock_restrict_self
 ssn: 446
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "int"
+    name: "ruleset_fd"
+    description: "Descritor do conjunto de regras Landlock."
+  arg1:
+    type: "uint32_t"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

@@ -1,11 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 sigreturn (a pagina do syscall `rt_sigreturn` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: rt_sigreturn
 ssn: 15
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "..."
+    name: "varargs"
+    description: "Argumentos variaveis; o formato depende da operacao pedida."
 output_data:
   type: "long"
   name: "result"

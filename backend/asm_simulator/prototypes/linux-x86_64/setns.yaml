@@ -1,11 +1,18 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 setns
 function_name: setns
 ssn: 308
-summary: ""
-input_args: {}
+summary: "Move a thread para um namespace ja existente, pelo descritor dele."
+input_args:
+  arg0:
+    type: "int"
+    name: "fd"
+    description: "Descritor de arquivo aberto. 0 stdin, 1 stdout, 2 stderr."
+  arg1:
+    type: "int"
+    name: "nstype"
+    description: "Tipo de namespace exigido: CLONE_NEWNET 0x40000000, CLONE_NEWPID 0x20000000. 0 aceita qualquer um."
 output_data:
   type: "long"
   name: "result"

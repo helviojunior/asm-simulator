@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 clone3
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: clone3
 ssn: 435
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "struct clone_args *"
+    name: "cl_args"
+    description: "struct clone_args * cl_args."
+  arg1:
+    type: "size_t"
+    name: "size"
+    description: "Tamanho em bytes da estrutura passada — e como o kernel sabe a versao dela."
 output_data:
   type: "long"
   name: "result"

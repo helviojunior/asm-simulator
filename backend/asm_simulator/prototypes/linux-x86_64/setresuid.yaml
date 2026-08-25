@@ -1,11 +1,23 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 setresuid
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: setresuid
 ssn: 117
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "uid_t"
+    name: "ruid"
+    description: "UID real."
+  arg1:
+    type: "uid_t"
+    name: "euid"
+    description: "UID efetivo — e o que decide o acesso."
+  arg2:
+    type: "uid_t"
+    name: "suid"
+    description: "UID salvo, guardado para poder voltar."
 output_data:
   type: "long"
   name: "result"

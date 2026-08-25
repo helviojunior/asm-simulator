@@ -1,11 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 sendfile (a pagina do syscall `sendfile64` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: sendfile64
 ssn: 239
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "int"
+    name: "out_fd"
+    description: "Descritor de destino."
+  arg1:
+    type: "int"
+    name: "in_fd"
+    description: "Descritor de origem — precisa suportar mmap (arquivo comum, nao socket)."
+  arg2:
+    type: "off_t *"
+    name: "offset"
+    description: "Deslocamento em bytes, a partir do inicio do arquivo."
+  arg3:
+    type: "size_t"
+    name: "count"
+    description: "Quantidade de bytes."
 output_data:
   type: "long"
   name: "result"

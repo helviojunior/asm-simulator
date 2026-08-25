@@ -1,11 +1,26 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 pread (a pagina do syscall `pread64` esta sob esse nome)
 function_name: pread64
 ssn: 17
-summary: ""
-input_args: {}
+summary: "Le de uma posicao do arquivo sem mexer na posicao do descritor."
+input_args:
+  arg0:
+    type: "int"
+    name: "fd"
+    description: "Descritor de arquivo aberto. 0 stdin, 1 stdout, 2 stderr."
+  arg1:
+    type: "void *"
+    name: "buf"
+    description: "Ponteiro para o bloco de memoria da operacao."
+  arg2:
+    type: "size_t"
+    name: "count"
+    description: "Quantidade de bytes."
+  arg3:
+    type: "off_t"
+    name: "offset"
+    description: "Posicao no arquivo, em bytes. A posicao do descritor NAO muda — e o que diferencia de read."
 output_data:
   type: "long"
   name: "result"

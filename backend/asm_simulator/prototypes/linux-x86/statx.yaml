@@ -1,11 +1,30 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 statx
 function_name: statx
 ssn: 383
-summary: ""
-input_args: {}
+summary: "Metadados de um arquivo, pedindo so os campos que interessam. Sucessor do stat, com data de criacao."
+input_args:
+  arg0:
+    type: "int"
+    name: "dirfd"
+    description: "Diretorio de referencia para um caminho relativo. AT_FDCWD (-100) usa o diretorio atual."
+  arg1:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho do arquivo, terminado em nulo."
+  arg2:
+    type: "int"
+    name: "flags"
+    description: "AT_SYMLINK_NOFOLLOW 0x100, AT_STATX_SYNC_AS_STAT 0, AT_EMPTY_PATH 0x1000."
+  arg3:
+    type: "unsigned int"
+    name: "mask"
+    description: "Que campos interessam: STATX_BASIC_STATS 0x7FF, STATX_BTIME 0x800."
+  arg4:
+    type: "struct statx *"
+    name: "statxbuf"
+    description: "Recebe a struct statx com os metadados pedidos em `mask`."
 output_data:
   type: "long"
   name: "result"

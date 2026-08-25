@@ -1,11 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 fallocate
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: fallocate
 ssn: 285
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "int"
+    name: "fd"
+    description: "Descritor de arquivo aberto. 0 stdin, 1 stdout, 2 stderr."
+  arg1:
+    type: "int"
+    name: "mode"
+    description: "Modo da operacao."
+  arg2:
+    type: "off_t"
+    name: "offset"
+    description: "Deslocamento em bytes, a partir do inicio do arquivo."
+  arg3:
+    type: "off_t"
+    name: "len"
+    description: "Tamanho em bytes."
 output_data:
   type: "long"
   name: "result"

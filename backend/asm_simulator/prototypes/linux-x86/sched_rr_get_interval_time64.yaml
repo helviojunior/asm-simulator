@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 sched_rr_get_interval (a pagina do syscall `sched_rr_get_interval_time64` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: sched_rr_get_interval_time64
 ssn: 423
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "pid"
+    description: "Identificador do processo. 0 significa o processo atual."
+  arg1:
+    type: "struct timespec *"
+    name: "tp"
+    description: "Estrutura de tempo (segundos e nanossegundos)."
 output_data:
   type: "long"
   name: "result"

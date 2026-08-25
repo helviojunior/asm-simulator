@@ -1,11 +1,18 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 stat (a pagina do syscall `stat64` esta sob esse nome)
 function_name: stat64
 ssn: 195
-summary: ""
-input_args: {}
+summary: "Metadados de um arquivo pelo caminho, com campos de 64 bits — a versao do i386 para arquivos grandes."
+input_args:
+  arg0:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho do arquivo, terminado em nulo."
+  arg1:
+    type: "struct stat *"
+    name: "statbuf"
+    description: "Recebe a struct stat com os metadados do arquivo."
 output_data:
   type: "long"
   name: "result"

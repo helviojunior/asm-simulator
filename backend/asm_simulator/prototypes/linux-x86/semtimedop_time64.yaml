@@ -1,11 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 semtimedop (a pagina do syscall `semtimedop_time64` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: semtimedop_time64
 ssn: 420
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "int"
+    name: "semid"
+    description: "Identificador do conjunto de semaforos."
+  arg1:
+    type: "struct sembuf *"
+    name: "sops"
+    description: "Vetor de operacoes de semaforo."
+  arg2:
+    type: "size_t"
+    name: "nsops"
+    description: "Quantas operacoes ha no vetor."
+  arg3:
+    type: "const struct timespec *"
+    name: "timeout"
+    description: "Tempo limite. NULL espera sem limite."
 output_data:
   type: "long"
   name: "result"

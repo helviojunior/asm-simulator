@@ -1,11 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 io_destroy
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: io_destroy
 ssn: 246
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "aio_context_t"
+    name: "ctx_id"
+    description: "aio_context_t ctx_id."
 output_data:
   type: "long"
   name: "result"

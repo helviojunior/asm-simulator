@@ -1,10 +1,14 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 exit_group
 function_name: exit_group
 ssn: 252
-summary: "Encerra TODAS as threads do processo. E o que a libc chama por tras de exit()."
-input_args: {}
+summary: "Encerra TODAS as threads do processo com o codigo dado. E o que a libc chama por tras de exit()."
+input_args:
+  arg0:
+    type: "int"
+    name: "status"
+    description: "Codigo de saida do processo. So os 8 bits baixos chegam a quem espera."
 output_data:
   type: "void"
   name: "none"

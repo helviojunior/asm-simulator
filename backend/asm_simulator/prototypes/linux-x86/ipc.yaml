@@ -1,11 +1,35 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 ipc
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: ipc
 ssn: 117
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "unsigned int"
+    name: "call"
+    description: "Valor sem sinal de 32 bits."
+  arg1:
+    type: "int"
+    name: "first"
+    description: "Valor inteiro."
+  arg2:
+    type: "unsigned long"
+    name: "second"
+    description: "unsigned long second."
+  arg3:
+    type: "unsigned long"
+    name: "third"
+    description: "unsigned long third."
+  arg4:
+    type: "void *"
+    name: "ptr"
+    description: "void * ptr."
+  arg5:
+    type: "long"
+    name: "fifth"
+    description: "long fifth."
 output_data:
   type: "long"
   name: "result"

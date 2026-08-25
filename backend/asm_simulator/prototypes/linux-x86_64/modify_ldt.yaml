@@ -1,11 +1,23 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 modify_ldt
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: modify_ldt
 ssn: 154
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "int"
+    name: "func"
+    description: "Valor inteiro."
+  arg1:
+    type: "void *"
+    name: "ptr"
+    description: "void * ptr."
+  arg2:
+    type: "unsigned long"
+    name: "bytecount"
+    description: "unsigned long bytecount."
 output_data:
   type: "long"
   name: "result"

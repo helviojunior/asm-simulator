@@ -1,11 +1,23 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 lookup_dcookie
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: lookup_dcookie
 ssn: 212
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "uint64_t"
+    name: "cookie"
+    description: "uint64_t cookie."
+  arg1:
+    type: "char *"
+    name: "buffer"
+    description: "Ponteiro para o bloco de memoria da operacao."
+  arg2:
+    type: "size_t"
+    name: "len"
+    description: "Tamanho em bytes."
 output_data:
   type: "long"
   name: "result"

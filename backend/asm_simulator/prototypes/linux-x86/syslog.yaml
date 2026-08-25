@@ -1,11 +1,22 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 syslog
 function_name: syslog
 ssn: 103
-summary: ""
-input_args: {}
+summary: "Le ou controla o buffer de mensagens do kernel — o que o dmesg mostra."
+input_args:
+  arg0:
+    type: "int"
+    name: "type"
+    description: "Operacao no buffer de log do kernel: 2 le, 3 le tudo, 5 limpa, 9 diz quanto ha para ler."
+  arg1:
+    type: "char *"
+    name: "bufp"
+    description: "Recebe o texto lido do buffer do kernel."
+  arg2:
+    type: "int"
+    name: "len"
+    description: "Tamanho do buffer, em bytes."
 output_data:
   type: "long"
   name: "result"

@@ -1,11 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 kexec_load
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: kexec_load
 ssn: 283
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "unsigned long"
+    name: "entry"
+    description: "unsigned long entry."
+  arg1:
+    type: "unsigned long"
+    name: "nr_segments"
+    description: "unsigned long nr_segments."
+  arg2:
+    type: "struct kexec_segment *"
+    name: "segments"
+    description: "struct kexec_segment * segments."
+  arg3:
+    type: "unsigned long"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

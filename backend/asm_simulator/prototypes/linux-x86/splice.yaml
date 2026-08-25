@@ -1,11 +1,34 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 splice
 function_name: splice
 ssn: 313
-summary: ""
-input_args: {}
+summary: "Move bytes entre descritores sem passar pelo espaco do usuario. Um dos lados tem de ser um pipe."
+input_args:
+  arg0:
+    type: "int"
+    name: "fd_in"
+    description: "Descritor de origem dos dados."
+  arg1:
+    type: "off64_t *"
+    name: "off_in"
+    description: "Deslocamento na origem. NULL usa (e avanca) a posicao atual do descritor."
+  arg2:
+    type: "int"
+    name: "fd_out"
+    description: "Descritor de destino dos dados."
+  arg3:
+    type: "off64_t *"
+    name: "off_out"
+    description: "Deslocamento no destino. NULL usa (e avanca) a posicao atual do descritor."
+  arg4:
+    type: "size_t"
+    name: "len"
+    description: "Quantos bytes mover. Um dos dois lados precisa ser um pipe."
+  arg5:
+    type: "unsigned int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

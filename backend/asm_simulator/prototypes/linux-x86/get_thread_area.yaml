@@ -1,11 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 get_thread_area
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: get_thread_area
 ssn: 244
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "struct user_desc *"
+    name: "u_info"
+    description: "Descritor do segmento local da thread (base, limite e flags)."
 output_data:
   type: "long"
   name: "result"

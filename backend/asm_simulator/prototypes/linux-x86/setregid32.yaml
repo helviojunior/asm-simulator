@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 setregid (a pagina do syscall `setregid32` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: setregid32
 ssn: 204
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "gid_t"
+    name: "rgid"
+    description: "GID real."
+  arg1:
+    type: "gid_t"
+    name: "egid"
+    description: "GID efetivo."
 output_data:
   type: "long"
   name: "result"

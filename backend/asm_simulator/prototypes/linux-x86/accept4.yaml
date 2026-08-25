@@ -1,11 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 accept4
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: accept4
 ssn: 364
-summary: ""
-input_args: {}
+summary: "Aceita uma conexao, com flags (SOCK_CLOEXEC, SOCK_NONBLOCK) na mesma chamada."
+input_args:
+  arg0:
+    type: "int"
+    name: "sockfd"
+    description: "Descritor do socket."
+  arg1:
+    type: "struct sockaddr *"
+    name: "addr"
+    description: "Endereco na memoria do processo."
+  arg2:
+    type: "socklen_t *"
+    name: "addrlen"
+    description: "socklen_t * addrlen."
+  arg3:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

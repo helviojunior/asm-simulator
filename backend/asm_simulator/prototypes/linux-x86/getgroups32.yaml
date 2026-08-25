@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 getgroups (a pagina do syscall `getgroups32` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: getgroups32
 ssn: 205
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "int"
+    name: "size"
+    description: "Tamanho em bytes da estrutura passada — e como o kernel sabe a versao dela."
+  arg1:
+    type: "gid_t *"
+    name: "list"
+    description: "Vetor de identificadores de grupo."
 output_data:
   type: "long"
   name: "result"

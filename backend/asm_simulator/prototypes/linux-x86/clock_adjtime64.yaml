@@ -1,11 +1,19 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 clock_adjtime (a pagina do syscall `clock_adjtime64` esta sob esse nome)
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: clock_adjtime64
 ssn: 405
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "clockid_t"
+    name: "clk_id"
+    description: "Qual relogio: CLOCK_REALTIME 0, CLOCK_MONOTONIC 1."
+  arg1:
+    type: "struct timex *"
+    name: "buf"
+    description: "Ponteiro para o bloco de memoria da operacao."
 output_data:
   type: "long"
   name: "result"

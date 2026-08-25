@@ -1,40 +1,32 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
 # Assinatura: man 2 clone
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Argumentos da SYSCALL crua, da secao "C library/kernel differences".
 function_name: clone
 ssn: 120
-summary: ""
+summary: "Cria um processo ou thread, escolhendo o que e compartilhado com o pai. E a base de fork() e de pthread_create()."
 input_args:
   arg0:
-    type: "int ( *fn)(void *"
-    name: "_Nullable)"
-    description: "int ( *fn)(void * _Nullable)."
+    type: "unsigned long"
+    name: "flags"
+    description: "O que o filho COMPARTILHA com o pai: CLONE_VM 0x100 (memoria), CLONE_FS 0x200, CLONE_FILES 0x400, CLONE_SIGHAND 0x800, CLONE_THREAD 0x10000. No byte baixo vai o sinal enviado ao pai na saida (SIGCHLD 17)."
   arg1:
     type: "void *"
     name: "stack"
-    description: "void * stack."
+    description: "Topo da pilha da thread nova — o endereco MAIS ALTO, porque a pilha cresce para baixo."
   arg2:
-    type: "int"
-    name: "flags"
-    description: "Combinacao de flags da chamada."
-  arg3:
-    type: "void *_Nullable"
-    name: "arg"
-    description: "void *_Nullable arg."
-  arg4:
-    type: "... \\fR/ *\\fP pid_t *_Nullable"
+    type: "int *"
     name: "parent_tid"
-    description: "... \\fR/ *\\fP pid_t *_Nullable parent_tid."
-  arg5:
-    type: "void *_Nullable"
+    description: "Endereco onde o kernel escreve o TID do filho, no espaco do PAI."
+  arg3:
+    type: "unsigned long"
     name: "tls"
-    description: "void *_Nullable tls."
-  arg6:
-    type: "pid_t *_Nullable child_tid \\fR *"
-    name: "/\\fP"
-    description: "pid_t *_Nullable child_tid \\fR * /\\fP."
+    description: "Novo valor do descritor de TLS da thread."
+  arg4:
+    type: "int *"
+    name: "child_tid"
+    description: "Endereco onde o kernel escreve o TID do filho, no espaco do FILHO."
 output_data:
   type: "int"
-  name: "result"
-  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."
+  name: "pid"
+  description: "No PAI, o PID do filho; no FILHO, 0. Negativo em erro (-errno). E o unico retorno que sai duas vezes."

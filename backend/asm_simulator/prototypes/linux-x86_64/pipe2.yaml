@@ -1,11 +1,18 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
-# TODO: resumo e descricoes derivados da assinatura; revisar.
+# Assinatura: man 2 pipe2
 function_name: pipe2
 ssn: 293
-summary: ""
-input_args: {}
+summary: "Cria um pipe, com flags (O_CLOEXEC, O_NONBLOCK) na mesma chamada."
+input_args:
+  arg0:
+    type: "int *"
+    name: "pipefd"
+    description: "Recebe os dois descritores: [0] le, [1] escreve."
+  arg1:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
 output_data:
   type: "long"
   name: "result"

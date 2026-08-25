@@ -1,11 +1,27 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
-# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# Assinatura: man 2 pkey_mprotect
 # TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: pkey_mprotect
 ssn: 380
 summary: ""
-input_args: {}
+input_args:
+  arg0:
+    type: "void *"
+    name: "addr"
+    description: "Endereco na memoria do processo."
+  arg1:
+    type: "size_t"
+    name: "len"
+    description: "Tamanho em bytes."
+  arg2:
+    type: "int"
+    name: "prot"
+    description: "Protecao da memoria: PROT_READ 1, PROT_WRITE 2, PROT_EXEC 4."
+  arg3:
+    type: "int"
+    name: "pkey"
+    description: "Valor inteiro."
 output_data:
   type: "long"
   name: "result"
