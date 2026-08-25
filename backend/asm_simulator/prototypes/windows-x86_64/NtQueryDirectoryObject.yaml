@@ -1,0 +1,47 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntobapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtQueryDirectoryObject
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "DirectoryHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "out/opt"
+    description: "Bloco de memoria da operacao. Opcional."
+  arg2:
+    type: "ULONG"
+    name: "Length"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+  arg3:
+    type: "BOOLEAN"
+    name: "ReturnSingleEntry"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg4:
+    type: "BOOLEAN"
+    name: "RestartScan"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg5:
+    type: "PULONG"
+    name: "Context"
+    direction: "inout"
+    description: "Contexto opaco repassado sem interpretacao."
+  arg6:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

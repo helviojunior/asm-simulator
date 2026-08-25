@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 migrate_pages
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: migrate_pages
+ssn: 294
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "pid"
+    description: "Identificador do processo."
+  arg1:
+    type: "unsigned long"
+    name: "maxnode"
+    description: "unsigned long maxnode."
+  arg2:
+    type: "const unsigned long *"
+    name: "old_nodes"
+    description: "const unsigned long * old_nodes."
+  arg3:
+    type: "const unsigned long *"
+    name: "new_nodes"
+    description: "const unsigned long * new_nodes."
+output_data:
+  type: "long"
+  name: "result"
+  description: "Depende da operacao; negativo em erro (-errno)."

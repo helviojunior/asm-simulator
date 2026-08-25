@@ -32,8 +32,30 @@ MAX_OUTPUT_BYTES = 1024 * 1024
 # Linhas sem codigo gerado (rotulo, comentario, directive) nao trazem offset, e
 # sequencias longas continuam em linhas seguintes repetindo o mesmo numero — as
 # duas coisas o padrao abaixo acomoda.
+# O sufixo cobre as duas continuacoes que o nasm escreve: `-` quando a
+# sequencia segue na proxima linha, e `<rep 4h>` quando os bytes vem de um
+# `times` (com espaco dentro, dai o `[^>]*`). Sem aceitar essa segunda forma, a
+# linha inteira era descartada — e com ela o mapa de linhas e a marcacao de
+# dados daquele trecho.
 _LISTING_LINE = re.compile(
-    r'^\s*(?P<line>\d+)\s+(?P<offset>[0-9A-Fa-f]{8})\s+(?P<bytes>[0-9A-Fa-f]+)-?(?:\s|$)'
+    r'^\s*(?P<line>\d+)\s+(?P<offset>[0-9A-Fa-f]{8})\s+'
+    r'(?P<bytes>[0-9A-Fa-f]+)(?:-|<[^>]*>)?(?:\s|$)'
+)
+
+# Directives que RESERVAM OU EMITEM DADOS, e nao instrucoes.
+#
+# Existe para o desmontador nao tentar ler texto como codigo. Capstone decodifica
+# o que puder, e os bytes de "/bin/sh" formam instrucoes validas — `6E` e `outsb`,
+# `73 68` e `jae`. Sem esta marcacao, um `db "/bin/sh"` aparece como um punhado
+# de instrucoes sem sentido, que e exatamente o que o aluno NAO deve ver.
+#
+# O rotulo opcional a frente cobre `command: db "notepad.exe", 0`; o `times`
+# cobre `times 16 db 0x90`.
+_DATA_DIRECTIVE = re.compile(
+    r'^\s*(?:[\w.$#@~?]+\s*:\s*)?'
+    r'(?:times\s+\S+\s+)?'
+    r'(?:d[bwdqto]|res[bwdqt]|incbin)\b',
+    re.IGNORECASE,
 )
 
 # "arquivo.asm:12: error: mensagem" / "... warning: ..."
@@ -85,17 +107,28 @@ def _parse_nasm_output(output, source_name):
     return parsed
 
 
-def _parse_listing(text, line_offset):
-    """Mapa ``offset do byte -> linha do fonte``, extraido do listing do nasm.
+def _data_lines(source):
+    """Numeros das linhas do fonte que sao directive de dados."""
+    lines = set()
+    for index, raw in enumerate((source or '').splitlines(), start=1):
+        # Comentario fora antes de olhar: `; db "x"` nao emite byte nenhum.
+        code = raw.split(';', 1)[0]
+        if _DATA_DIRECTIVE.match(code):
+            lines.add(index)
+    return lines
 
-    E o proprio montador dizendo de que linha veio cada byte: nao ha
-    heuristica de casamento de texto, e macros, ``times`` e ``db`` de multiplas
-    linhas ficam corretos de graca.
+
+def _parse_listing(text, line_offset):
+    """Linhas do listing como ``[(offset, linha do fonte)]``, em ordem.
+
+    E o proprio montador dizendo de onde veio cada byte: nao ha heuristica de
+    casamento de texto, e macros, ``times`` e ``db`` de multiplas linhas ficam
+    corretos de graca.
 
     ``line_offset`` desconta as directives que injetamos antes do fonte, para
     o numero bater com o que o aluno ve no editor.
     """
-    mapping = {}
+    rows = {}
     for raw in (text or '').splitlines():
         match = _LISTING_LINE.match(raw)
         if not match:
@@ -106,8 +139,41 @@ def _parse_listing(text, line_offset):
             continue
         offset = int(match.group('offset'), 16)
         # Nao sobrescrever: a primeira linha que gerou aquele offset e a certa.
-        mapping.setdefault(offset, line)
-    return mapping
+        rows.setdefault(offset, line)
+    return sorted(rows.items())
+
+
+def _data_ranges(rows, data_lines, size):
+    """Faixas ``[inicio, fim)`` de bytes que sairam de directive de dados.
+
+    O tamanho de cada trecho vem do PROXIMO offset do listing, e nao da
+    contagem de bytes da propria linha: com `times`, o nasm escreve `90<rept>`
+    e nao lista os bytes repetidos, entao contar o que esta escrito daria 1
+    onde ha 4.
+    """
+    spans = []
+    for index, (offset, line) in enumerate(rows):
+        if line not in data_lines:
+            continue
+        end = rows[index + 1][0] if index + 1 < len(rows) else size
+        if offset < end:
+            spans.append((offset, end))
+    return _merge(spans)
+
+
+def _merge(spans):
+    """Funde intervalos que se tocam, para o desmontador ver um bloco so.
+
+    Um `db "/bin/sh", 0x01` sai do listing em varias linhas; sem fundir, viraria
+    varias linhas de `db` na desmontagem em vez da string inteira.
+    """
+    merged = []
+    for start, end in sorted(spans):
+        if merged and start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return [tuple(span) for span in merged]
 
 
 def _preamble(arch, base_address, source):
@@ -128,9 +194,11 @@ def _preamble(arch, base_address, source):
 def assemble(source, arch='x86', base_address=0):
     """Monta ``source`` (sintaxe NASM).
 
-    Devolve ``(bytes, warnings, line_map)``, onde ``line_map`` associa o offset
-    de cada byte gerado a linha do fonte que o originou — e o que permite a
-    interface destacar, a cada passo, a linha correspondente no editor.
+    Devolve ``(bytes, warnings, line_map, data_ranges)``. ``line_map`` associa o
+    offset de cada byte gerado a linha do fonte que o originou — e o que permite
+    a interface destacar, a cada passo, a linha correspondente no editor.
+    ``data_ranges`` marca o que veio de `db`/`resb`/`incbin`, para o desmontador
+    nao tentar ler texto como instrucao.
 
     Levanta ``AssemblyError`` quando o nasm recusa o fonte.
     """
@@ -199,11 +267,13 @@ def assemble(source, arch='x86', base_address=0):
 
         data = out_file.read_bytes()
         listing = lst_file.read_text(encoding='utf-8', errors='replace') if lst_file.exists() else ''
-        line_map = _parse_listing(listing, line_offset)
+        rows = _parse_listing(listing, line_offset)
+        line_map = dict(rows)
+        data_ranges = _data_ranges(rows, _data_lines(source), len(data))
 
     if len(data) > MAX_OUTPUT_BYTES:
         raise AssemblyError(
             f'Assembled binary is too large ({len(data)} bytes; limit is {MAX_OUTPUT_BYTES}).'
         )
 
-    return data, warnings, line_map
+    return data, warnings, line_map, data_ranges

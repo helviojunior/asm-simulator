@@ -1,0 +1,41 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+function_name: NtAllocateVirtualMemory
+ssn: null
+summary: "Reserva ou confirma memoria virtual, possivelmente em outro processo."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PVOID *"
+    name: "BaseAddress"
+    direction: "inout"
+    description: "Entra com o endereco desejado (ou 0 para o kernel escolher) e sai com o endereco alocado."
+  arg2:
+    type: "ULONG_PTR"
+    name: "ZeroBits"
+    direction: "in"
+    description: "Quantos bits altos do endereco devem ser zero. 0 e o comum."
+  arg3:
+    type: "PSIZE_T"
+    name: "RegionSize"
+    direction: "inout"
+    description: "Entra com o tamanho pedido e sai com ele arredondado para pagina."
+  arg4:
+    type: "ULONG"
+    name: "AllocationType"
+    direction: "in"
+    description: "MEM_COMMIT 0x1000, MEM_RESERVE 0x2000. Combinados por OR no caso comum."
+  arg5:
+    type: "ULONG"
+    name: "PageProtection"
+    direction: "in"
+    description: "PAGE_READWRITE 0x04, PAGE_EXECUTE_READWRITE 0x40. E aqui que se pede memoria executavel."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

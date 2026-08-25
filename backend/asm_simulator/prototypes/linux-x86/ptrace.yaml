@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 ptrace
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: ptrace
+ssn: 26
+summary: ""
+input_args:
+  arg0:
+    type: "enum __ptrace_request"
+    name: "request"
+    description: "Codigo da operacao. Define o significado do terceiro argumento."
+  arg1:
+    type: "pid_t"
+    name: "pid"
+    description: "Identificador do processo."
+  arg2:
+    type: "void *"
+    name: "addr"
+    description: "Endereco de memoria."
+  arg3:
+    type: "void *"
+    name: "data"
+    description: "void * data."
+output_data:
+  type: "long"
+  name: "result"
+  description: "Depende da operacao; negativo em erro (-errno)."

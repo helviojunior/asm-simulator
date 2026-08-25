@@ -1,0 +1,22 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtWaitForAlertByThreadId
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PVOID"
+    name: "Address"
+    direction: "in/opt"
+    description: "Endereco de memoria. Opcional."
+  arg1:
+    type: "PLARGE_INTEGER"
+    name: "Timeout"
+    direction: "in/opt"
+    description: "Tempo limite em unidades de 100ns. Negativo e relativo ao agora; NULL espera para sempre."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

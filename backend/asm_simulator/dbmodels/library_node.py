@@ -29,6 +29,11 @@ class LibraryNode(Base):
         X86 = 'x86', 'x86 (32-bit)'
         X86_64 = 'x86_64', 'x86-64 (64-bit)'
 
+    class Os(models.TextChoices):
+        LINUX = 'linux', 'Linux'
+        WINDOWS = 'windows', 'Windows'
+        MACOS = 'macos', 'macOS'
+
     parent = models.ForeignKey(
         'self',
         null=True,
@@ -44,6 +49,10 @@ class LibraryNode(Base):
     # ("0x7F200100"). Um inteiro perderia a forma original e, em 64 bits,
     # esbarraria no limite do inteiro com sinal do SQLite.
     arch = models.CharField(max_length=16, choices=Arch.choices, default=Arch.X86)
+    # Sistema ALVO. Vazio = ainda nao resolvido — o numero de uma syscall
+    # pertence ao sistema, nao a arquitetura (`write` e 4 no int 0x80 do Linux
+    # e 0x2000004 no macOS), entao sem isso nao da para ler o programa.
+    os = models.CharField(max_length=16, choices=Os.choices, blank=True, default='')
     code_base = models.CharField(max_length=32, blank=True, default='')
     stack_top = models.CharField(max_length=32, blank=True, default='')
     # Quantas posicoes de argumento inspecionar num `call`.

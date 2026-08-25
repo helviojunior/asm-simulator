@@ -1,0 +1,57 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateProcessEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "ProcessHandle"
+    direction: "out"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "PCOBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags. Opcional."
+  arg3:
+    type: "HANDLE"
+    name: "ParentProcess"
+    direction: "in"
+    description: "Entrada: HANDLE."
+  arg4:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Combinacao de flags."
+  arg5:
+    type: "HANDLE"
+    name: "SectionHandle"
+    direction: "in/opt"
+    description: "Handle da secao (objeto de memoria compartilhavel). Opcional."
+  arg6:
+    type: "HANDLE"
+    name: "DebugPort"
+    direction: "in/opt"
+    description: "Entrada: HANDLE. Opcional."
+  arg7:
+    type: "HANDLE"
+    name: "TokenHandle"
+    direction: "in/opt"
+    description: "Handle do token de acesso. Opcional."
+  arg8:
+    type: "ULONG"
+    name: "Reserved"
+    direction: "in"
+    description: "Entrada: ULONG."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

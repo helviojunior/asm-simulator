@@ -1,0 +1,11 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+function_name: socketcall
+ssn: 102
+summary: "Porta unica para toda a API de sockets em 32 bits. Em 64 bits cada operacao tem sua propria syscall."
+input_args: {}
+output_data:
+  type: "int"
+  name: "result"
+  description: "Depende da operacao; negativo em erro (-errno)."

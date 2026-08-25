@@ -1,0 +1,16 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 time
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: time
+ssn: 201
+summary: ""
+input_args:
+  arg0:
+    type: "time_t *_Nullable"
+    name: "tloc"
+    description: "time_t *_Nullable tloc."
+output_data:
+  type: "time_t"
+  name: "result"
+  description: "Instante em segundos; negativo em erro (-errno)."

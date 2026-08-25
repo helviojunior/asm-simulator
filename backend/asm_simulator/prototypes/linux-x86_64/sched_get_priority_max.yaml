@@ -1,0 +1,16 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 sched_get_priority_max
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: sched_get_priority_max
+ssn: 146
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "policy"
+    description: "int policy."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

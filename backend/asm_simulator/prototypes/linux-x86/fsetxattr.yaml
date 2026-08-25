@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 fsetxattr
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: fsetxattr
+ssn: 228
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "fd"
+    description: "Descritor de arquivo aberto. 0 stdin, 1 stdout, 2 stderr."
+  arg1:
+    type: "const char *"
+    name: "name"
+    description: "const char * name."
+  arg2:
+    type: "const void *"
+    name: "value"
+    description: "const void * value."
+  arg3:
+    type: "size_t"
+    name: "size"
+    description: "Tamanho em bytes."
+  arg4:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

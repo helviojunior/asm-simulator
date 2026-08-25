@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 ioperm
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: ioperm
+ssn: 173
+summary: ""
+input_args:
+  arg0:
+    type: "unsigned long"
+    name: "from"
+    description: "unsigned long from."
+  arg1:
+    type: "unsigned long"
+    name: "num"
+    description: "unsigned long num."
+  arg2:
+    type: "int"
+    name: "turn_on"
+    description: "int turn_on."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

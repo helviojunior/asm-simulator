@@ -1,0 +1,35 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 mmap
+function_name: mmap
+ssn: 9
+summary: "Mapeia memoria."
+input_args:
+  arg0:
+    type: "void *"
+    name: "addr"
+    description: "Endereco sugerido, ou 0 para o kernel escolher."
+  arg1:
+    type: "size_t"
+    name: "length"
+    description: "Tamanho em bytes."
+  arg2:
+    type: "int"
+    name: "prot"
+    description: "PROT_READ 1, PROT_WRITE 2, PROT_EXEC 4."
+  arg3:
+    type: "int"
+    name: "flags"
+    description: "MAP_SHARED 1, MAP_PRIVATE 2, MAP_ANONYMOUS 0x20."
+  arg4:
+    type: "int"
+    name: "fd"
+    description: "Descritor a mapear, ou -1 com MAP_ANONYMOUS."
+  arg5:
+    type: "off_t"
+    name: "offset"
+    description: "Deslocamento em bytes, multiplo do tamanho de pagina."
+output_data:
+  type: "void *"
+  name: "addr"
+  description: "Endereco do mapeamento, ou valor negativo pequeno em erro (-errno)."

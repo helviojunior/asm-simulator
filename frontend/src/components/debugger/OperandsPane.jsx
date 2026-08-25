@@ -5,6 +5,7 @@ import { cn } from "lib/utils";
 import { hex } from "lib/cpu/format";
 import { annotateValue, inspectOperands } from "lib/cpu/inspect";
 import { displayName } from "lib/cpu/registers";
+import { ToastArea } from "components/ui/toast";
 
 /**
  * Painel de informacao da instrucao atual — o equivalente da barra abaixo da
@@ -173,7 +174,12 @@ function Shell({ title, subtitle, children }) {
         </span>
         {subtitle && <span className="text-[11px] text-[#d4d4d4]">{subtitle}</span>}
       </header>
-      <div className="flex-1 overflow-auto py-1 text-[12px] leading-[1.6]">{children}</div>
+      <div className="flex-1 overflow-auto py-1 text-[12px] leading-[1.6]">
+        {/* Avisos nao bloqueantes vem ANTES do conteudo: e o que mudou agora,
+            e some sozinho em seguida. */}
+        <ToastArea />
+        {children}
+      </div>
     </section>
   );
 }

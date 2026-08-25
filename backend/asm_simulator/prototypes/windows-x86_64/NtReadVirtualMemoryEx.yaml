@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtReadVirtualMemoryEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PVOID"
+    name: "BaseAddress"
+    direction: "in/opt"
+    description: "Endereco base da regiao de memoria. Opcional."
+  arg2:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "out"
+    description: "Bloco de memoria da operacao."
+  arg3:
+    type: "SIZE_T"
+    name: "NumberOfBytesToRead"
+    direction: "in"
+    description: "Quantidade de bytes a ler."
+  arg4:
+    type: "PSIZE_T"
+    name: "NumberOfBytesRead"
+    direction: "out/opt"
+    description: "Recebe quantos bytes foram lidos. Opcional."
+  arg5:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Combinacao de flags."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

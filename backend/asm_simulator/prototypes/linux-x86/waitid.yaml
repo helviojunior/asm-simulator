@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 waitid
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: waitid
+ssn: 284
+summary: ""
+input_args:
+  arg0:
+    type: "idtype_t"
+    name: "idtype"
+    description: "idtype_t idtype."
+  arg1:
+    type: "id_t"
+    name: "id"
+    description: "id_t id."
+  arg2:
+    type: "siginfo_t *"
+    name: "infop"
+    description: "siginfo_t * infop."
+  arg3:
+    type: "int"
+    name: "options"
+    description: "int options."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

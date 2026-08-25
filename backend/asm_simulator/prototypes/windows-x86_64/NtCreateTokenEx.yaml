@@ -1,0 +1,97 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateTokenEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "TokenHandle"
+    direction: "out"
+    description: "Handle do token de acesso."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "POBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags. Opcional."
+  arg3:
+    type: "TOKEN_TYPE"
+    name: "Type"
+    direction: "in"
+    description: "Entrada: TOKEN_TYPE."
+  arg4:
+    type: "PLUID"
+    name: "AuthenticationId"
+    direction: "in"
+    description: "Entrada: PLUID."
+  arg5:
+    type: "PLARGE_INTEGER"
+    name: "ExpirationTime"
+    direction: "in"
+    description: "Entrada: PLARGE_INTEGER."
+  arg6:
+    type: "PTOKEN_USER"
+    name: "User"
+    direction: "in"
+    description: "Entrada: PTOKEN_USER."
+  arg7:
+    type: "PTOKEN_GROUPS"
+    name: "Groups"
+    direction: "in"
+    description: "Entrada: PTOKEN_GROUPS."
+  arg8:
+    type: "PTOKEN_PRIVILEGES"
+    name: "Privileges"
+    direction: "in"
+    description: "Entrada: PTOKEN_PRIVILEGES."
+  arg9:
+    type: "PTOKEN_SECURITY_ATTRIBUTES_INFORMATION"
+    name: "UserAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto. Opcional."
+  arg10:
+    type: "PTOKEN_SECURITY_ATTRIBUTES_INFORMATION"
+    name: "DeviceAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto. Opcional."
+  arg11:
+    type: "PTOKEN_GROUPS"
+    name: "DeviceGroups"
+    direction: "in/opt"
+    description: "Entrada: PTOKEN_GROUPS. Opcional."
+  arg12:
+    type: "PTOKEN_MANDATORY_POLICY"
+    name: "MandatoryPolicy"
+    direction: "in/opt"
+    description: "Entrada: PTOKEN_MANDATORY_POLICY. Opcional."
+  arg13:
+    type: "PTOKEN_OWNER"
+    name: "Owner"
+    direction: "in/opt"
+    description: "Entrada: PTOKEN_OWNER. Opcional."
+  arg14:
+    type: "PTOKEN_PRIMARY_GROUP"
+    name: "PrimaryGroup"
+    direction: "in"
+    description: "Entrada: PTOKEN_PRIMARY_GROUP."
+  arg15:
+    type: "PTOKEN_DEFAULT_DACL"
+    name: "DefaultDacl"
+    direction: "in/opt"
+    description: "Entrada: PTOKEN_DEFAULT_DACL. Opcional."
+  arg16:
+    type: "PTOKEN_SOURCE"
+    name: "Source"
+    direction: "in"
+    description: "Entrada: PTOKEN_SOURCE."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

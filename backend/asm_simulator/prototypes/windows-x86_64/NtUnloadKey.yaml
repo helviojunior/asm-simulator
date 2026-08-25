@@ -1,0 +1,17 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntregapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUnloadKey
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "POBJECT_ATTRIBUTES"
+    name: "TargetKey"
+    direction: "in"
+    description: "Entrada: POBJECT_ATTRIBUTES."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

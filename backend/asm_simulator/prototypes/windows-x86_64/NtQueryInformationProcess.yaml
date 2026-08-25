@@ -1,0 +1,36 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+function_name: NtQueryInformationProcess
+ssn: null
+summary: "Consulta informacao de um processo — inclusive o endereco do PEB."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PROCESSINFOCLASS"
+    name: "ProcessInformationClass"
+    direction: "in"
+    description: "ProcessBasicInformation 0 traz o PEB; ProcessImageFileName 27 o caminho."
+  arg2:
+    type: "PVOID"
+    name: "ProcessInformation"
+    direction: "out"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg3:
+    type: "ULONG"
+    name: "ProcessInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+  arg4:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho realmente necessario. Util para chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

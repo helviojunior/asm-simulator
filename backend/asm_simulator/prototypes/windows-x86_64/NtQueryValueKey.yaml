@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntregapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtQueryValueKey
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "KeyHandle"
+    direction: "in"
+    description: "Handle da chave de registro."
+  arg1:
+    type: "PCUNICODE_STRING"
+    name: "ValueName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg2:
+    type: "KEY_VALUE_INFORMATION_CLASS"
+    name: "KeyValueInformationClass"
+    direction: "in"
+    description: "Entrada: KEY_VALUE_INFORMATION_CLASS."
+  arg3:
+    type: "PVOID"
+    name: "KeyValueInformation"
+    direction: "out/opt"
+    description: "Bloco de informacao. O formato depende da classe pedida. Opcional."
+  arg4:
+    type: "ULONG"
+    name: "Length"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+  arg5:
+    type: "PULONG"
+    name: "ResultLength"
+    direction: "out"
+    description: "Tamanho em bytes."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

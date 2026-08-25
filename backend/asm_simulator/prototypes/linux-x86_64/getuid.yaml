@@ -1,0 +1,12 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 getuid
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: getuid
+ssn: 102
+summary: ""
+input_args: {}
+output_data:
+  type: "uid_t"
+  name: "result"
+  description: "Identificador de usuario. Nunca falha."

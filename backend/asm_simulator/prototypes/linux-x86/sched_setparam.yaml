@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 sched_setparam
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: sched_setparam
+ssn: 154
+summary: ""
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "pid"
+    description: "Identificador do processo."
+  arg1:
+    type: "const struct sched_param *"
+    name: "param"
+    description: "const struct sched_param * param."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

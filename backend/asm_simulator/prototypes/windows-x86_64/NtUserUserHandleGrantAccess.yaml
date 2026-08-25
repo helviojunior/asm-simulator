@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserUserHandleGrantAccess
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "UserHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "HANDLE"
+    name: "Job"
+    direction: "in"
+    description: "Entrada: HANDLE."
+  arg2:
+    type: "BOOL"
+    name: "Grant"
+    direction: "in"
+    description: "Entrada: BOOL."
+output_data:
+  type: "BOOL"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 timer_settime
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: timer_settime
+ssn: 260
+summary: ""
+input_args:
+  arg0:
+    type: "timer_t"
+    name: "timerid"
+    description: "timer_t timerid."
+  arg1:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+  arg2:
+    type: "const struct itimerspec *restrict"
+    name: "new_value"
+    description: "const struct itimerspec *restrict new_value."
+  arg3:
+    type: "struct itimerspec *_Nullable restrict"
+    name: "old_value"
+    description: "struct itimerspec *_Nullable restrict old_value."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

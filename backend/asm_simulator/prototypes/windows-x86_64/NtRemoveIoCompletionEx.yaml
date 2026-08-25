@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntioapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtRemoveIoCompletionEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "IoCompletionHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "PFILE_IO_COMPLETION_INFORMATION"
+    name: "IoCompletionInformation"
+    direction: "out"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg2:
+    type: "ULONG"
+    name: "Count"
+    direction: "in"
+    description: "Quantidade de itens."
+  arg3:
+    type: "PULONG"
+    name: "NumEntriesRemoved"
+    direction: "out"
+    description: "Saida: PULONG."
+  arg4:
+    type: "PLARGE_INTEGER"
+    name: "Timeout"
+    direction: "in/opt"
+    description: "Tempo limite em unidades de 100ns. Negativo e relativo ao agora; NULL espera para sempre."
+  arg5:
+    type: "BOOLEAN"
+    name: "Alertable"
+    direction: "in"
+    description: "TRUE permite que uma APC interrompa a espera."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

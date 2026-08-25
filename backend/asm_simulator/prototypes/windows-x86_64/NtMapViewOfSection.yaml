@@ -1,0 +1,61 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+function_name: NtMapViewOfSection
+ssn: null
+summary: "Mapeia uma secao no espaco de um processo."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "SectionHandle"
+    direction: "in"
+    description: "Handle da secao (objeto de memoria compartilhada)."
+  arg1:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg2:
+    type: "PVOID *"
+    name: "BaseAddress"
+    direction: "inout"
+    description: "Entra com o endereco desejado (ou 0) e sai com onde a secao foi mapeada."
+  arg3:
+    type: "ULONG_PTR"
+    name: "ZeroBits"
+    direction: "in"
+    description: "Bits altos que devem ser zero no endereco. 0 e o comum."
+  arg4:
+    type: "SIZE_T"
+    name: "CommitSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg5:
+    type: "PLARGE_INTEGER"
+    name: "SectionOffset"
+    direction: "inout/opt"
+    description: "Deslocamento em bytes. Opcional."
+  arg6:
+    type: "PSIZE_T"
+    name: "ViewSize"
+    direction: "inout"
+    description: "Tamanho em bytes."
+  arg7:
+    type: "SECTION_INHERIT"
+    name: "InheritDisposition"
+    direction: "in"
+    description: "Entrada: SECTION_INHERIT."
+  arg8:
+    type: "ULONG"
+    name: "AllocationType"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg9:
+    type: "ULONG"
+    name: "PageProtection"
+    direction: "in"
+    description: "Protecao de pagina. PAGE_READWRITE 0x04, PAGE_EXECUTE_READWRITE 0x40."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtSystemDebugControl
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "SYSDBG_COMMAND"
+    name: "Command"
+    direction: "in"
+    description: "Entrada: SYSDBG_COMMAND."
+  arg1:
+    type: "PVOID"
+    name: "InputBuffer"
+    direction: "inout/opt"
+    description: "Entra e sai: PVOID. Opcional."
+  arg2:
+    type: "ULONG"
+    name: "InputBufferLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg3:
+    type: "PVOID"
+    name: "OutputBuffer"
+    direction: "out/opt"
+    description: "Saida: PVOID. Opcional."
+  arg4:
+    type: "ULONG"
+    name: "OutputBufferLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg5:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

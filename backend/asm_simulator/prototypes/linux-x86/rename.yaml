@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 rename
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: rename
+ssn: 38
+summary: ""
+input_args:
+  arg0:
+    type: "const char *"
+    name: "oldpath"
+    description: "Caminho de origem."
+  arg1:
+    type: "const char *"
+    name: "newpath"
+    description: "Caminho de destino."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

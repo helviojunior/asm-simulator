@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 nfsservctl
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: nfsservctl
+ssn: 169
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "cmd"
+    description: "int cmd."
+  arg1:
+    type: "struct nfsctl_arg *"
+    name: "argp"
+    description: "struct nfsctl_arg * argp."
+  arg2:
+    type: "union nfsctl_res *"
+    name: "resp"
+    description: "union nfsctl_res * resp."
+output_data:
+  type: "long"
+  name: "result"
+  description: "Depende da operacao; negativo em erro (-errno)."

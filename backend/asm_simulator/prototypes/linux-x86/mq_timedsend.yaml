@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 mq_timedsend
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: mq_timedsend
+ssn: 279
+summary: ""
+input_args:
+  arg0:
+    type: "mqd_t"
+    name: "mqdes"
+    description: "mqd_t mqdes."
+  arg1:
+    type: "const char *"
+    name: "msg_ptr"
+    description: "const char * msg_ptr."
+  arg2:
+    type: "size_t"
+    name: "msg_len"
+    description: "size_t msg_len."
+  arg3:
+    type: "unsigned int"
+    name: "msg_prio"
+    description: "unsigned int msg_prio."
+  arg4:
+    type: "const struct timespec *"
+    name: "abs_timeout"
+    description: "const struct timespec * abs_timeout."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

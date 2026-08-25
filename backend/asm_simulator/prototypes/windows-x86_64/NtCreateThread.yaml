@@ -1,0 +1,52 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateThread
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "ThreadHandle"
+    direction: "out"
+    description: "Handle da thread alvo. NtCurrentThread (-2) e a propria."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "PCOBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags. Opcional."
+  arg3:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg4:
+    type: "PCLIENT_ID"
+    name: "ClientId"
+    direction: "out"
+    description: "Estrutura CLIENT_ID com o PID e o TID que identificam o alvo."
+  arg5:
+    type: "PCONTEXT"
+    name: "ThreadContext"
+    direction: "in"
+    description: "Estrutura CONTEXT com o estado dos registradores."
+  arg6:
+    type: "PINITIAL_TEB"
+    name: "InitialTeb"
+    direction: "in"
+    description: "Entrada: PINITIAL_TEB."
+  arg7:
+    type: "BOOLEAN"
+    name: "CreateSuspended"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

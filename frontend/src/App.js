@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DialogProvider } from "contexts/DialogContext";
+import { ToastProvider } from "contexts/ToastContext";
 import { I18nProvider } from "i18n";
 import AppLayout from "components/layout/AppLayout";
 import Dashboard from "pages/Dashboard";
@@ -24,6 +25,7 @@ function App() {
         {/* Projeto publico: sem login, o idioma vem do navegador (fallback EN). */}
         <I18nProvider>
           <DialogProvider>
+            <ToastProvider>
             <Routes>
               {/* O simulador ocupa a janela inteira: um debugger nao divide
                   espaco com sidebar. Por isso fica fora do AppLayout. */}
@@ -36,6 +38,7 @@ function App() {
               <Route path="/" element={<Navigate to="/simulator" replace />} />
               <Route path="*" element={<Navigate to="/simulator" replace />} />
             </Routes>
+            </ToastProvider>
           </DialogProvider>
         </I18nProvider>
       </BrowserRouter>

@@ -1,0 +1,47 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtSetTimer
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "TimerHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "PLARGE_INTEGER"
+    name: "DueTime"
+    direction: "in"
+    description: "Entrada: PLARGE_INTEGER."
+  arg2:
+    type: "PTIMER_APC_ROUTINE"
+    name: "TimerApcRoutine"
+    direction: "in/opt"
+    description: "Endereco da rotina. Opcional."
+  arg3:
+    type: "PVOID"
+    name: "TimerContext"
+    direction: "in/opt"
+    description: "Contexto opaco repassado sem interpretacao. Opcional."
+  arg4:
+    type: "BOOLEAN"
+    name: "ResumeTimer"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg5:
+    type: "LONG"
+    name: "Period"
+    direction: "in/opt"
+    description: "Entrada: LONG. Opcional."
+  arg6:
+    type: "PBOOLEAN"
+    name: "PreviousState"
+    direction: "out/opt"
+    description: "Saida: PBOOLEAN. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

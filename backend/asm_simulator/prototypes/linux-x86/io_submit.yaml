@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 io_submit
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: io_submit
+ssn: 248
+summary: ""
+input_args:
+  arg0:
+    type: "aio_context_t"
+    name: "ctx_id"
+    description: "aio_context_t ctx_id."
+  arg1:
+    type: "long"
+    name: "nr"
+    description: "long nr."
+  arg2:
+    type: "struct iocb * *"
+    name: "iocbpp"
+    description: "struct iocb * * iocbpp."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

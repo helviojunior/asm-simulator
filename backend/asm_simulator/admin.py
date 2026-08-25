@@ -11,8 +11,8 @@ from asm_simulator.models import LibraryNode
 
 @admin.register(LibraryNode)
 class LibraryNodeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'kind', 'parent', 'arch', 'updated')
-    list_filter = ('kind', 'arch')
+    list_display = ('name', 'kind', 'parent', 'arch', 'os', 'updated')
+    list_filter = ('kind', 'arch', 'os')
     # `source` fica de fora da busca: nao e mais coluna do banco — o conteudo
     # esta em <DATA_DIR>/library/<id>.asm.
     search_fields = ('name',)
@@ -21,6 +21,6 @@ class LibraryNodeAdmin(admin.ModelAdmin):
     readonly_fields = ('source_path',)
     fieldsets = (
         (None, {'fields': ('parent', 'kind', 'name', 'enabled')}),
-        ('Execution parameters', {'fields': ('arch', 'code_base', 'stack_top', 'arg_count')}),
+        ('Execution parameters', {'fields': ('arch', 'os', 'code_base', 'stack_top', 'arg_count')}),
         ('Source file', {'fields': ('source_path',)}),
     )

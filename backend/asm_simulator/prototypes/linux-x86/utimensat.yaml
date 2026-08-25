@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 utimensat
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: utimensat
+ssn: 320
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "dirfd"
+    description: "Descritor do diretorio base para um caminho relativo; AT_FDCWD usa o diretorio corrente."
+  arg1:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho terminado em NUL."
+  arg2:
+    type: "const struct timespec *"
+    name: "times"
+    description: "const struct timespec * times."
+  arg3:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

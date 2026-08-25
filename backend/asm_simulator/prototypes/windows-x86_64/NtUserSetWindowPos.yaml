@@ -1,0 +1,47 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserSetWindowPos
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HWND"
+    name: "WindowHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "HWND"
+    name: "WindowHandleInsertAfter"
+    direction: "in/opt"
+    description: "Entrada: HWND. Opcional."
+  arg2:
+    type: "LONG"
+    name: "X"
+    direction: "in"
+    description: "Entrada: LONG."
+  arg3:
+    type: "LONG"
+    name: "Y"
+    direction: "in"
+    description: "Entrada: LONG."
+  arg4:
+    type: "LONG"
+    name: "cx"
+    direction: "in"
+    description: "Entrada: LONG."
+  arg5:
+    type: "LONG"
+    name: "cy"
+    direction: "in"
+    description: "Entrada: LONG."
+  arg6:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Combinacao de flags."
+output_data:
+  type: "BOOL"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

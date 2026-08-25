@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtSetCachedSigningLevel2
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Combinacao de flags."
+  arg1:
+    type: "SE_SIGNING_LEVEL"
+    name: "InputSigningLevel"
+    direction: "in"
+    description: "Entrada: SE_SIGNING_LEVEL."
+  arg2:
+    type: "PHANDLE"
+    name: "SourceFiles"
+    direction: "in"
+    description: "Entrada: PHANDLE."
+  arg3:
+    type: "ULONG"
+    name: "SourceFileCount"
+    direction: "in"
+    description: "Quantidade de itens."
+  arg4:
+    type: "HANDLE"
+    name: "TargetFile"
+    direction: "in/opt"
+    description: "Entrada: HANDLE. Opcional."
+  arg5:
+    type: "SE_SET_FILE_CACHE_INFORMATION *"
+    name: "CacheInformation"
+    direction: "in/opt"
+    description: "Bloco de informacao. O formato depende da classe pedida. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

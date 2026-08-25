@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ChevronDown, ChevronRight, Download, File, FilePlus, FileUp, Folder,
+  Binary, ChevronDown, ChevronRight, Download, File, FilePlus, FileUp, Folder,
   FolderOpen, FolderPlus, Pencil, Save, Trash2, Upload,
 } from "lucide-react";
 import { useI18n } from "i18n";
 import { useDialog } from "contexts/DialogContext";
 import { cn } from "lib/utils";
 import { ContextMenu, useContextMenu } from "components/ui/contextMenu";
+import { OS, osIcon } from "lib/cpu/os";
 import {
   BUNDLE_EXTENSION, KIND, buildTree, createNode, deleteNode, exportLibrary,
   fromParams, importLibrary, listNodes, readNode, toParams, updateNode,
@@ -18,6 +19,12 @@ const NODE_MIME = "application/x-asm-library-node";
 
 // Teto do upload, alinhado com o MAX_SOURCE_BYTES do backend.
 const MAX_UPLOAD_BYTES = 256 * 1024;
+
+// O que se pode soltar aqui: fonte avulso ou a biblioteca inteira empacotada.
+// Qualquer outra coisa e recusada com o nome do arquivo — aceitar em silencio
+// criaria um ".asm" com o conteudo de um PDF dentro.
+const SOURCE_FILE = /\.(asm|s|inc)$/i;
+const BUNDLE_FILE = /\.scasmlib$/i;
 
 /**
  * Biblioteca de programas: pastas e arquivos .asm do aluno.
@@ -39,11 +46,15 @@ export default function LibraryPane({
   dirty, onSave, onSaved, saveAs = false, onSaveAsHandled, savedTick = 0,
   // Avisa quantos itens um import trouxe — vira mensagem na barra de status.
   onImported,
+  // Abre o wizard de import de binario. Mora aqui, e nao na barra de comandos,
+  // porque e um jeito de TRAZER material para dentro — vizinho do import de
+  // biblioteca, e nao dos comandos de execucao.
+  onImportBinary,
   // Pastas abertas e pasta selecionada vivem NO PAI: este painel desmonta ao
   // trocar de aba, e o estado morreria junto (a arvore reabriria fechada).
   expanded, onExpandedChange, selectedFolder, onSelectedFolderChange,
 }) {
-  const { t, lang } = useI18n();
+  const { t, tf, lang } = useI18n();
   const { confirm, alert } = useDialog();
   const { menu, openMenu, closeMenu } = useContextMenu();
 
@@ -234,7 +245,45 @@ export default function LibraryPane({
     }
   };
 
-  /** Cria um arquivo por vez a partir do que foi solto do sistema. */
+  /**
+   * Distribui o que foi solto do sistema.
+   *
+   * Um `.scasmlib` e a biblioteca inteira e vai para o import; um `.asm` e um
+   * programa avulso e vira arquivo. O resto e recusado por nome.
+   */
+  const dropFiles = async (files, parent) => {
+    const list = Array.from(files || []);
+    if (list.length === 0) return;
+
+    const bundles = list.filter((file) => BUNDLE_FILE.test(file.name));
+    const sources = list.filter((file) => SOURCE_FILE.test(file.name));
+    const rejected = list.filter(
+      (file) => !BUNDLE_FILE.test(file.name) && !SOURCE_FILE.test(file.name)
+    );
+
+    for (const bundle of bundles) {
+      // Um de cada vez: cada import e uma transacao no backend, e o segundo
+      // precisa ver o que o primeiro criou para resolver colisao de nome.
+      await doImport(bundle, parent);
+    }
+    if (sources.length) await uploadFiles(sources, parent);
+
+    // O aviso vem por ULTIMO: soltando uma pasta com um `.asm` e um `.png`
+    // junto, o que era valido ja entrou antes de o modal aparecer.
+    if (rejected.length) {
+      await alert({
+        title: t("library.invalidDrop", "Invalid file"),
+        description: tf(
+          "library.invalidDropHint",
+          { names: rejected.map((file) => file.name).join(", ") },
+          "Only .asm, .s and .inc sources or a .scasmlib bundle can be dropped here. Rejected: {names}"
+        ),
+        variant: "danger",
+      });
+    }
+  };
+
+  /** Cria um arquivo por vez a partir dos fontes soltos. */
   const uploadFiles = async (files, parent) => {
     const list = Array.from(files || []);
     if (list.length === 0) return;
@@ -277,7 +326,7 @@ export default function LibraryPane({
 
     const id = event.dataTransfer.getData(NODE_MIME);
     if (id) return move(id, parent ?? null);
-    if (event.dataTransfer.files?.length) return uploadFiles(event.dataTransfer.files, parent);
+    if (event.dataTransfer.files?.length) return dropFiles(event.dataTransfer.files, parent);
     return undefined;
   };
 
@@ -361,6 +410,15 @@ export default function LibraryPane({
       icon: Download,
       onSelect: doExport,
     },
+    { separator: true },
+    {
+      key: "import-binary",
+      label: t("sim.importBinary", "Import binary…"),
+      icon: Binary,
+      // Nao cria nada na arvore: o binario vira codigo-fonte no editor, e quem
+      // decide se aquilo merece ser guardado e o aluno.
+      onSelect: () => onImportBinary?.(),
+    },
   ];
 
   const menuItems = () => {
@@ -435,6 +493,13 @@ export default function LibraryPane({
           onClick={onSave}
           disabled={busy || !dirty}
         />
+        <span className="mx-1 h-4 w-px bg-[#3c3c3c]" />
+        <Action
+          icon={Binary}
+          label={t("sim.importBinary", "Import binary…")}
+          onClick={() => onImportBinary?.()}
+          disabled={busy}
+        />
         {selectedFolder && (
           <button
             type="button"
@@ -444,9 +509,7 @@ export default function LibraryPane({
             {t("library.toRoot", "to root")}
           </button>
         )}
-        {openFile && (
-          <span className="ml-auto truncate pl-2 text-[11px] text-[#6a9955]">{openFile.name}</span>
-        )}
+
       </div>
 
       {/* A area inteira e alvo de drop: soltar no vazio manda para a raiz. */}
@@ -667,6 +730,7 @@ function FileMeta({ node, lang }) {
   if (node.kind !== KIND.FILE) return null;
 
   const arch = node.metadata?.arch;
+  const target = node.metadata?.os;
   const updated = formatTimestamp(node.updated, lang);
 
   return (
@@ -674,6 +738,13 @@ function FileMeta({ node, lang }) {
       className="flex shrink-0 items-center gap-2 pl-2 text-[10px] text-[#6b6b6b]"
       title={node.updated ? new Date(node.updated).toLocaleString(lang) : undefined}
     >
+      {/* O glifo do sistema vem da Nerd Font embarcada, na familia que tem a
+          cobertura garantida (ver o @font-face "MesloLGS NF Embedded"). */}
+      {target && (
+        <span className="font-dump text-[12px] text-[#dcb67a]" title={OS[target]?.label}>
+          {osIcon(target)}
+        </span>
+      )}
       {arch && (
         <span className="rounded bg-[#3c3c3c] px-1 py-px text-[#9cdcfe]">
           {arch === "x86_64" ? "x64" : "x86"}

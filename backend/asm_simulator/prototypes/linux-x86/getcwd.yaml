@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 getcwd
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: getcwd
+ssn: 183
+summary: ""
+input_args:
+  arg0:
+    type: "char *"
+    name: "buf"
+    description: "Bloco de memoria da operacao."
+  arg1:
+    type: "size_t"
+    name: "size"
+    description: "Tamanho em bytes."
+output_data:
+  type: "char *"
+  name: "result"
+  description: "Valor de retorno; negativo em erro (-errno)."

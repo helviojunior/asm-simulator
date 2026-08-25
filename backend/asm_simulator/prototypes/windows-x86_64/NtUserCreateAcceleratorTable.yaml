@@ -1,0 +1,22 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserCreateAcceleratorTable
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "LPACCEL"
+    name: "paccel"
+    direction: "in"
+    description: "Entrada: LPACCEL."
+  arg1:
+    type: "LONG"
+    name: "cAccel"
+    direction: "in"
+    description: "Entrada: LONG."
+output_data:
+  type: "HACCEL"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

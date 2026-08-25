@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 mknod
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: mknod
+ssn: 133
+summary: ""
+input_args:
+  arg0:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho terminado em NUL."
+  arg1:
+    type: "mode_t"
+    name: "mode"
+    description: "Permissoes do arquivo, em octal."
+  arg2:
+    type: "dev_t"
+    name: "dev"
+    description: "dev_t dev."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

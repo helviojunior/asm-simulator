@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntlpcapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtReadRequestData
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "PortHandle"
+    direction: "in"
+    description: "Handle da porta de comunicacao (LPC/ALPC)."
+  arg1:
+    type: "PPORT_MESSAGE"
+    name: "Message"
+    direction: "in"
+    description: "Entrada: PPORT_MESSAGE."
+  arg2:
+    type: "ULONG"
+    name: "DataEntryIndex"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg3:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "out"
+    description: "Bloco de memoria da operacao."
+  arg4:
+    type: "SIZE_T"
+    name: "BufferSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg5:
+    type: "PSIZE_T"
+    name: "NumberOfBytesRead"
+    direction: "out/opt"
+    description: "Recebe quantos bytes foram lidos. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 tgkill
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: tgkill
+ssn: 234
+summary: ""
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "tgid"
+    description: "pid_t tgid."
+  arg1:
+    type: "pid_t"
+    name: "tid"
+    description: "Identificador da thread."
+  arg2:
+    type: "int"
+    name: "sig"
+    description: "Numero do sinal. 9 SIGKILL, 15 SIGTERM."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

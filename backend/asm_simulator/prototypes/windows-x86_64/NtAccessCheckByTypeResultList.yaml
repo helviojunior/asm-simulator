@@ -1,0 +1,67 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAccessCheckByTypeResultList
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    direction: "in"
+    description: "Descritor de seguranca do objeto."
+  arg1:
+    type: "PSID"
+    name: "PrincipalSelfSid"
+    direction: "in/opt"
+    description: "Entrada: PSID. Opcional."
+  arg2:
+    type: "HANDLE"
+    name: "ClientToken"
+    direction: "in"
+    description: "Entrada: HANDLE."
+  arg3:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg4:
+    type: "POBJECT_TYPE_LIST"
+    name: "ObjectTypeList"
+    direction: "in"
+    description: "Entrada: POBJECT_TYPE_LIST."
+  arg5:
+    type: "ULONG"
+    name: "ObjectTypeListLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg6:
+    type: "PGENERIC_MAPPING"
+    name: "GenericMapping"
+    direction: "in"
+    description: "Entrada: PGENERIC_MAPPING."
+  arg7:
+    type: "PPRIVILEGE_SET"
+    name: "PrivilegeSet"
+    direction: "out"
+    description: "Saida: PPRIVILEGE_SET."
+  arg8:
+    type: "PULONG"
+    name: "PrivilegeSetLength"
+    direction: "inout"
+    description: "Tamanho em bytes."
+  arg9:
+    type: "PACCESS_MASK"
+    name: "GrantedAccess"
+    direction: "out"
+    description: "Recebe os direitos efetivamente concedidos."
+  arg10:
+    type: "PNTSTATUS"
+    name: "AccessStatus"
+    direction: "out"
+    description: "Saida: PNTSTATUS."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

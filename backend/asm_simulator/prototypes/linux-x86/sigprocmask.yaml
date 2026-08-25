@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 sigprocmask
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: sigprocmask
+ssn: 126
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "how"
+    description: "int how."
+  arg1:
+    type: "const sigset_t *_Nullable restrict"
+    name: "set"
+    description: "const sigset_t *_Nullable restrict set."
+  arg2:
+    type: "sigset_t *_Nullable restrict"
+    name: "oldset"
+    description: "sigset_t *_Nullable restrict oldset."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

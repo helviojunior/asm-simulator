@@ -1,0 +1,16 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 alarm
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: alarm
+ssn: 27
+summary: ""
+input_args:
+  arg0:
+    type: "unsigned int"
+    name: "seconds"
+    description: "unsigned int seconds."
+output_data:
+  type: "unsigned int"
+  name: "result"
+  description: "Valor da operacao."

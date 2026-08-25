@@ -1,0 +1,52 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntregapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtLoadKey3
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "POBJECT_ATTRIBUTES"
+    name: "TargetKey"
+    direction: "in"
+    description: "Entrada: POBJECT_ATTRIBUTES."
+  arg1:
+    type: "POBJECT_ATTRIBUTES"
+    name: "SourceFile"
+    direction: "in"
+    description: "Entrada: POBJECT_ATTRIBUTES."
+  arg2:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Combinacao de flags."
+  arg3:
+    type: "PCM_EXTENDED_PARAMETER"
+    name: "ExtendedParameters"
+    direction: "in"
+    description: "Entrada: PCM_EXTENDED_PARAMETER."
+  arg4:
+    type: "ULONG"
+    name: "ExtendedParameterCount"
+    direction: "in"
+    description: "Quantidade de itens."
+  arg5:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in/opt"
+    description: "Direitos pedidos sobre o objeto. Opcional."
+  arg6:
+    type: "PHANDLE"
+    name: "RootHandle"
+    direction: "out/opt"
+    description: "Handle do objeto. Opcional."
+  arg7:
+    type: "PVOID"
+    name: "Reserved"
+    direction: "in"
+    description: "Entrada: PVOID."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

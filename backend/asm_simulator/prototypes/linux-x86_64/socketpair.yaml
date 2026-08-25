@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 socketpair
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: socketpair
+ssn: 53
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "domain"
+    description: "Familia de enderecos: AF_INET 2, AF_INET6 10, AF_UNIX 1."
+  arg1:
+    type: "int"
+    name: "type"
+    description: "Tipo do socket: SOCK_STREAM 1, SOCK_DGRAM 2."
+  arg2:
+    type: "int"
+    name: "protocol"
+    description: "0 escolhe o protocolo padrao do tipo."
+  arg3:
+    type: "int *"
+    name: "sv"
+    description: "int * sv."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

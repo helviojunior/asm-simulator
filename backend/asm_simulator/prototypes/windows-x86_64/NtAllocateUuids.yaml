@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAllocateUuids
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PULARGE_INTEGER"
+    name: "Time"
+    direction: "out"
+    description: "Saida: PULARGE_INTEGER."
+  arg1:
+    type: "PULONG"
+    name: "Range"
+    direction: "out"
+    description: "Saida: PULONG."
+  arg2:
+    type: "PULONG"
+    name: "Sequence"
+    direction: "out"
+    description: "Saida: PULONG."
+  arg3:
+    type: "PCHAR"
+    name: "Seed"
+    direction: "out"
+    description: "Saida: PCHAR."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

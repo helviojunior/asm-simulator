@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAllocateUserPhysicalPagesEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PULONG_PTR"
+    name: "NumberOfPages"
+    direction: "inout"
+    description: "Entra e sai: PULONG_PTR."
+  arg2:
+    type: "PULONG_PTR"
+    name: "UserPfnArray"
+    direction: "out"
+    description: "Saida: PULONG_PTR."
+  arg3:
+    type: "PMEM_EXTENDED_PARAMETER"
+    name: "ExtendedParameters"
+    direction: "inout/opt"
+    description: "Entra e sai: PMEM_EXTENDED_PARAMETER. Opcional."
+  arg4:
+    type: "ULONG"
+    name: "ExtendedParameterCount"
+    direction: "in"
+    description: "Quantidade de itens."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

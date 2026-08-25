@@ -1,0 +1,41 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntioapi.h
+function_name: NtOpenFile
+ssn: null
+summary: "Abre um arquivo existente."
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "FileHandle"
+    direction: "out"
+    description: "Handle do arquivo."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "PCOBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in"
+    description: "Atributos do objeto (nome, diretorio raiz, flags). NULL onde for opcional."
+  arg3:
+    type: "PIO_STATUS_BLOCK"
+    name: "IoStatusBlock"
+    direction: "out"
+    description: "Recebe o status da operacao e a quantidade de bytes transferidos."
+  arg4:
+    type: "ULONG"
+    name: "ShareAccess"
+    direction: "in"
+    description: "FILE_SHARE_READ 1, FILE_SHARE_WRITE 2, FILE_SHARE_DELETE 4."
+  arg5:
+    type: "ULONG"
+    name: "OpenOptions"
+    direction: "in"
+    description: "Entrada: ULONG."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

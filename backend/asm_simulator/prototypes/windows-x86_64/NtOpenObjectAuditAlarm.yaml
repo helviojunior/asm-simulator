@@ -1,0 +1,72 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtOpenObjectAuditAlarm
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PCUNICODE_STRING"
+    name: "SubsystemName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg1:
+    type: "PVOID"
+    name: "HandleId"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+  arg2:
+    type: "PCUNICODE_STRING"
+    name: "ObjectTypeName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg3:
+    type: "PCUNICODE_STRING"
+    name: "ObjectName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg4:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    direction: "in/opt"
+    description: "Descritor de seguranca do objeto. Opcional."
+  arg5:
+    type: "HANDLE"
+    name: "ClientToken"
+    direction: "in"
+    description: "Entrada: HANDLE."
+  arg6:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg7:
+    type: "ACCESS_MASK"
+    name: "GrantedAccess"
+    direction: "in"
+    description: "Recebe os direitos efetivamente concedidos."
+  arg8:
+    type: "PPRIVILEGE_SET"
+    name: "Privileges"
+    direction: "in/opt"
+    description: "Entrada: PPRIVILEGE_SET. Opcional."
+  arg9:
+    type: "BOOLEAN"
+    name: "ObjectCreation"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg10:
+    type: "BOOLEAN"
+    name: "AccessGranted"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg11:
+    type: "PBOOLEAN"
+    name: "GenerateOnClose"
+    direction: "out"
+    description: "Saida: PBOOLEAN."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

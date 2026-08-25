@@ -1,0 +1,47 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntregapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateKey
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "KeyHandle"
+    direction: "out"
+    description: "Handle da chave de registro."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "POBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags."
+  arg3:
+    type: "ULONG"
+    name: "TitleIndex"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg4:
+    type: "PCUNICODE_STRING"
+    name: "Class"
+    direction: "in/opt"
+    description: "Entrada: PCUNICODE_STRING. Opcional."
+  arg5:
+    type: "ULONG"
+    name: "CreateOptions"
+    direction: "in"
+    description: "FILE_SYNCHRONOUS_IO_NONALERT 0x20 faz a E/S ser sincrona."
+  arg6:
+    type: "PULONG"
+    name: "Disposition"
+    direction: "out/opt"
+    description: "Saida: PULONG. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

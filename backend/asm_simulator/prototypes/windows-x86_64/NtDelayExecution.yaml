@@ -1,0 +1,21 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+function_name: NtDelayExecution
+ssn: null
+summary: "Suspende a thread por um intervalo. E o Sleep() por tras da API."
+input_args:
+  arg0:
+    type: "BOOLEAN"
+    name: "Alertable"
+    direction: "in"
+    description: "TRUE permite que uma APC interrompa a espera."
+  arg1:
+    type: "PLARGE_INTEGER"
+    name: "DelayInterval"
+    direction: "in"
+    description: "Intervalo em unidades de 100ns. Valor NEGATIVO e relativo ao agora."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

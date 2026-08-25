@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntobapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtQuerySymbolicLinkObject
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "LinkHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "PUNICODE_STRING"
+    name: "LinkTarget"
+    direction: "inout"
+    description: "Entra e sai: PUNICODE_STRING."
+  arg2:
+    type: "PULONG"
+    name: "ReturnedLength"
+    direction: "out/opt"
+    description: "Tamanho em bytes. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

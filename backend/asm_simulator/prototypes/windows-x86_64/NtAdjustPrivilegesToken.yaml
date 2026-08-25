@@ -1,0 +1,41 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+function_name: NtAdjustPrivilegesToken
+ssn: null
+summary: "Liga ou desliga privilegios de um token."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "TokenHandle"
+    direction: "in"
+    description: "Handle do token de acesso."
+  arg1:
+    type: "BOOLEAN"
+    name: "DisableAllPrivileges"
+    direction: "in"
+    description: "TRUE desativa TODOS os privilegios e ignora NewState."
+  arg2:
+    type: "PTOKEN_PRIVILEGES"
+    name: "NewState"
+    direction: "in/opt"
+    description: "Privilegios a ligar ou desligar. SE_DEBUG_NAME e o que permite abrir outro processo. Opcional."
+  arg3:
+    type: "ULONG"
+    name: "BufferLength"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+  arg4:
+    type: "PTOKEN_PRIVILEGES"
+    name: "PreviousState"
+    direction: "out/opt"
+    description: "Saida: PTOKEN_PRIVILEGES. Opcional."
+  arg5:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho realmente necessario. Util para chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

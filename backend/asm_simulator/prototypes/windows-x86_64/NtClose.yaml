@@ -1,0 +1,16 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntobapi.h
+function_name: NtClose
+ssn: null
+summary: "Fecha um handle de qualquer tipo de objeto."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "Handle"
+    direction: "in"
+    description: "Handle do objeto."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

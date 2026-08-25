@@ -1,0 +1,40 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 clone
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: clone
+ssn: 56
+summary: ""
+input_args:
+  arg0:
+    type: "int ( *fn)(void *"
+    name: "_Nullable)"
+    description: "int ( *fn)(void * _Nullable)."
+  arg1:
+    type: "void *"
+    name: "stack"
+    description: "void * stack."
+  arg2:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+  arg3:
+    type: "void *_Nullable"
+    name: "arg"
+    description: "void *_Nullable arg."
+  arg4:
+    type: "... \\fR/ *\\fP pid_t *_Nullable"
+    name: "parent_tid"
+    description: "... \\fR/ *\\fP pid_t *_Nullable parent_tid."
+  arg5:
+    type: "void *_Nullable"
+    name: "tls"
+    description: "void *_Nullable tls."
+  arg6:
+    type: "pid_t *_Nullable child_tid \\fR *"
+    name: "/\\fP"
+    description: "pid_t *_Nullable child_tid \\fR * /\\fP."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

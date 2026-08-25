@@ -1,0 +1,16 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 sigreturn
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: sigreturn
+ssn: 119
+summary: ""
+input_args:
+  arg0:
+    type: "..."
+    name: "varargs"
+    description: "Argumentos variaveis; o formato depende da operacao pedida."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

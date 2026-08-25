@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 epoll_wait
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: epoll_wait
+ssn: 232
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "epfd"
+    description: "int epfd."
+  arg1:
+    type: "struct epoll_event *"
+    name: "events"
+    description: "struct epoll_event * events."
+  arg2:
+    type: "int"
+    name: "maxevents"
+    description: "int maxevents."
+  arg3:
+    type: "int"
+    name: "timeout"
+    description: "Tempo limite. NULL espera para sempre."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

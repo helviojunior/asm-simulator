@@ -1,0 +1,92 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAccessCheckByTypeAndAuditAlarm
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PCUNICODE_STRING"
+    name: "SubsystemName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg1:
+    type: "PVOID"
+    name: "HandleId"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+  arg2:
+    type: "PCUNICODE_STRING"
+    name: "ObjectTypeName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg3:
+    type: "PCUNICODE_STRING"
+    name: "ObjectName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg4:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    direction: "in"
+    description: "Descritor de seguranca do objeto."
+  arg5:
+    type: "PSID"
+    name: "PrincipalSelfSid"
+    direction: "in/opt"
+    description: "Entrada: PSID. Opcional."
+  arg6:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg7:
+    type: "AUDIT_EVENT_TYPE"
+    name: "AuditType"
+    direction: "in"
+    description: "Entrada: AUDIT_EVENT_TYPE."
+  arg8:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Combinacao de flags."
+  arg9:
+    type: "POBJECT_TYPE_LIST"
+    name: "ObjectTypeList"
+    direction: "in/opt"
+    description: "Entrada: POBJECT_TYPE_LIST. Opcional."
+  arg10:
+    type: "ULONG"
+    name: "ObjectTypeListLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg11:
+    type: "PGENERIC_MAPPING"
+    name: "GenericMapping"
+    direction: "in"
+    description: "Entrada: PGENERIC_MAPPING."
+  arg12:
+    type: "BOOLEAN"
+    name: "ObjectCreation"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg13:
+    type: "PACCESS_MASK"
+    name: "GrantedAccess"
+    direction: "out"
+    description: "Recebe os direitos efetivamente concedidos."
+  arg14:
+    type: "PNTSTATUS"
+    name: "AccessStatus"
+    direction: "out"
+    description: "Saida: PNTSTATUS."
+  arg15:
+    type: "PBOOLEAN"
+    name: "GenerateOnClose"
+    direction: "out"
+    description: "Saida: PBOOLEAN."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

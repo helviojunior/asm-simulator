@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAdjustGroupsToken
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "TokenHandle"
+    direction: "in"
+    description: "Handle do token de acesso."
+  arg1:
+    type: "BOOLEAN"
+    name: "ResetToDefault"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg2:
+    type: "PTOKEN_GROUPS"
+    name: "NewState"
+    direction: "in/opt"
+    description: "Entrada: PTOKEN_GROUPS. Opcional."
+  arg3:
+    type: "ULONG"
+    name: "BufferLength"
+    direction: "in/opt"
+    description: "Tamanho do buffer, em bytes. Opcional."
+  arg4:
+    type: "PTOKEN_GROUPS"
+    name: "PreviousState"
+    direction: "out/opt"
+    description: "Saida: PTOKEN_GROUPS. Opcional."
+  arg5:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

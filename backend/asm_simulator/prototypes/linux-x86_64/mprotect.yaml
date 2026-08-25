@@ -1,0 +1,23 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 mprotect
+function_name: mprotect
+ssn: 10
+summary: "Troca a protecao de uma regiao. E como um shellcode torna executavel a memoria onde se copiou."
+input_args:
+  arg0:
+    type: "void *"
+    name: "addr"
+    description: "Inicio da regiao, alinhado a pagina."
+  arg1:
+    type: "size_t"
+    name: "len"
+    description: "Tamanho em bytes."
+  arg2:
+    type: "int"
+    name: "prot"
+    description: "PROT_READ 1, PROT_WRITE 2, PROT_EXEC 4, combinados por OR."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 em sucesso, negativo em erro (-errno)."

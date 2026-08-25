@@ -1,0 +1,31 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+function_name: NtOpenThread
+ssn: null
+summary: "Abre um handle para outra thread."
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "ThreadHandle"
+    direction: "out"
+    description: "Handle da thread alvo."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "PCOBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in"
+    description: "Atributos do objeto (nome, diretorio raiz, flags). NULL onde for opcional."
+  arg3:
+    type: "PCLIENT_ID"
+    name: "ClientId"
+    direction: "in/opt"
+    description: "Estrutura com o PID e o TID que identificam o alvo. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 mq_notify
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: mq_notify
+ssn: 244
+summary: ""
+input_args:
+  arg0:
+    type: "mqd_t"
+    name: "mqdes"
+    description: "mqd_t mqdes."
+  arg1:
+    type: "const struct sigevent *"
+    name: "sevp"
+    description: "const struct sigevent * sevp."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtSetSystemEnvironmentValueEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PCUNICODE_STRING"
+    name: "VariableName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg1:
+    type: "PCGUID"
+    name: "VendorGuid"
+    direction: "in"
+    description: "Entrada: PCGUID."
+  arg2:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "in/opt"
+    description: "Bloco de memoria da operacao. Opcional."
+  arg3:
+    type: "ULONG"
+    name: "BufferLength"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+  arg4:
+    type: "ULONG"
+    name: "Attributes"
+    direction: "in"
+    description: "Atributos do objeto."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

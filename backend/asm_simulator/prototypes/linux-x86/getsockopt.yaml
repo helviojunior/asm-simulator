@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 getsockopt
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: getsockopt
+ssn: 365
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "sockfd"
+    description: "Descritor do socket."
+  arg1:
+    type: "int"
+    name: "level"
+    description: "int level."
+  arg2:
+    type: "int"
+    name: "optname"
+    description: "int optname."
+  arg3:
+    type: "void *"
+    name: "optval"
+    description: "void * optval."
+  arg4:
+    type: "socklen_t *restrict"
+    name: "optlen"
+    description: "socklen_t *restrict optlen."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

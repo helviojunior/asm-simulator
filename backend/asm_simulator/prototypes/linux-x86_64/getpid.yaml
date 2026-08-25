@@ -1,0 +1,11 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 getpid
+function_name: getpid
+ssn: 39
+summary: "Devolve o identificador do processo."
+input_args: {}
+output_data:
+  type: "pid_t"
+  name: "pid"
+  description: "PID do processo chamador. Nunca falha."

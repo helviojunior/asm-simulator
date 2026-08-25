@@ -1,0 +1,23 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 connect
+function_name: connect
+ssn: 42
+summary: "Conecta um socket a um endereco. E o \"connect back\" de um reverse shell."
+input_args:
+  arg0:
+    type: "int"
+    name: "sockfd"
+    description: "Descritor devolvido por socket()."
+  arg1:
+    type: "const struct sockaddr *"
+    name: "addr"
+    description: "Endereco de destino. Em AF_INET: familia, porta em big-endian e IPv4."
+  arg2:
+    type: "socklen_t"
+    name: "addrlen"
+    description: "Tamanho da estrutura: 16 para sockaddr_in."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 em sucesso, negativo em erro (-errno)."

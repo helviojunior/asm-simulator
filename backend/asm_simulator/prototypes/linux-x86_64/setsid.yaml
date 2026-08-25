@@ -1,0 +1,12 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 setsid
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: setsid
+ssn: 112
+summary: ""
+input_args: {}
+output_data:
+  type: "pid_t"
+  name: "result"
+  description: "Identificador do processo; negativo em erro (-errno)."

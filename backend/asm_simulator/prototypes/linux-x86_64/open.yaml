@@ -1,0 +1,19 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 open
+function_name: open
+ssn: 2
+summary: "Abre um arquivo e devolve o descritor."
+input_args:
+  arg0:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho terminado em NUL."
+  arg1:
+    type: "int"
+    name: "flags"
+    description: "O_RDONLY 0, O_WRONLY 1, O_RDWR 2, combinado com O_CREAT 0x40 e outros."
+output_data:
+  type: "int"
+  name: "fd"
+  description: "Descritor novo, ou negativo em erro (-errno)."

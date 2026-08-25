@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtSubscribeWnfStateChange
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PCWNF_STATE_NAME"
+    name: "StateName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg1:
+    type: "WNF_CHANGE_STAMP"
+    name: "ChangeStamp"
+    direction: "in/opt"
+    description: "Entrada: WNF_CHANGE_STAMP. Opcional."
+  arg2:
+    type: "ULONG"
+    name: "EventMask"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg3:
+    type: "PULONG64"
+    name: "SubscriptionId"
+    direction: "out/opt"
+    description: "Saida: PULONG64. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

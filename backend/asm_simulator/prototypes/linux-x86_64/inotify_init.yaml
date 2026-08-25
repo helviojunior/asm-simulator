@@ -1,0 +1,12 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 inotify_init
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: inotify_init
+ssn: 253
+summary: ""
+input_args: {}
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

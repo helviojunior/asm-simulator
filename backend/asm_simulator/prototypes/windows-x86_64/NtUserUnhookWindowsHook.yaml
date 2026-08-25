@@ -1,0 +1,22 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserUnhookWindowsHook
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "LONG"
+    name: "FilterType"
+    direction: "in"
+    description: "Entrada: LONG."
+  arg1:
+    type: "HOOKPROC"
+    name: "FilterProc"
+    direction: "in"
+    description: "Entrada: HOOKPROC."
+output_data:
+  type: "LOGICAL"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

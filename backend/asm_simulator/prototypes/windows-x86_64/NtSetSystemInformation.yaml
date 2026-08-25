@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtSetSystemInformation
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "SYSTEM_INFORMATION_CLASS"
+    name: "SystemInformationClass"
+    direction: "in"
+    description: "Entrada: SYSTEM_INFORMATION_CLASS."
+  arg1:
+    type: "PVOID"
+    name: "SystemInformation"
+    direction: "in/opt"
+    description: "Bloco de informacao. O formato depende da classe pedida. Opcional."
+  arg2:
+    type: "ULONG"
+    name: "SystemInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

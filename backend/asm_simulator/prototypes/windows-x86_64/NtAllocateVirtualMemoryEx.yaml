@@ -1,0 +1,47 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAllocateVirtualMemoryEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PVOID *"
+    name: "BaseAddress"
+    direction: "inout"
+    description: "Endereco base da regiao de memoria."
+  arg2:
+    type: "PSIZE_T"
+    name: "RegionSize"
+    direction: "inout"
+    description: "Tamanho da regiao, em bytes."
+  arg3:
+    type: "ULONG"
+    name: "AllocationType"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg4:
+    type: "ULONG"
+    name: "PageProtection"
+    direction: "in"
+    description: "Protecao de pagina. PAGE_READWRITE 0x04, PAGE_EXECUTE_READWRITE 0x40."
+  arg5:
+    type: "PMEM_EXTENDED_PARAMETER"
+    name: "ExtendedParameters"
+    direction: "inout/opt"
+    description: "Entra e sai: PMEM_EXTENDED_PARAMETER. Opcional."
+  arg6:
+    type: "ULONG"
+    name: "ExtendedParameterCount"
+    direction: "in"
+    description: "Quantidade de itens."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

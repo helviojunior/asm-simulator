@@ -1,0 +1,57 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateSectionEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "SectionHandle"
+    direction: "out"
+    description: "Handle da secao (objeto de memoria compartilhavel)."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "PCOBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags. Opcional."
+  arg3:
+    type: "PLARGE_INTEGER"
+    name: "MaximumSize"
+    direction: "in/opt"
+    description: "Tamanho em bytes. Opcional."
+  arg4:
+    type: "ULONG"
+    name: "SectionPageProtection"
+    direction: "in"
+    description: "Protecao de pagina. PAGE_READWRITE 0x04, PAGE_EXECUTE_READWRITE 0x40."
+  arg5:
+    type: "ULONG"
+    name: "AllocationAttributes"
+    direction: "in"
+    description: "Atributos do objeto."
+  arg6:
+    type: "HANDLE"
+    name: "FileHandle"
+    direction: "in/opt"
+    description: "Handle do arquivo. Opcional."
+  arg7:
+    type: "PMEM_EXTENDED_PARAMETER"
+    name: "ExtendedParameters"
+    direction: "inout/opt"
+    description: "Entra e sai: PMEM_EXTENDED_PARAMETER. Opcional."
+  arg8:
+    type: "ULONG"
+    name: "ExtendedParameterCount"
+    direction: "in"
+    description: "Quantidade de itens."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

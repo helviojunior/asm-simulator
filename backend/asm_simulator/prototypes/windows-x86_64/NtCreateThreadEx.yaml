@@ -1,0 +1,66 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+function_name: NtCreateThreadEx
+ssn: null
+summary: "Cria uma thread, possivelmente em outro processo. Fecha a sequencia de uma injecao."
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "ThreadHandle"
+    direction: "out"
+    description: "Handle da thread alvo."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "PCOBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto (nome, diretorio raiz, flags). NULL onde for opcional."
+  arg3:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Processo onde a thread nasce. Pode ser outro processo — e o que fecha uma injecao."
+  arg4:
+    type: "PUSER_THREAD_START_ROUTINE"
+    name: "StartRoutine"
+    direction: "in"
+    description: "Endereco onde a thread comeca a executar. Numa injecao, e o shellcode ja copiado."
+  arg5:
+    type: "PVOID"
+    name: "Argument"
+    direction: "in/opt"
+    description: "Parametro unico entregue a StartRoutine. Opcional."
+  arg6:
+    type: "ULONG"
+    name: "CreateFlags"
+    direction: "in"
+    description: "THREAD_CREATE_FLAGS_CREATE_SUSPENDED 0x1 nasce suspensa."
+  arg7:
+    type: "SIZE_T"
+    name: "ZeroBits"
+    direction: "in"
+    description: "Bits altos que devem ser zero no endereco. 0 e o comum."
+  arg8:
+    type: "SIZE_T"
+    name: "StackSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg9:
+    type: "SIZE_T"
+    name: "MaximumStackSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg10:
+    type: "PPS_ATTRIBUTE_LIST"
+    name: "AttributeList"
+    direction: "in/opt"
+    description: "Entrada: PPS_ATTRIBUTE_LIST. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

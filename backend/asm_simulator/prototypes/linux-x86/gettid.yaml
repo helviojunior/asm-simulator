@@ -1,0 +1,12 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 gettid
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: gettid
+ssn: 224
+summary: ""
+input_args: {}
+output_data:
+  type: "pid_t"
+  name: "result"
+  description: "Identificador do processo; negativo em erro (-errno)."

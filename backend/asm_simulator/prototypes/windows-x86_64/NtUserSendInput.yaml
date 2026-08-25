@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserSendInput
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "ULONG"
+    name: "Count"
+    direction: "in"
+    description: "Quantidade de itens."
+  arg1:
+    type: "LPINPUT"
+    name: "Inputs"
+    direction: "in"
+    description: "Entrada: LPINPUT."
+  arg2:
+    type: "LONG"
+    name: "Size"
+    direction: "in"
+    description: "Tamanho em bytes."
+output_data:
+  type: "ULONG"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

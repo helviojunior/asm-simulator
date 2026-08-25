@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtGetNlsSectionPtr
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "ULONG"
+    name: "SectionType"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg1:
+    type: "ULONG"
+    name: "SectionData"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg2:
+    type: "PVOID"
+    name: "ContextData"
+    direction: "in"
+    description: "Entrada: PVOID."
+  arg3:
+    type: "PVOID *"
+    name: "SectionPointer"
+    direction: "out"
+    description: "Saida: PVOID *."
+  arg4:
+    type: "PULONG"
+    name: "SectionSize"
+    direction: "out"
+    description: "Tamanho em bytes."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 set_mempolicy
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: set_mempolicy
+ssn: 276
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "mode"
+    description: "Permissoes do arquivo, em octal."
+  arg1:
+    type: "const unsigned long *"
+    name: "nodemask"
+    description: "const unsigned long * nodemask."
+  arg2:
+    type: "unsigned long"
+    name: "maxnode"
+    description: "unsigned long maxnode."
+output_data:
+  type: "long"
+  name: "result"
+  description: "Depende da operacao; negativo em erro (-errno)."

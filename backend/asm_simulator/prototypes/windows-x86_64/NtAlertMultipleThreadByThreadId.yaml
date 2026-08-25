@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAlertMultipleThreadByThreadId
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "MultipleThreadId"
+    direction: "in"
+    description: "Entrada: PHANDLE."
+  arg1:
+    type: "ULONG"
+    name: "Count"
+    direction: "in"
+    description: "Quantidade de itens."
+  arg2:
+    type: "PPS_ALERT_THREAD_EXTENDED_PARAMETER"
+    name: "ExtendedParameters"
+    direction: "inout/opt"
+    description: "Entra e sai: PPS_ALERT_THREAD_EXTENDED_PARAMETER. Opcional."
+  arg3:
+    type: "ULONG"
+    name: "ExtendedParameterCount"
+    direction: "in"
+    description: "Quantidade de itens."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

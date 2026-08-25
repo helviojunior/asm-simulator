@@ -1,0 +1,36 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 recvfrom
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: recvfrom
+ssn: 45
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "sockfd"
+    description: "Descritor do socket."
+  arg1:
+    type: "void *"
+    name: "buf"
+    description: "Bloco de memoria da operacao."
+  arg2:
+    type: "size_t"
+    name: "len"
+    description: "Tamanho em bytes."
+  arg3:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+  arg4:
+    type: "struct sockaddr *_Nullable restrict"
+    name: "src_addr"
+    description: "struct sockaddr *_Nullable restrict src_addr."
+  arg5:
+    type: "socklen_t *_Nullable restrict"
+    name: "addrlen"
+    description: "Tamanho da estrutura de endereco, em bytes."
+output_data:
+  type: "ssize_t"
+  name: "result"
+  description: "Quantidade de bytes, ou negativo em erro (-errno)."

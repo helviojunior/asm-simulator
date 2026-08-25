@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 mq_open
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: mq_open
+ssn: 277
+summary: ""
+input_args:
+  arg0:
+    type: "const char *"
+    name: "name"
+    description: "const char * name."
+  arg1:
+    type: "int"
+    name: "oflag"
+    description: "int oflag."
+output_data:
+  type: "mqd_t"
+  name: "result"
+  description: "Valor de retorno; negativo em erro (-errno)."

@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 request_key
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: request_key
+ssn: 249
+summary: ""
+input_args:
+  arg0:
+    type: "const char *"
+    name: "type"
+    description: "Tipo do socket: SOCK_STREAM 1, SOCK_DGRAM 2."
+  arg1:
+    type: "const char *"
+    name: "description"
+    description: "const char * description."
+  arg2:
+    type: "const char *_Nullable"
+    name: "callout_info"
+    description: "const char *_Nullable callout_info."
+  arg3:
+    type: "key_serial_t"
+    name: "dest_keyring"
+    description: "key_serial_t dest_keyring."
+output_data:
+  type: "key_serial_t"
+  name: "result"
+  description: "Valor de retorno; negativo em erro (-errno)."

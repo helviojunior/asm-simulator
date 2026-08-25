@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtConvertBetweenAuxiliaryCounterAndPerformanceCounter
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "BOOLEAN"
+    name: "ConvertAuxiliaryToPerformanceCounter"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg1:
+    type: "PULONG64"
+    name: "PerformanceOrAuxiliaryCounterValue"
+    direction: "in"
+    description: "Entrada: PULONG64."
+  arg2:
+    type: "PULONG64"
+    name: "ConvertedValue"
+    direction: "out"
+    description: "Saida: PULONG64."
+  arg3:
+    type: "PULONG64"
+    name: "ConversionError"
+    direction: "out/opt"
+    description: "Saida: PULONG64. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

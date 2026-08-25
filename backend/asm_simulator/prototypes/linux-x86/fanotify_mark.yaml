@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 fanotify_mark
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: fanotify_mark
+ssn: 339
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "fanotify_fd"
+    description: "int fanotify_fd."
+  arg1:
+    type: "unsigned int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+  arg2:
+    type: "uint64_t"
+    name: "mask"
+    description: "uint64_t mask."
+  arg3:
+    type: "int"
+    name: "dirfd"
+    description: "Descritor do diretorio base para um caminho relativo; AT_FDCWD usa o diretorio corrente."
+  arg4:
+    type: "const char *_Nullable"
+    name: "pathname"
+    description: "Caminho terminado em NUL."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

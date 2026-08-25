@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 fchownat
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: fchownat
+ssn: 298
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "dirfd"
+    description: "Descritor do diretorio base para um caminho relativo; AT_FDCWD usa o diretorio corrente."
+  arg1:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho terminado em NUL."
+  arg2:
+    type: "uid_t"
+    name: "owner"
+    description: "uid_t owner."
+  arg3:
+    type: "gid_t"
+    name: "group"
+    description: "gid_t group."
+  arg4:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

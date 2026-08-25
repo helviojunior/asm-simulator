@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 renameat
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: renameat
+ssn: 264
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "olddirfd"
+    description: "int olddirfd."
+  arg1:
+    type: "const char *"
+    name: "oldpath"
+    description: "Caminho de origem."
+  arg2:
+    type: "int"
+    name: "newdirfd"
+    description: "int newdirfd."
+  arg3:
+    type: "const char *"
+    name: "newpath"
+    description: "Caminho de destino."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

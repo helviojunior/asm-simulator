@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserSetClassWord
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HWND"
+    name: "WindowHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "LONG"
+    name: "Index"
+    direction: "in"
+    description: "Entrada: LONG."
+  arg2:
+    type: "USHORT"
+    name: "NewWord"
+    direction: "in"
+    description: "Entrada: USHORT."
+output_data:
+  type: "USHORT"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

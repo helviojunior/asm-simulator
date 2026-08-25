@@ -1,0 +1,41 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+function_name: NtQueryVirtualMemory
+ssn: null
+summary: "Consulta o estado de uma regiao de memoria."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PVOID"
+    name: "BaseAddress"
+    direction: "in/opt"
+    description: "Endereco base da regiao. Opcional."
+  arg2:
+    type: "MEMORY_INFORMATION_CLASS"
+    name: "MemoryInformationClass"
+    direction: "in"
+    description: "Entrada: MEMORY_INFORMATION_CLASS."
+  arg3:
+    type: "PVOID"
+    name: "MemoryInformation"
+    direction: "out"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg4:
+    type: "SIZE_T"
+    name: "MemoryInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+  arg5:
+    type: "PSIZE_T"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho realmente necessario. Util para chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

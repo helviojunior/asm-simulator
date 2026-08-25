@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 shmget
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: shmget
+ssn: 29
+summary: ""
+input_args:
+  arg0:
+    type: "key_t"
+    name: "key"
+    description: "key_t key."
+  arg1:
+    type: "size_t"
+    name: "size"
+    description: "Tamanho em bytes."
+  arg2:
+    type: "int"
+    name: "shmflg"
+    description: "int shmflg."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

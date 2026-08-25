@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — nttmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtRegisterProtocolAddressInformation
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ResourceManager"
+    direction: "in"
+    description: "Entrada: HANDLE."
+  arg1:
+    type: "PCRM_PROTOCOL_ID"
+    name: "ProtocolId"
+    direction: "in"
+    description: "Entrada: PCRM_PROTOCOL_ID."
+  arg2:
+    type: "ULONG"
+    name: "ProtocolInformationSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg3:
+    type: "PVOID"
+    name: "ProtocolInformation"
+    direction: "in"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg4:
+    type: "ULONG"
+    name: "CreateOptions"
+    direction: "in/opt"
+    description: "FILE_SYNCHRONOUS_IO_NONALERT 0x20 faz a E/S ser sincrona. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

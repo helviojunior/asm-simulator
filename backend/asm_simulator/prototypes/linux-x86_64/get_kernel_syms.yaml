@@ -1,0 +1,16 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 get_kernel_syms
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: get_kernel_syms
+ssn: 177
+summary: ""
+input_args:
+  arg0:
+    type: "struct kernel_sym *"
+    name: "table"
+    description: "struct kernel_sym * table."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

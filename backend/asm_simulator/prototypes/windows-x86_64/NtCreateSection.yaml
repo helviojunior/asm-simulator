@@ -1,0 +1,46 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+function_name: NtCreateSection
+ssn: null
+summary: "Cria um objeto de secao (memoria compartilhavel entre processos)."
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "SectionHandle"
+    direction: "out"
+    description: "Handle da secao (objeto de memoria compartilhada)."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "PCOBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto (nome, diretorio raiz, flags). NULL onde for opcional."
+  arg3:
+    type: "PLARGE_INTEGER"
+    name: "MaximumSize"
+    direction: "in/opt"
+    description: "Tamanho em bytes. Opcional."
+  arg4:
+    type: "ULONG"
+    name: "SectionPageProtection"
+    direction: "in"
+    description: "Protecao maxima das paginas. PAGE_EXECUTE_READWRITE 0x40 permite tudo depois."
+  arg5:
+    type: "ULONG"
+    name: "AllocationAttributes"
+    direction: "in"
+    description: "SEC_COMMIT 0x8000000. SEC_IMAGE 0x1000000 mapeia como imagem executavel."
+  arg6:
+    type: "HANDLE"
+    name: "FileHandle"
+    direction: "in/opt"
+    description: "Handle do arquivo. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,11 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+function_name: mmap2
+ssn: 192
+summary: "Mapeia memoria. O deslocamento em paginas permite arquivos grandes em 32 bits."
+input_args: {}
+output_data:
+  type: "void *"
+  name: "addr"
+  description: "Endereco do mapeamento, ou valor negativo pequeno em erro (-errno)."

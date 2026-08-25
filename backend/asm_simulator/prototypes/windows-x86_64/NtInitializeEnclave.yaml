@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtInitializeEnclave
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PVOID"
+    name: "BaseAddress"
+    direction: "in"
+    description: "Endereco base da regiao de memoria."
+  arg2:
+    type: "PVOID"
+    name: "EnclaveInformation"
+    direction: "in"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg3:
+    type: "ULONG"
+    name: "EnclaveInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+  arg4:
+    type: "PULONG"
+    name: "EnclaveError"
+    direction: "out/opt"
+    description: "Saida: PULONG. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

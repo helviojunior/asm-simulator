@@ -1,0 +1,16 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 setuid
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: setuid
+ssn: 105
+summary: ""
+input_args:
+  arg0:
+    type: "uid_t"
+    name: "uid"
+    description: "uid_t uid."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 select
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: select
+ssn: 82
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "nfds"
+    description: "Quantidade de descritores no vetor."
+  arg1:
+    type: "fd_set *_Nullable restrict"
+    name: "readfds"
+    description: "fd_set *_Nullable restrict readfds."
+  arg2:
+    type: "fd_set *_Nullable restrict"
+    name: "writefds"
+    description: "fd_set *_Nullable restrict writefds."
+  arg3:
+    type: "fd_set *_Nullable restrict"
+    name: "exceptfds"
+    description: "fd_set *_Nullable restrict exceptfds."
+  arg4:
+    type: "struct timeval *_Nullable restrict"
+    name: "timeout"
+    description: "Tempo limite. NULL espera para sempre."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

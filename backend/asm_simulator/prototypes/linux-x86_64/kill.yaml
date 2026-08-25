@@ -1,0 +1,19 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 kill
+function_name: kill
+ssn: 62
+summary: "Envia um sinal a um processo."
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "pid"
+    description: "Processo alvo. 0 atinge o grupo, -1 todos os processos permitidos."
+  arg1:
+    type: "int"
+    name: "sig"
+    description: "Numero do sinal. 9 SIGKILL, 15 SIGTERM."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 em sucesso, negativo em erro (-errno)."

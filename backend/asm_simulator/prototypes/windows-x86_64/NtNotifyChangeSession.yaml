@@ -1,0 +1,52 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmisc.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtNotifyChangeSession
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "SessionHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "ULONG"
+    name: "ChangeSequenceNumber"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg2:
+    type: "PLARGE_INTEGER"
+    name: "ChangeTimeStamp"
+    direction: "in"
+    description: "Entrada: PLARGE_INTEGER."
+  arg3:
+    type: "IO_SESSION_EVENT"
+    name: "Event"
+    direction: "in"
+    description: "Evento sinalizado ao fim de uma operacao assincrona. NULL e o comum."
+  arg4:
+    type: "IO_SESSION_STATE"
+    name: "NewState"
+    direction: "in"
+    description: "Entrada: IO_SESSION_STATE."
+  arg5:
+    type: "IO_SESSION_STATE"
+    name: "PreviousState"
+    direction: "in"
+    description: "Entrada: IO_SESSION_STATE."
+  arg6:
+    type: "PVOID"
+    name: "Payload"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+  arg7:
+    type: "ULONG"
+    name: "PayloadSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

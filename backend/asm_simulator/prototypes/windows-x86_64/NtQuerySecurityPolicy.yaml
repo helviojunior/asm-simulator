@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmisc.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtQuerySecurityPolicy
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PCUNICODE_STRING"
+    name: "Policy"
+    direction: "in"
+    description: "Entrada: PCUNICODE_STRING."
+  arg1:
+    type: "PCUNICODE_STRING"
+    name: "KeyName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg2:
+    type: "PCUNICODE_STRING"
+    name: "ValueName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg3:
+    type: "SECURE_SETTING_VALUE_TYPE"
+    name: "ValueType"
+    direction: "in"
+    description: "Entrada: SECURE_SETTING_VALUE_TYPE."
+  arg4:
+    type: "PVOID"
+    name: "Value"
+    direction: "out/opt"
+    description: "Saida: PVOID. Opcional."
+  arg5:
+    type: "PULONG"
+    name: "ValueSize"
+    direction: "inout"
+    description: "Tamanho em bytes."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

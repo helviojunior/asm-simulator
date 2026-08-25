@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 utime
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: utime
+ssn: 132
+summary: ""
+input_args:
+  arg0:
+    type: "const char *"
+    name: "filename"
+    description: "const char * filename."
+  arg1:
+    type: "const struct utimbuf *_Nullable"
+    name: "times"
+    description: "const struct utimbuf *_Nullable times."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

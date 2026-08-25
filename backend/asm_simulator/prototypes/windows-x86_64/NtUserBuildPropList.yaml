@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserBuildPropList
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HWINSTA"
+    name: "WindowStationHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "ULONG"
+    name: "PropListInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+  arg2:
+    type: "PVOID"
+    name: "PropListInformation"
+    direction: "out"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg3:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 signal
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: signal
+ssn: 48
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "signum"
+    description: "int signum."
+  arg1:
+    type: "sighandler_t"
+    name: "handler"
+    description: "sighandler_t handler."
+output_data:
+  type: "sighandler_t"
+  name: "result"
+  description: "Valor de retorno; negativo em erro (-errno)."

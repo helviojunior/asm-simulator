@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtRaiseHardError
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "NTSTATUS"
+    name: "ErrorStatus"
+    direction: "in"
+    description: "Entrada: NTSTATUS."
+  arg1:
+    type: "ULONG"
+    name: "NumberOfParameters"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg2:
+    type: "ULONG"
+    name: "UnicodeStringParameterMask"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg3:
+    type: "PULONG_PTR"
+    name: "Parameters"
+    direction: "in"
+    description: "Entrada: PULONG_PTR."
+  arg4:
+    type: "ULONG"
+    name: "ValidResponseOptions"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg5:
+    type: "PULONG"
+    name: "Response"
+    direction: "out"
+    description: "Saida: PULONG."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

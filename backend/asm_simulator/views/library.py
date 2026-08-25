@@ -61,6 +61,7 @@ def _serialize_metadata(node):
         return None
     return {
         'arch': node.arch,
+        'os': node.os,
         'code_base': node.code_base,
         'stack_top': node.stack_top,
         'arg_count': node.arg_count,
@@ -85,6 +86,14 @@ def _clean_metadata(payload):
         if arch not in LibraryNode.Arch.values:
             return None, 'library.archInvalid'
         fields['arch'] = arch
+
+    if 'os' in raw:
+        # Vazio e legitimo: o arquivo pode ter sido salvo antes de o alvo ser
+        # resolvido, e o frontend resolve na proxima montagem.
+        target = str(raw.get('os') or '')
+        if target and target not in LibraryNode.Os.values:
+            return None, 'library.osInvalid'
+        fields['os'] = target
 
     for key in ('code_base', 'stack_top'):
         if key in raw:
@@ -168,6 +177,7 @@ ERROR_TEXTS = {
     'library.cyclicMove': 'A folder cannot be moved into itself.',
     'library.metadataInvalid': 'Invalid execution parameters.',
     'library.archInvalid': 'Unsupported architecture.',
+    'library.osInvalid': 'Unsupported target system.',
     'library.addressInvalid': 'Address must be a number (e.g. 0x401000).',
     'library.argCountInvalid': f'Argument count must be between 0 and {MAX_ARG_COUNT}.',
     'library.importInvalid': 'This file is not a valid .scasmlib bundle.',
@@ -319,7 +329,13 @@ class LibraryExportView(APIView):
 
     def get(self, request):
         nodes = list(LibraryNode.objects.all().order_by('kind', 'name'))
-        payload = library_bundle.export_bundle(nodes, lambda node: node.source)
+        payload = library_bundle.export_bundle(
+            nodes,
+            lambda node: node.source,
+            # A MESMA funcao que serve a API: um campo novo em metadata entra
+            # nos dois caminhos de uma vez.
+            _serialize_metadata,
+        )
 
         response = HttpResponse(payload, content_type='application/gzip')
         response['Content-Disposition'] = f'attachment; filename="{BUNDLE_FILENAME}"'

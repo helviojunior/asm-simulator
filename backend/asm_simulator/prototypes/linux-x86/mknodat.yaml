@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 mknodat
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: mknodat
+ssn: 297
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "dirfd"
+    description: "Descritor do diretorio base para um caminho relativo; AT_FDCWD usa o diretorio corrente."
+  arg1:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho terminado em NUL."
+  arg2:
+    type: "mode_t"
+    name: "mode"
+    description: "Permissoes do arquivo, em octal."
+  arg3:
+    type: "dev_t"
+    name: "dev"
+    description: "dev_t dev."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

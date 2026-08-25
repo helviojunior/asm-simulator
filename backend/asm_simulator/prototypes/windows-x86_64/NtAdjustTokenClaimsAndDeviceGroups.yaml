@@ -1,0 +1,92 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAdjustTokenClaimsAndDeviceGroups
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "TokenHandle"
+    direction: "in"
+    description: "Handle do token de acesso."
+  arg1:
+    type: "BOOLEAN"
+    name: "UserResetToDefault"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg2:
+    type: "BOOLEAN"
+    name: "DeviceResetToDefault"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg3:
+    type: "BOOLEAN"
+    name: "DeviceGroupsResetToDefault"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg4:
+    type: "PTOKEN_SECURITY_ATTRIBUTES_INFORMATION"
+    name: "NewUserState"
+    direction: "in/opt"
+    description: "Entrada: PTOKEN_SECURITY_ATTRIBUTES_INFORMATION. Opcional."
+  arg5:
+    type: "PTOKEN_SECURITY_ATTRIBUTES_INFORMATION"
+    name: "NewDeviceState"
+    direction: "in/opt"
+    description: "Entrada: PTOKEN_SECURITY_ATTRIBUTES_INFORMATION. Opcional."
+  arg6:
+    type: "PTOKEN_GROUPS"
+    name: "NewDeviceGroupsState"
+    direction: "in/opt"
+    description: "Entrada: PTOKEN_GROUPS. Opcional."
+  arg7:
+    type: "ULONG"
+    name: "UserBufferLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg8:
+    type: "PTOKEN_SECURITY_ATTRIBUTES_INFORMATION"
+    name: "PreviousUserState"
+    direction: "out/opt"
+    description: "Saida: PTOKEN_SECURITY_ATTRIBUTES_INFORMATION. Opcional."
+  arg9:
+    type: "ULONG"
+    name: "DeviceBufferLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg10:
+    type: "PTOKEN_SECURITY_ATTRIBUTES_INFORMATION"
+    name: "PreviousDeviceState"
+    direction: "out/opt"
+    description: "Saida: PTOKEN_SECURITY_ATTRIBUTES_INFORMATION. Opcional."
+  arg11:
+    type: "ULONG"
+    name: "DeviceGroupsBufferLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg12:
+    type: "PTOKEN_GROUPS"
+    name: "PreviousDeviceGroups"
+    direction: "out/opt"
+    description: "Saida: PTOKEN_GROUPS. Opcional."
+  arg13:
+    type: "PULONG"
+    name: "UserReturnLength"
+    direction: "out/opt"
+    description: "Tamanho em bytes. Opcional."
+  arg14:
+    type: "PULONG"
+    name: "DeviceReturnLength"
+    direction: "out/opt"
+    description: "Tamanho em bytes. Opcional."
+  arg15:
+    type: "PULONG"
+    name: "DeviceGroupsReturnBufferLength"
+    direction: "out/opt"
+    description: "Tamanho em bytes. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

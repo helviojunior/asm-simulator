@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntxcapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtRaiseException
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PEXCEPTION_RECORD"
+    name: "ExceptionRecord"
+    direction: "in"
+    description: "Entrada: PEXCEPTION_RECORD."
+  arg1:
+    type: "PCONTEXT"
+    name: "ContextRecord"
+    direction: "in"
+    description: "Entrada: PCONTEXT."
+  arg2:
+    type: "BOOLEAN"
+    name: "FirstChance"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

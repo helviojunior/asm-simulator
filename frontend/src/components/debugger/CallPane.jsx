@@ -1,6 +1,7 @@
 import React from "react";
 import { useI18n } from "i18n";
 import { CALL_CONVENTIONS, callArguments } from "lib/cpu/inspect";
+import { hex } from "lib/cpu/format";
 import ArgumentRow from "components/debugger/ArgumentRow";
 
 /**
@@ -27,6 +28,11 @@ export default function CallPane({ machine, count, convention, onConventionChang
 
   const { convention: spec, args } = callArguments(machine, { count, convention });
   const digits = machine.arch.bits === 64 ? 16 : 8;
+
+  // Destino, quando e um imediato. Chamada indireta (`call rbx`, `call [rax]`)
+  // so se resolve na hora de executar, entao nao ha o que antecipar.
+  const immediate = (insn.operands || []).find((operand) => operand.type === "imm");
+  const target = immediate ? BigInt(immediate.value) : null;
   const options = Object.values(CALL_CONVENTIONS).filter((item) =>
     item.archs.includes(machine.archId)
   );
@@ -54,6 +60,14 @@ export default function CallPane({ machine, count, convention, onConventionChang
       </header>
 
       <div className="flex-1 overflow-auto py-1 text-[12px] leading-[1.6]">
+        {/* Dito ANTES de executar: quem so olhasse os registradores depois
+            concluiria que a funcao rodou e devolveu o que ja estava la. */}
+        {target !== null && !machine.hasCodeAt(target) && (
+          <p className="mx-2 mb-1 rounded border border-[#dcdcaa]/40 bg-[#dcdcaa]/5 px-2 py-1 text-[10px] text-[#dcdcaa]">
+            {hex(target, digits)} — {t("sim.callNotLoaded", "target not loaded — the call will be skipped")}
+          </p>
+        )}
+
         {args.map((arg) => (
           <ArgumentRow key={arg.index} machine={machine} arg={arg} digits={digits} />
         ))}

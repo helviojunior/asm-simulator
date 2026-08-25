@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 listxattr
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: listxattr
+ssn: 194
+summary: ""
+input_args:
+  arg0:
+    type: "const char *"
+    name: "path"
+    description: "Caminho terminado em NUL."
+  arg1:
+    type: "char *_Nullable"
+    name: "list"
+    description: "char *_Nullable list."
+  arg2:
+    type: "size_t"
+    name: "size"
+    description: "Tamanho em bytes."
+output_data:
+  type: "ssize_t"
+  name: "result"
+  description: "Quantidade de bytes, ou negativo em erro (-errno)."

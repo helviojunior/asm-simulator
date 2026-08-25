@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 fanotify_init
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: fanotify_init
+ssn: 300
+summary: ""
+input_args:
+  arg0:
+    type: "unsigned int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+  arg1:
+    type: "unsigned int"
+    name: "event_f_flags"
+    description: "unsigned int event_f_flags."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

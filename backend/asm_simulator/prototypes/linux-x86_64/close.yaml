@@ -1,0 +1,15 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 close
+function_name: close
+ssn: 3
+summary: "Fecha um descritor."
+input_args:
+  arg0:
+    type: "int"
+    name: "fd"
+    description: "Descritor de arquivo aberto. 0 stdin, 1 stdout, 2 stderr."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 em sucesso, negativo em erro (-errno)."

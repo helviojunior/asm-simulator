@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtQueryWnfStateNameInformation
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PCWNF_STATE_NAME"
+    name: "StateName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg1:
+    type: "WNF_STATE_NAME_INFORMATION"
+    name: "NameInfoClass"
+    direction: "in"
+    description: "Entrada: WNF_STATE_NAME_INFORMATION."
+  arg2:
+    type: "PCSID"
+    name: "ExplicitScope"
+    direction: "in/opt"
+    description: "Entrada: PCSID. Opcional."
+  arg3:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "out"
+    description: "Bloco de memoria da operacao."
+  arg4:
+    type: "ULONG"
+    name: "BufferLength"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

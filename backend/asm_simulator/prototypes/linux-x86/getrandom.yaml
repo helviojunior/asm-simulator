@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 getrandom
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: getrandom
+ssn: 355
+summary: ""
+input_args:
+  arg0:
+    type: "void *"
+    name: "buf"
+    description: "Bloco de memoria da operacao."
+  arg1:
+    type: "size_t"
+    name: "buflen"
+    description: "size_t buflen."
+  arg2:
+    type: "unsigned int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "ssize_t"
+  name: "result"
+  description: "Quantidade de bytes, ou negativo em erro (-errno)."

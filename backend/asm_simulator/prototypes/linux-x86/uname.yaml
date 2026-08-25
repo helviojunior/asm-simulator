@@ -1,0 +1,15 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 uname
+function_name: uname
+ssn: 122
+summary: "Devolve nome e versao do sistema."
+input_args:
+  arg0:
+    type: "struct utsname *"
+    name: "buf"
+    description: "Estrutura de 6 campos de 65 bytes que recebe os nomes do sistema."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 em sucesso, negativo em erro (-errno)."

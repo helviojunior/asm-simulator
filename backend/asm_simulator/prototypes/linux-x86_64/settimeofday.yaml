@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 settimeofday
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: settimeofday
+ssn: 164
+summary: ""
+input_args:
+  arg0:
+    type: "const struct timeval *"
+    name: "tv"
+    description: "const struct timeval * tv."
+  arg1:
+    type: "const struct timezone *_Nullable"
+    name: "tz"
+    description: "const struct timezone *_Nullable tz."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

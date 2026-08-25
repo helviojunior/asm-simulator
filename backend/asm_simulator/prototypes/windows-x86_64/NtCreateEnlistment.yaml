@@ -1,0 +1,52 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — nttmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateEnlistment
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "EnlistmentHandle"
+    direction: "out"
+    description: "Handle do objeto."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "HANDLE"
+    name: "ResourceManagerHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg3:
+    type: "HANDLE"
+    name: "TransactionHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg4:
+    type: "POBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags. Opcional."
+  arg5:
+    type: "ULONG"
+    name: "CreateOptions"
+    direction: "in/opt"
+    description: "FILE_SYNCHRONOUS_IO_NONALERT 0x20 faz a E/S ser sincrona. Opcional."
+  arg6:
+    type: "NOTIFICATION_MASK"
+    name: "NotificationMask"
+    direction: "in"
+    description: "Entrada: NOTIFICATION_MASK."
+  arg7:
+    type: "PVOID"
+    name: "EnlistmentKey"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

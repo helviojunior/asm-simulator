@@ -49,7 +49,7 @@ export default function StackPane({ machine, changed = [] }) {
   const rows = [];
   for (let i = -ROWS_BELOW; i <= ROWS_ABOVE; i += 1) {
     const address = sp + BigInt(i) * wordSize;
-    if (address < machine.stackLimit || address > machine.stackTop) continue;
+    if (address < machine.stackLimit || address > machine.stackCeiling) continue;
     const value = memory.read(address, arch.wordSize);
     rows.push({
       address,
@@ -67,7 +67,7 @@ export default function StackPane({ machine, changed = [] }) {
 
   return (
     <section className="flex h-full flex-col overflow-hidden bg-[#1e1e1e]">
-      <header className="flex shrink-0 items-center gap-2 border-b border-[#3c3c3c] px-3 py-1.5">
+      <header className="flex shrink-0 items-center gap-2 border-b border-[#3c3c3c] px-2 py-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9cdcfe]">
           {t("sim.stack", "Stack")}
         </span>
@@ -111,7 +111,7 @@ export default function StackPane({ machine, changed = [] }) {
               className={cn(
                 "shrink-0 tabular-nums",
                 row.changed
-                  ? "-mx-1 bg-[#5a1d1d] px-1 font-bold text-[#ff6b6b]"
+                  ? "rounded-sm bg-[#5a1d1d] font-bold text-[#ff6b6b]"
                   : "text-[#d4d4d4]"
               )}
             >
@@ -140,20 +140,20 @@ export default function StackPane({ machine, changed = [] }) {
  */
 function AsciiDump({ bytes }) {
   return (
-    <span className="shrink-0 border-l border-[#3c3c3c] pl-2 font-dump">
+    <span className="shrink-0 border-l border-[#3c3c3c] pl-3 font-dump">
       {Array.from(bytes, (byte, index) => {
         const cell = asciiCell(byte);
         return (
           <span
             key={index}
             title={cell.label}
-            // overflow-hidden e a ultima linha de defesa: se ainda assim um
-            // glifo vier de outra fonte, ele e cortado na celula em vez de
-            // vazar por cima da proxima.
-            className={cn(
-              "inline-block w-[1ch] overflow-hidden text-center",
-              ASCII_COLOR[cell.kind]
-            )}
+            // SEM overflow-hidden: por especificacao, um `inline-block` com
+            // overflow diferente de `visible` passa a ter a baseline na borda
+            // INFERIOR, e o `items-baseline` da linha entao empurra tudo para
+            // baixo — a faixa azul crescia e o texto ficava colado no topo.
+            // A largura fixa ja basta: a face `font-dump` e a embarcada, cuja
+            // cobertura de glifos e verificada (ver o README da fonte).
+            className={cn("inline-block w-[1ch] text-center", ASCII_COLOR[cell.kind])}
           >
             {cell.char}
           </span>

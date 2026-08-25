@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntregapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtSaveMergedKeys
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "HighPrecedenceKeyHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "HANDLE"
+    name: "LowPrecedenceKeyHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg2:
+    type: "HANDLE"
+    name: "FileHandle"
+    direction: "in"
+    description: "Handle do arquivo."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -53,12 +53,15 @@ class BundleError(Exception):
 # Export
 # ---------------------------------------------------------------------------
 
-def export_bundle(nodes, read_source):
+def export_bundle(nodes, read_source, read_metadata):
     """Monta o ``.scasmlib`` e devolve os bytes.
 
     `nodes` e a lista PLANA de nos; `read_source(node)` entrega o fonte de um
-    arquivo. As duas dependencias entram por parametro para o servico nao
-    precisar conhecer o ORM nem o armazenamento em disco.
+    arquivo e `read_metadata(node)` os parametros de execucao. As tres
+    dependencias entram por parametro para o servico nao precisar conhecer o
+    ORM nem o armazenamento em disco — e, no caso da metadata, para que a lista
+    de campos exista num lugar SO. Duplicada aqui, ela ja engoliu um campo novo
+    em silencio: o bundle exportava sem ele e ninguem percebia ate reimportar.
     """
     paths = _paths_by_id(nodes)
     buffer = io.BytesIO()
@@ -74,7 +77,7 @@ def export_bundle(nodes, read_source):
         for node in nodes:
             path = paths[str(node.id)]
             _add(tar, f'{path}{METADATA_SUFFIX}', yaml.safe_dump(
-                _node_metadata(node), sort_keys=False, allow_unicode=True))
+                _node_metadata(node, read_metadata), sort_keys=False, allow_unicode=True))
             if node.kind == 'folder':
                 _add_dir(tar, path)
             else:
@@ -104,7 +107,7 @@ def _paths_by_id(nodes):
     return cache
 
 
-def _node_metadata(node):
+def _node_metadata(node, read_metadata):
     data = {
         'id': str(node.id),
         'kind': node.kind,
@@ -112,12 +115,7 @@ def _node_metadata(node):
         'parent': str(node.parent_id) if node.parent_id else None,
     }
     if node.kind != 'folder':
-        data['metadata'] = {
-            'arch': node.arch,
-            'code_base': node.code_base,
-            'stack_top': node.stack_top,
-            'arg_count': node.arg_count,
-        }
+        data['metadata'] = read_metadata(node)
     return data
 
 

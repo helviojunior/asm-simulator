@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntlpcapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtQueryInformationPort
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "PortHandle"
+    direction: "in"
+    description: "Handle da porta de comunicacao (LPC/ALPC)."
+  arg1:
+    type: "PORT_INFORMATION_CLASS"
+    name: "PortInformationClass"
+    direction: "in"
+    description: "Entrada: PORT_INFORMATION_CLASS."
+  arg2:
+    type: "PVOID"
+    name: "PortInformation"
+    direction: "out"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg3:
+    type: "ULONG"
+    name: "Length"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+  arg4:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

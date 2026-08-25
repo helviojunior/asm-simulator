@@ -1,0 +1,19 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 munmap
+function_name: munmap
+ssn: 11
+summary: "Desfaz um mapeamento de memoria."
+input_args:
+  arg0:
+    type: "void *"
+    name: "addr"
+    description: "Inicio da regiao, alinhado a pagina."
+  arg1:
+    type: "size_t"
+    name: "length"
+    description: "Tamanho em bytes."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 em sucesso, negativo em erro (-errno)."

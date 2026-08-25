@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 setgroups
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: setgroups
+ssn: 81
+summary: ""
+input_args:
+  arg0:
+    type: "size_t"
+    name: "size"
+    description: "Tamanho em bytes."
+  arg1:
+    type: "const gid_t *_Nullable"
+    name: "list"
+    description: "const gid_t *_Nullable list."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -250,10 +250,24 @@ const HANDLERS = {
   },
 
   call: (m, [target]) => {
+    const destination = m.readOperand(target);
+
+    // Destino que nao esta no programa carregado: uma funcao importada, um
+    // ponteiro que o exercicio nao resolve, um endereco calculado errado. Nao
+    // ha o que executar la, e saltar so levaria a "sem instrucao neste
+    // endereco" — parando a aula por algo que nem e o assunto.
+    //
+    // O `call` entao PASSA DIRETO, como um step over de algo que nao podemos
+    // simular: a pilha nao e tocada (nada e empilhado porque nada retornaria) e
+    // a execucao segue na instrucao seguinte. Quem avisa e a interface.
+    if (!m.hasCodeAt(destination)) {
+      return { externalCall: { address: destination, from: m.cpu.ip } };
+    }
+
     // O endereco de retorno vai para a pilha ANTES do desvio: e exatamente o
     // valor que um buffer overflow sobrescreve.
     m.push(m.cpu.ip + BigInt(m.currentInstruction.size));
-    m.cpu.ip = m.readOperand(target);
+    m.cpu.ip = destination;
     return { jumped: true };
   },
 
@@ -276,6 +290,9 @@ const HANDLERS = {
   // que nao tem efeito plausivel de reproduzir.
   int: (m, [vector]) => {
     const number = m.readOperand(vector);
+    // `int 3` (CD 03) e o mesmo breakpoint do `int3` (CC), so que na forma de
+    // dois bytes. Os dois caem no mesmo lugar: nada a fazer.
+    if (number === 3n) return undefined;
     if (number !== 0x80n) {
       return {
         halt: { reason: HALT.SYSCALL, message: `int 0x${number.toString(16)}` },
@@ -285,7 +302,55 @@ const HANDLERS = {
   },
   syscall: (m) => m.syscall("syscall"),
   sysenter: (m) => m.syscall("sysenter"),
+
+  // --- Instrucoes sem efeito observavel aqui ------------------------------
+  //
+  // Aparecem o tempo todo em codigo real — o `cld` que todo shellcode poe
+  // antes de uma instrucao de string, o `endbr64` que o compilador emite em
+  // cada funcao, as barreiras de memoria. Nenhuma delas muda o estado que este
+  // simulador modela, mas parar a execucao em cada uma interromperia a aula
+  // por algo que, na maquina real, nao teria acontecido.
+  //
+  // O criterio para entrar aqui e estreito: a instrucao NAO pode ter efeito
+  // sobre registrador, memoria ou flag que o simulador exiba. `hlt` continua
+  // parando, `ud2` continua sendo erro.
+  ...noEffect([
+    // Espera e dicas ao processador.
+    "pause", "prefetch", "prefetchnta", "prefetcht0", "prefetcht1", "prefetcht2",
+    "prefetchw", "hint_nop",
+    // Barreiras de memoria: so ordenam acessos, e aqui tudo e sequencial.
+    "lfence", "sfence", "mfence",
+    // Marcadores de CET, presentes em todo binario recente.
+    "endbr32", "endbr64",
+    // x87 sem efeito sobre o que modelamos.
+    "fnop", "fwait", "wait",
+    // Flag de interrupcao: nao existe neste modelo, e em user mode as duas sao
+    // privilegiadas de qualquer forma.
+    "cli", "sti",
+    // Breakpoint de software. Sem depurador anexado nao ha para quem entregar
+    // a interrupcao, e parar aqui seria o simulador reagindo a uma armadilha
+    // posta para OUTRA ferramenta.
+    "int3",
+    // Direcao das instrucoes de string. Nenhuma instrucao deste simulador le o
+    // DF — nao ha `movsb`/`stosb` —, entao mexer nele so acenderia uma flag que
+    // ninguem consulta. O par inteiro fica de fora, para nao ficar meio
+    // implementado.
+    "cld", "std",
+  ]),
+
+  // --- Flags de controle, implementadas de verdade -------------------------
+  //
+  // Diferente do DF: o CF E lido aqui, por `adc`, `sbb`, `jc` e companhia.
+  // Trata-las como nop nao seria "sem efeito", seria dar resultado errado.
+  clc: (m) => { m.cpu.setFlag("CF", false); },
+  stc: (m) => { m.cpu.setFlag("CF", true); },
+  cmc: (m) => { m.cpu.setFlag("CF", !m.cpu.getFlag("CF")); },
 };
+
+/** Mapa `{ mnemonico: () => undefined }` para as instrucoes sem efeito. */
+function noEffect(mnemonics) {
+  return Object.fromEntries(mnemonics.map((name) => [name, () => undefined]));
+}
 
 function shift(machine, [dst, countOperand], mode) {
   const cpu = machine.cpu;

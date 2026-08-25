@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserGetIconSize
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HGDIOBJ"
+    name: "IconOrCursorHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "LOGICAL"
+    name: "IsCursorHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg2:
+    type: "PULONG"
+    name: "XX"
+    direction: "out"
+    description: "Saida: PULONG."
+  arg3:
+    type: "PULONG"
+    name: "YY"
+    direction: "out"
+    description: "Saida: PULONG."
+output_data:
+  type: "BOOL"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

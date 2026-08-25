@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 semctl
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: semctl
+ssn: 394
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "semid"
+    description: "int semid."
+  arg1:
+    type: "int"
+    name: "semnum"
+    description: "int semnum."
+  arg2:
+    type: "int"
+    name: "cmd"
+    description: "int cmd."
+  arg3:
+    type: "..."
+    name: "varargs"
+    description: "Argumentos variaveis; o formato depende da operacao pedida."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

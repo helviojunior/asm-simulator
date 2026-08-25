@@ -1,0 +1,36 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 move_pages
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: move_pages
+ssn: 279
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "pid"
+    description: "Identificador do processo."
+  arg1:
+    type: "unsigned long"
+    name: "count"
+    description: "Quantidade de bytes."
+  arg2:
+    type: "void * *"
+    name: "pages"
+    description: "void * * pages."
+  arg3:
+    type: "const int *"
+    name: "nodes"
+    description: "const int * nodes."
+  arg4:
+    type: "int *"
+    name: "status"
+    description: "Codigo de saida."
+  arg5:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "long"
+  name: "result"
+  description: "Depende da operacao; negativo em erro (-errno)."

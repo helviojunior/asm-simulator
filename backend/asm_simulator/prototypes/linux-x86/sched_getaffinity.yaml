@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 sched_getaffinity
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: sched_getaffinity
+ssn: 242
+summary: ""
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "pid"
+    description: "Identificador do processo."
+  arg1:
+    type: "size_t"
+    name: "cpusetsize"
+    description: "size_t cpusetsize."
+  arg2:
+    type: "cpu_set_t *"
+    name: "mask"
+    description: "cpu_set_t * mask."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpnpapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtReplacePartitionUnit
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PCUNICODE_STRING"
+    name: "TargetInstancePath"
+    direction: "in"
+    description: "Entrada: PCUNICODE_STRING."
+  arg1:
+    type: "PCUNICODE_STRING"
+    name: "SpareInstancePath"
+    direction: "in"
+    description: "Entrada: PCUNICODE_STRING."
+  arg2:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Combinacao de flags."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

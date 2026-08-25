@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 umount2
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: umount2
+ssn: 166
+summary: ""
+input_args:
+  arg0:
+    type: "const char *"
+    name: "target"
+    description: "const char * target."
+  arg1:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -26,18 +26,32 @@ Os `.woff2` aqui contêm apenas os intervalos que a interface desenha:
     U+2600-26FF   símbolos diversos
     U+E0A0-E0D4   Powerline
     U+FFFD        caractere de substituição
+    U+F179        ícone Apple (nf-fa-apple)
+    U+F17A        ícone Windows (nf-fa-windows)
+    U+F17C        ícone Linux (nf-fa-linux)
 
 Os ~9000 glifos de ícone da Nerd Font (devicons, seti, font-awesome…) foram
-removidos: nenhuma tela os usa, e eles respondiam por 94% do tamanho — 1 MB
-por variante contra os ~60 KB atuais.
+removidos: eles respondiam por 94% do tamanho — 1 MB por variante contra os
+~60 KB atuais. Os **três ícones de sistema operacional** são a exceção: a
+interface os desenha ao lado do alvo de cada programa, e sem eles o navegador
+cairia para outra fonte e mostraria o retângulo de glifo ausente.
 
-**Se algum dia a UI precisar dos ícones**, regenere sem `--unicodes`:
+**Para incluir outro ícone**, acrescente o ponto de código à lista e regenere
+as quatro variantes:
 
 ```bash
-curl -sSLO "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
-pyftsubset "MesloLGS NF Regular.ttf" --unicodes="*" --flavor=woff2 \
-  --output-file=MesloLGS-NF-Regular.woff2
+RANGES="U+0000-00FF,U+0100-017F,U+2000-206F,U+2190-21FF,U+2500-259F,\
+U+25A0-25FF,U+2600-26FF,U+E0A0-E0D4,U+FFFD,U+F179,U+F17A,U+F17C"
+
+for v in "Regular" "Bold" "Italic" "Bold Italic"; do
+  curl -sSLO "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20${v// /%20}.ttf"
+  pyftsubset "MesloLGS NF $v.ttf" --unicodes="$RANGES" --flavor=woff2 \
+    --output-file="MesloLGS-NF-${v// /}.woff2"
+done
 ```
+
+Confira depois que o glifo entrou **e** que ele tem a largura de avanço do
+`0` (1233): um ícone mais largo desalinharia as colunas monoespaçadas.
 
 ## Ordem de carga
 

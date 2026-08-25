@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 setsockopt
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: setsockopt
+ssn: 366
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "sockfd"
+    description: "Descritor do socket."
+  arg1:
+    type: "int"
+    name: "level"
+    description: "int level."
+  arg2:
+    type: "int"
+    name: "optname"
+    description: "int optname."
+  arg3:
+    type: "const void *"
+    name: "optval"
+    description: "const void * optval."
+  arg4:
+    type: "socklen_t"
+    name: "optlen"
+    description: "socklen_t optlen."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -1,0 +1,52 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserCreateWindowStation
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "POBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "HANDLE"
+    name: "KeyboardLayoutHandle"
+    direction: "in/opt"
+    description: "Handle do objeto. Opcional."
+  arg3:
+    type: "PVOID"
+    name: "KeyboardLayoutOffset"
+    direction: "in/opt"
+    description: "Deslocamento em bytes. Opcional."
+  arg4:
+    type: "PVOID"
+    name: "NlsTableOffset"
+    direction: "in/opt"
+    description: "Deslocamento em bytes. Opcional."
+  arg5:
+    type: "PVOID"
+    name: "KeyboardDescriptor"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+  arg6:
+    type: "PCUNICODE_STRING"
+    name: "LanguageIdString"
+    direction: "in/opt"
+    description: "Entrada: PCUNICODE_STRING. Opcional."
+  arg7:
+    type: "ULONG"
+    name: "KeyboardLocale"
+    direction: "in/opt"
+    description: "Entrada: ULONG. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

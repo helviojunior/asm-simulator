@@ -1,0 +1,23 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 execve
+function_name: execve
+ssn: 11
+summary: "Substitui a imagem do processo. E o objetivo classico de um shellcode."
+input_args:
+  arg0:
+    type: "const char *"
+    name: "pathname"
+    description: "Caminho do programa. Num shellcode, tipicamente \"/bin/sh\"."
+  arg1:
+    type: "char *const _Nullable *"
+    name: "argv"
+    description: "Vetor de ponteiros terminado em NULL. argv[0] e o nome do programa."
+  arg2:
+    type: "char *const _Nullable *"
+    name: "envp"
+    description: "Vetor de ambiente terminado em NULL. NULL e aceito."
+output_data:
+  type: "int"
+  name: "result"
+  description: "Nao retorna em caso de sucesso: a imagem do processo foi substituida. Negativo em erro."

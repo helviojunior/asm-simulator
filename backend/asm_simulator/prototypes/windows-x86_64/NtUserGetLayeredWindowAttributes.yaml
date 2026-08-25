@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserGetLayeredWindowAttributes
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HWND"
+    name: "WindowHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "COLORREF *"
+    name: "Key"
+    direction: "out/opt"
+    description: "Chave de lock do arquivo. NULL e o comum."
+  arg2:
+    type: "PBYTE"
+    name: "Alpha"
+    direction: "out/opt"
+    description: "Saida: PBYTE. Opcional."
+  arg3:
+    type: "PULONG"
+    name: "Flags"
+    direction: "out/opt"
+    description: "Combinacao de flags. Opcional."
+output_data:
+  type: "BOOL"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

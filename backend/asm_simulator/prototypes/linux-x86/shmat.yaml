@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 shmat
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: shmat
+ssn: 397
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "shmid"
+    description: "int shmid."
+  arg1:
+    type: "const void *_Nullable"
+    name: "shmaddr"
+    description: "const void *_Nullable shmaddr."
+  arg2:
+    type: "int"
+    name: "shmflg"
+    description: "int shmflg."
+output_data:
+  type: "void *"
+  name: "result"
+  description: "Endereco em sucesso; valor negativo pequeno em erro (-errno)."

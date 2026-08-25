@@ -1,0 +1,36 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+function_name: NtProtectVirtualMemory
+ssn: null
+summary: "Troca a protecao de uma regiao. E como um shellcode torna executavel a memoria onde se copiou."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PVOID *"
+    name: "BaseAddress"
+    direction: "inout"
+    description: "Inicio da regiao; sai alinhado para baixo ao tamanho de pagina."
+  arg2:
+    type: "PSIZE_T"
+    name: "RegionSize"
+    direction: "inout"
+    description: "Tamanho; sai arredondado para cima ao tamanho de pagina."
+  arg3:
+    type: "ULONG"
+    name: "NewProtection"
+    direction: "in"
+    description: "Nova protecao. PAGE_EXECUTE_READ 0x20, PAGE_EXECUTE_READWRITE 0x40."
+  arg4:
+    type: "PULONG"
+    name: "OldProtection"
+    direction: "out"
+    description: "Recebe a protecao anterior. Nao pode ser NULL, mesmo que nao interesse."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

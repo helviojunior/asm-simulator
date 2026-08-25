@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 semop
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: semop
+ssn: 65
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "semid"
+    description: "int semid."
+  arg1:
+    type: "struct sembuf *"
+    name: "sops"
+    description: "struct sembuf * sops."
+  arg2:
+    type: "size_t"
+    name: "nsops"
+    description: "size_t nsops."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -8,7 +8,11 @@
  */
 
 import { hex } from "./format";
-import { SIMULATED_SYSCALLS, SYSCALL_ABI, SYSCALL_SIGNATURES } from "./syscalls";
+import {
+  SIMULATED_SYSCALLS, SYSCALL_SIGNATURES, argumentSlot, syscallAbi, syscallNumber,
+} from "./syscalls";
+import { ntdllSummary, resolveSyscall } from "lib/ntdll";
+import { syscallNameOverride } from "./syscallNames";
 
 // Quantos bytes olhar a frente ao tentar reconhecer uma string.
 const STRING_SCAN = 24;
@@ -20,7 +24,10 @@ export function describeRegion(machine, address) {
   if (value >= machine.codeBase && value < machine.codeEnd) {
     return { region: "code", offset: value - machine.codeBase };
   }
-  if (value <= machine.stackTop && value >= machine.stackLimit) {
+  // O teto leva a folga: um `[rsp+0x30]` logo depois do prologo cai acima do
+  // ponteiro inicial, e e exatamente onde o shellcode espera o que o chamador
+  // deixou — chamar aquilo de "fora da pilha" seria enganoso.
+  if (value <= machine.stackCeiling && value >= machine.stackLimit) {
     return { region: "stack", offset: machine.stackTop - value };
   }
   return { region: null };
@@ -57,7 +64,13 @@ export function annotateValue(machine, value, { asPointer = true } = {}) {
   if (asPointer) {
     const { region, offset } = describeRegion(machine, numeric);
     if (region === "code") notes.push(`code+0x${offset.toString(16).toUpperCase()}`);
-    if (region === "stack") notes.push(`stack-0x${offset.toString(16).toUpperCase()}`);
+    // Offset negativo existe: e um endereco ACIMA do ponteiro inicial, dentro
+    // da folga. O sinal precisa aparecer, senao "stack-0xFFFF..." confundiria.
+    if (region === "stack") {
+      notes.push(offset < 0n
+        ? `stack+0x${(-offset).toString(16).toUpperCase()}`
+        : `stack-0x${offset.toString(16).toUpperCase()}`);
+    }
     if (region) {
       const text = readStringAt(machine, numeric);
       if (text) notes.push(`"${text}"`);
@@ -228,9 +241,20 @@ export const CALL_CONVENTIONS = {
   },
 };
 
-/** Convencao padrao de cada arquitetura. */
-export function defaultConvention(archId) {
-  return archId === "x86_64" ? "sysv" : "cdecl";
+/**
+ * Convencao padrao de um alvo.
+ *
+ * Nao depende so da arquitetura: em 64 bits, Linux e macOS usam System V e o
+ * Windows usa a fastcall da Microsoft. Sao registradores DIFERENTES para os
+ * mesmos argumentos — ler um binario do Windows pela tabela do Linux mostra
+ * RDI e RSI onde o programa pos RCX e RDX.
+ *
+ * Em 32 bits todas passam pela pilha, e a diferenca (quem limpa) nao muda o
+ * que o painel exibe.
+ */
+export function defaultConvention(archId, osId) {
+  if (archId !== "x86_64") return "cdecl";
+  return osId === "windows" ? "fastcall" : "sysv";
 }
 
 /**
@@ -241,7 +265,9 @@ export function defaultConvention(archId) {
  * parametro da interface: o aluno decide quantas posicoes quer inspecionar.
  */
 export function callArguments(machine, { count = 4, convention } = {}) {
-  const spec = CALL_CONVENTIONS[convention] || CALL_CONVENTIONS[defaultConvention(machine.archId)];
+  const spec =
+    CALL_CONVENTIONS[convention] ||
+    CALL_CONVENTIONS[defaultConvention(machine.archId, machine.osId)];
   const wordSize = machine.arch.wordSize;
   const sp = machine.cpu.sp;
   const args = [];
@@ -328,29 +354,55 @@ export function syscallInvocation(machine, { count = 4 } = {}) {
   const via = syscallGate(machine?.currentInstruction);
   if (!via) return null;
 
-  const abi = SYSCALL_ABI[machine.archId];
-  const number = machine.cpu.readRegister(abi.numberRegister);
-  const name = abi.names[Number(number)] || null;
+  const abi = syscallAbi(machine.osId, machine.archId);
+  const raw = machine.cpu.readRegister(abi.numberRegister);
+  // No macOS de 64 bits o numero vem somado a classe UNIX (0x2000000): sem
+  // tirar a classe, `mov rax, 0x2000004` viraria "syscall 33554436".
+  const number = syscallNumber(abi, raw);
+  // Ordem de precedencia: o que o aluno afirmou, depois a ntdll que ele
+  // importou, depois a tabela fixa. A escolha manual vem primeiro porque e a
+  // unica que carrega conhecimento que o simulador nao tem como ter.
+  const chosen = syscallNameOverride(machine.osId, machine.archId, number);
+  const fromNtdll =
+    !chosen && abi.resolvable === false
+      ? resolveSyscall(machine.archId, number)
+      : null;
+  const name =
+    chosen || fromNtdll || (abi.resolvable === false ? null : abi.names[number] || null);
 
   const signature = name ? SYSCALL_SIGNATURES[name] : null;
-  const params =
-    signature ??
-    Array.from({ length: Math.min(count, abi.argumentRegisters.length) }, (_, i) => `arg${i}`);
+  // Com prototipo conhecido a aridade e a dele; sem, quem decide quantas
+  // posicoes olhar e a barra superior. Nao ha teto no numero de registradores:
+  // do ultimo em diante os argumentos vem da pilha.
+  const params = signature ?? Array.from({ length: count }, (_, i) => `arg${i}`);
 
   return {
     via,
+    os: machine.osId,
+    table: abi.table,
     numberRegister: abi.numberRegister,
+    // `raw` e o que esta no registrador; `number` e o que a tabela indexa. Os
+    // dois aparecem no painel quando diferem — e o que explica o 0x2000000.
+    raw,
     number,
     name,
+    // Windows nao tem numero estavel POR SI SO: sem a ntdll importada nao ha o
+    // que resolver, e dizer isso e mais util que exibir um nome inventado.
+    resolvable: abi.resolvable !== false || Boolean(fromNtdll) || Boolean(chosen),
+    // De onde veio o nome: escolha do aluno, DLL importada, ou a tabela.
+    origin: chosen ? "manual" : fromNtdll ? "ntdll" : name ? "table" : null,
+    source: fromNtdll ? ntdllSummary(machine.archId)?.origin || "ntdll.dll" : null,
+    // True quando o alvo e Windows, NAO ha tabela e o aluno tambem nao disse
+    // nada: e o gatilho do convite a importar a ntdll.
+    needsNtdll: abi.resolvable === false && !fromNtdll && !chosen,
     // Sem prototipo conhecido nao ha o que nomear: o painel avisa em vez de
     // apresentar "arg0" como se fosse o nome real do parametro.
     known: Boolean(signature),
     simulated: Boolean(name && SIMULATED_SYSCALLS.has(name)),
-    args: params.slice(0, abi.argumentRegisters.length).map((param, index) => ({
+    args: params.map((param, index) => ({
       index,
       name: param,
-      register: abi.argumentRegisters[index],
-      value: machine.cpu.readRegister(abi.argumentRegisters[index]),
+      ...argumentSlot(machine, abi, index),
     })),
   };
 }

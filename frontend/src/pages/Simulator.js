@@ -4,9 +4,11 @@ import api from "lib/api";
 import brand from "lib/brand";
 import { useI18n, LANGUAGE_OPTIONS } from "i18n";
 import { useDialog } from "contexts/DialogContext";
+import { useToast } from "contexts/ToastContext";
 import { Machine } from "lib/cpu/machine";
 import { HALT } from "lib/cpu/halt";
 import { ARCH } from "lib/cpu/registers";
+import { OS, OS_OPTIONS, detectOs, osIcon } from "lib/cpu/os";
 import { defaultConvention } from "lib/cpu/inspect";
 import { findArchMismatch } from "lib/asm/archCheck";
 import { fromParams, updateNode } from "lib/library";
@@ -22,6 +24,10 @@ import CallPane from "components/debugger/CallPane";
 import SyscallPane from "components/debugger/SyscallPane";
 import Splitter from "components/debugger/Splitter";
 import AboutModal, { AboutButton } from "components/AboutModal";
+import ImportBinaryWizard from "components/ImportBinaryWizard";
+import NtdllModal from "components/NtdllModal";
+import { ntdllSummary, refreshNtdll } from "lib/ntdll";
+import { clearSyscallNames } from "lib/cpu/syscallNames";
 import { usePaneSizes } from "lib/usePaneSizes";
 
 // O editor abre VAZIO: quem chega escreve o proprio programa (ou abre um da
@@ -59,9 +65,13 @@ function decodeBase64(value) {
 
 export default function Simulator() {
   const { t, tf, lang, setLanguage } = useI18n();
-  const { alert, confirm } = useDialog();
+  const { alert, confirm, choose } = useDialog();
+  const { toast } = useToast();
 
   const [arch, setArch] = useState("x86");
+  // Alvo do programa. null = ainda nao definido; e resolvido (por deteccao ou
+  // perguntando) antes de montar ou salvar, e vai junto no metadado.
+  const [os, setOs] = useState(null);
   const [source, setSource] = useState(DEFAULT_SOURCE);
   // Arquivo da biblioteca atualmente aberto no editor ({ id, name }), ou null
   // quando o conteudo nao veio de lugar nenhum.
@@ -74,10 +84,15 @@ export default function Simulator() {
   // Mapa offset -> linha do fonte. Guardado a parte para sobreviver a uma
   // re-desmontagem (codigo automodificavel), que nao passa pelo montador.
   const [lineMap, setLineMap] = useState({});
+  // Faixas de bytes que sao DADOS (vieram de `db`/`times`/`incbin`). Guardadas
+  // ao lado do lineMap e pelo mesmo motivo: a re-desmontagem de codigo
+  // automodificavel precisa reaplica-las, senao a string embutida volta a ser
+  // lida como instrucao.
+  const [dataRanges, setDataRanges] = useState([]);
   // Quantos argumentos inspecionar num `call`. A aridade real e desconhecida,
   // entao quem decide e quem esta olhando.
   const [argCount, setArgCount] = useState(4);
-  const [convention, setConvention] = useState(() => defaultConvention("x86"));
+  const [convention, setConvention] = useState(() => defaultConvention("x86", null));
   const [messages, setMessages] = useState([]);
   const [busy, setBusy] = useState(false);
   // Retrato do que ESTA no arquivo salvo. E com ele que se decide se ha algo a
@@ -90,6 +105,8 @@ export default function Simulator() {
   // Mensagem transitoria da barra de status ("arquivo X salvo").
   const [notice, setNotice] = useState(null);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [ntdllOpen, setNtdllOpen] = useState(false);
   // Contador de salvamentos. A arvore da biblioteca mostra a data de alteracao
   // de cada arquivo; sem este sinal ela ficaria defasada ate a proxima troca
   // de aba.
@@ -105,22 +122,31 @@ export default function Simulator() {
   // instancia numa ref e usamos `tick` apenas para pedir novo render — assim
   // nao clonamos o estado inteiro a cada passo.
   const machineRef = useRef(null);
+  // Destinos de chamada externa ja anunciados. Sem isto, um `call` para fora
+  // dentro de um laco abriria o mesmo modal a cada volta.
   const [tick, setTick] = useState(0);
   const refresh = useCallback(() => setTick((value) => value + 1), []);
 
   const machine = machineRef.current;
+
+  // A convencao segue o alvo. Trocar de sistema sem trocar a convencao deixaria
+  // o painel lendo os argumentos nos registradores errados — em 64 bits, RDI/RSI
+  // no Linux contra RCX/RDX no Windows. Escolha manual vale ate a proxima
+  // mudanca de arquitetura ou de alvo, que e um sinal mais forte.
+  useEffect(() => {
+    setConvention(defaultConvention(arch, os));
+  }, [arch, os]);
 
   // Trocar de arquitetura reaproveita o layout tipico de cada uma.
   const handleArchChange = (value) => {
     setArch(value);
     setCodeBase(DEFAULT_LAYOUT[value].codeBase);
     setStackTop(DEFAULT_LAYOUT[value].stackTop);
-    setConvention(defaultConvention(value));
   };
 
   // Parametros de execucao em vigor. Vao para a biblioteca no salvamento: sao
   // do ARQUIVO, nao da sessao.
-  const params = { arch, codeBase, stackTop, argCount };
+  const params = { arch, os, codeBase, stackTop, argCount };
 
   /**
    * Abre um arquivo da biblioteca: fonte e parametros de execucao.
@@ -136,13 +162,16 @@ export default function Simulator() {
     const next = {
       source: text,
       arch: nextArch,
+      // Arquivo salvo antes de o alvo existir chega sem ele: fica indefinido e
+      // sera resolvido na proxima montagem, e nao herdado do programa anterior.
+      os: OS[fileParams?.os] ? fileParams.os : null,
       codeBase: fileParams?.codeBase || DEFAULT_LAYOUT[nextArch].codeBase,
       stackTop: fileParams?.stackTop || DEFAULT_LAYOUT[nextArch].stackTop,
       argCount: Math.max(0, Math.min(16, fileParams?.argCount ?? 4)),
     };
 
     setArch(next.arch);
-    setConvention(defaultConvention(next.arch));
+    setOs(next.os);
     setCodeBase(next.codeBase);
     setStackTop(next.stackTop);
     setArgCount(next.argCount);
@@ -190,8 +219,11 @@ export default function Simulator() {
   /** Volta ao estado "nada montado": nao ha programa a inspecionar. */
   const discardProgram = () => {
     machineRef.current = null;
+    // Os nomes que o aluno deu valem para o programa que estava carregado.
+    clearSyscallNames();
     setInstructions([]);
     setLineMap({});
+    setDataRanges([]);
     setMessages([]);
     setChanges({ registers: [], flags: [], memory: [] });
     refresh();
@@ -208,11 +240,46 @@ export default function Simulator() {
     ? Boolean(baseline) && (
         source !== baseline.source ||
         arch !== baseline.arch ||
+        os !== baseline.os ||
         codeBase !== baseline.codeBase ||
         stackTop !== baseline.stackTop ||
         argCount !== baseline.argCount
       )
-    : Boolean(source.trim());
+    // Sem arquivo aberto sempre ha o que fazer: "salvar como". Um arquivo
+    // vazio e legitimo — comeca-se um exercicio criando o arquivo, nao
+    // escrevendo nele.
+    : true;
+
+  /**
+   * Fecha o arquivo: editor em branco e nada montado, como no primeiro boot.
+   *
+   * Pergunta pelo que se perde, na ordem em que importa: alteracao nao salva
+   * primeiro (e o que nao da para recuperar), depois a simulacao em andamento.
+   */
+  const handleCloseFile = useCallback(async () => {
+    if (openFile && dirty) {
+      const ok = await confirm({
+        title: t("sim.closeDirty", "There are unsaved changes"),
+        description: tf(
+          "sim.closeDirtyHint",
+          { name: openFile.name },
+          'Closing "{name}" discards what you changed since the last save.'
+        ),
+        variant: "warning",
+        confirmLabel: t("sim.closeConfirm", "Discard and close"),
+      });
+      if (!ok) return;
+    } else if (!(await confirmDiscardRun())) {
+      return;
+    }
+
+    setSource("");
+    setOpenFile(null);
+    setBaseline(null);
+    setOs(null);
+    discardProgram();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [confirm, confirmDiscardRun, dirty, openFile, t, tf]);
 
   /** Publica um aviso na barra de status; ele some sozinho. */
   const notify = useCallback((message) => {
@@ -228,6 +295,74 @@ export default function Simulator() {
   }, [notice]);
 
   /**
+   * Garante que o alvo esta definido, devolvendo-o (ou null se desistirem).
+   *
+   * Tenta reconhecer pelo fonte primeiro. So pergunta quando nao da para
+   * afirmar: chutar resolveria os numeros de syscall para as funcoes erradas,
+   * e o painel mentiria com toda a confianca — pior que nao saber.
+   */
+  const resolveOs = useCallback(async () => {
+    if (os) return os;
+
+    const detected = detectOs(source);
+    if (detected.os) {
+      setOs(detected.os);
+      return detected.os;
+    }
+
+    const chosen = await choose({
+      title: t("sim.pickOs", "Which system is this program for?"),
+      description: t(
+        "sim.pickOsHint",
+        "The syscall number depends on it: 4 is write on Linux i386 and close on Linux x86-64. Nothing in the source says which one this is."
+      ),
+      options: OS_OPTIONS.map((item) => ({
+        value: item.id,
+        label: item.label,
+        icon: item.icon,
+        description: t(`sim.osHint.${item.id}`, ""),
+      })),
+    });
+    if (chosen) setOs(chosen);
+    return chosen;
+  }, [choose, os, source, t]);
+
+  /** Abre o wizard de import, se nao houver nada a perder no caminho. */
+  const openImport = useCallback(async () => {
+    if (await confirmDiscardRun()) setImportOpen(true);
+  }, [confirmDiscardRun]);
+
+  /**
+   * Import concluido: o fonte reconstruido entra no editor SEM arquivo.
+   *
+   * Sem arquivo de proposito — o binario nao veio da biblioteca, e quem decide
+   * se aquilo merece ser guardado e o aluno, depois de olhar. Como o baseline
+   * fica nulo, o botao de salvar ja nasce ativo.
+   */
+  const handleBinaryImported = useCallback(
+    ({ source: text, arch: nextArch, os: nextOs, name, baseAddress }) => {
+      setSource(text);
+      setOpenFile(null);
+      setBaseline(null);
+      setArch(nextArch);
+      setOs(nextOs || null);
+
+      // O layout tem de acompanhar a arquitetura importada. Ficando o de 64
+      // bits com um binario de 32, o programa nasceria acima de 0xFFFFFFFF e
+      // pararia no primeiro salto. A base e a que o servidor usou para gerar o
+      // `org` do fonte; o topo da pilha vem do padrao da arquitetura.
+      const layout = DEFAULT_LAYOUT[nextArch];
+      setCodeBase(baseAddress ? `0x${BigInt(baseAddress).toString(16).toUpperCase()}` : layout.codeBase);
+      if (nextArch !== arch) setStackTop(layout.stackTop);
+      discardProgram();
+      showSource();
+      notify(tf("sim.binaryImported", { name }, 'Binary "{name}" disassembled into source.'));
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [arch, notify, showSource, tf]
+  );
+
+  /**
    * Salva no arquivo aberto.
    *
    * Sem arquivo aberto nao ha onde gravar: o pedido vira "salvar como" e quem
@@ -235,14 +370,18 @@ export default function Simulator() {
    * nome. Esse e o unico caso em que salvar troca de aba.
    */
   const handleSave = useCallback(async () => {
-    if (!source.trim()) return;
+    // O alvo faz parte do que se salva: um arquivo sem ele reabriria sem saber
+    // ler os proprios numeros de syscall.
+    const target = await resolveOs();
+    if (!target) return;
+
     if (!openFile) {
       setSaveAs(true);
       return;
     }
     if (!dirty) return;
 
-    const snapshot = { source, arch, codeBase, stackTop, argCount };
+    const snapshot = { source, arch, os: target, codeBase, stackTop, argCount };
     setBusy(true);
     try {
       await updateNode(openFile.id, {
@@ -263,7 +402,7 @@ export default function Simulator() {
     } finally {
       setBusy(false);
     }
-  }, [alert, arch, argCount, codeBase, dirty, notify, openFile, source, stackTop, t, tf]);
+  }, [alert, arch, argCount, codeBase, dirty, notify, openFile, resolveOs, source, stackTop, t, tf]);
 
   /** Import concluido: a biblioteca diz quantos itens entraram. */
   const handleImported = useCallback(
@@ -276,10 +415,50 @@ export default function Simulator() {
   /** Confirmacao de que a biblioteca salvou (criou um arquivo novo). */
   const handleSaved = useCallback(
     (name) => {
-      setBaseline({ source, arch, codeBase, stackTop, argCount });
+      setBaseline({ source, arch, os, codeBase, stackTop, argCount });
       notify(tf("library.savedFile", { name }, 'File "{name}" saved.'));
     },
-    [arch, argCount, codeBase, notify, source, stackTop, tf]
+    [arch, argCount, codeBase, notify, os, source, stackTop, tf]
+  );
+
+  /**
+   * Convida a importar a ntdll quando ela faria diferenca.
+   *
+   * So no alvo Windows, so quando o programa REALMENTE entra no kernel, e so
+   * se ainda nao houver tabela. Fora disso o convite seria interrupcao: num
+   * shellcode que so chama a API por DLL, nao ha SSN a resolver.
+   *
+   * Ja carregada, usa-se a que esta la — sem perguntar nada.
+   */
+  const offerNtdll = useCallback(
+    async (target) => {
+      if (target !== OS.windows.id) return;
+      if (!/\b(syscall|sysenter)\b/i.test(source.replace(/;.*$/gm, ""))) return;
+
+      // Pode ter sido importada em outra aba, ou por outro worker do uwsgi.
+      let summary = ntdllSummary(arch);
+      if (!summary) {
+        try {
+          summary = await refreshNtdll(arch);
+        } catch {
+          summary = null;
+        }
+      }
+      if (summary) return;
+
+      const wants = await confirm({
+        title: t("ntdll.offerTitle", "Import ntdll.dll to read the syscalls?"),
+        description: t(
+          "ntdll.offerHint",
+          "This program enters the kernel, but Windows has no stable syscall number — it changes between builds. With the ntdll.dll of the build you are studying, the numbers resolve to function names."
+        ),
+        variant: "info",
+        confirmLabel: t("ntdll.offerConfirm", "Import now"),
+        cancelLabel: t("ntdll.offerSkip", "Continue without it"),
+      });
+      if (wants) setNtdllOpen(true);
+    },
+    [arch, confirm, source, t]
   );
 
   const assemble = useCallback(async () => {
@@ -300,6 +479,13 @@ export default function Simulator() {
       // O fonte declara uma arquitetura (via `bits`) ou a denuncia pelo que
       // usa. Montar com a errada da erro obscuro do nasm — ou, pior, monta e
       // roda diferente (o caso de `int 0x80` em 64 bits).
+      // O alvo entra ANTES da montagem: e ele que decide a tabela de syscalls
+      // com que a maquina vai ser criada.
+      const target = await resolveOs();
+      if (!target) return;
+
+      if (target === OS.windows.id) await offerNtdll(target);
+
       const mismatch = findArchMismatch(source, arch);
       if (mismatch) {
         const proceed = await confirm({
@@ -359,13 +545,14 @@ export default function Simulator() {
 
       const data = response.data;
       const bytes = decodeBase64(data.data);
-      const next = new Machine({ arch, codeBase: base, stackTop: top });
+      const next = new Machine({ arch, os: target, codeBase: base, stackTop: top });
       next.load({ bytes, instructions: data.instructions });
 
       machineRef.current = next;
-      showSource();
+        showSource();
       setInstructions(data.instructions);
       setLineMap(data.line_map || {});
+      setDataRanges(data.data_ranges || []);
       setMessages(data.warnings || []);
       setChanges({ registers: [], flags: [], memory: [] });
       refresh();
@@ -384,7 +571,8 @@ export default function Simulator() {
     } finally {
       setBusy(false);
     }
-  }, [alert, arch, codeBase, confirm, refresh, showSource, source, stackTop, t, tf]);
+  }, [alert, arch, codeBase, confirm, offerNtdll, refresh, resolveOs, showSource,
+      source, stackTop, t, tf]);
 
   /**
    * Re-desmonta o codigo depois de uma escrita que caiu dentro dele.
@@ -411,6 +599,7 @@ export default function Simulator() {
         data: window.btoa(binary),
         arch: current.archId,
         base_address: current.codeBase.toString(),
+        data_ranges: dataRanges,
       });
       const decoded = (response.data.instructions || []).map((insn) => ({
         ...insn,
@@ -424,7 +613,7 @@ export default function Simulator() {
       // defasada, mas a execucao continua correta.
       current.codeDirty = false;
     }
-  }, [lineMap, refresh]);
+  }, [dataRanges, lineMap, refresh]);
 
   /**
    * Modal ao fim da execucao.
@@ -461,6 +650,88 @@ export default function Simulator() {
     [alert, t]
   );
 
+  /**
+   * Avisa que um `call` apontou para fora do programa carregado.
+   *
+   * A execucao NAO parou — a chamada foi ignorada e o fluxo seguiu na
+   * instrucao seguinte. Isso precisa ser dito: quem so olhasse os registradores
+   * concluiria que a funcao rodou e devolveu o que ja estava la.
+   *
+   * Modal na primeira vez para CADA destino; repeticoes (um `call` dentro de um
+   * laco) so atualizam a barra de status.
+   */
+  const announceExternalCall = useCallback(
+    ({ address }) => {
+      const digits = machineRef.current?.arch.bits === 64 ? 16 : 8;
+      const target = hex(address, digits);
+
+      toast({
+        // A chave e o destino: o mesmo `call` dentro de um laco reinicia o
+        // aviso que ja esta na tela em vez de empilhar copias.
+        key: `call:${address.toString()}`,
+        variant: "warning",
+        title: t("sim.externalCall", "Call to an address outside the program"),
+        description: (
+          <>
+            <span className="font-mono">call {target}</span> —{" "}
+            {t(
+              "sim.externalCallHint",
+              "There is no loaded code at that address, so the call was skipped and execution continued at the next instruction."
+            )}{" "}
+            <span className="text-[#9a9a9a]">
+              {t(
+                "sim.externalCallEffect",
+                "Nothing was pushed and no register changed — the value the function would return does not exist here."
+              )}
+            </span>
+          </>
+        ),
+      });
+    },
+    [t, toast]
+  );
+
+  /**
+   * Avisa que uma chamada de sistema nao tem simulacao.
+   *
+   * A execucao NAO parou: a chamada passou direto. Precisa ser dito porque o
+   * unico efeito que deixou de acontecer e o RETORNO — e quem so olhasse o
+   * registrador depois concluiria que a chamada devolveu o que ja estava la.
+   *
+   * Modal na primeira vez para cada chamada; repeticoes so atualizam a barra
+   * de status.
+   */
+  const announceUnsimulated = useCallback(
+    ({ name, number, text, reason }) => {
+      toast({
+        key: `syscall:${reason}:${name || number}`,
+        variant: "info",
+        title: t("sim.syscallSkipped", "This system call is not simulated"),
+        description: (
+          <>
+            <span className="font-mono">{text}</span> —{" "}
+            {reason === "windows"
+              ? t(
+                  "sim.syscallSkippedWindows",
+                  "Windows syscall numbers change between builds, so there is nothing to resolve without the ntdll.dll of that build."
+                )
+              : t(
+                  "sim.syscallSkippedHint",
+                  "The simulator reproduces write, read, exit and execve; the others have no plausible effect to reproduce here."
+                )}{" "}
+            <span className="text-[#9a9a9a]">
+              {t(
+                "sim.syscallSkippedEffect",
+                "Execution continued at the next instruction. No register changed — the value the call would return does not exist here."
+              )}
+            </span>
+          </>
+        ),
+      });
+    },
+    [t, toast]
+  );
+
   // Cada comando aplica o efeito na maquina e publica o diff para os paineis.
   const runCommand = useCallback(
     (command) => {
@@ -473,17 +744,21 @@ export default function Simulator() {
       if (result && result.changes) setChanges(result.changes);
       refresh();
       if (current.codeDirty) refreshDisassembly();
+      if (result && result.externalCall) announceExternalCall(result.externalCall);
+      if (result && result.unsimulated) announceUnsimulated(result.unsimulated);
       if (!wasHalted && current.halted) announceHalt(current.halted);
       // O destaque da linha atual so serve se o fonte estiver a vista — e o
       // fonte a vista e, por construcao, o do programa em execucao: abrir
       // outro arquivo descarta o programa montado.
       showSource();
     },
-    [announceHalt, refresh, refreshDisassembly, showSource]
+    [announceExternalCall, announceHalt, announceUnsimulated, refresh,
+     refreshDisassembly, showSource]
   );
 
   const stepInto = useCallback(() => runCommand((m) => m.step()), [runCommand]);
   const stepOver = useCallback(() => runCommand((m) => m.stepOver()), [runCommand]);
+  const skip = useCallback(() => runCommand((m) => m.skip()), [runCommand]);
   const stepBack = useCallback(
     () =>
       runCommand((m) => {
@@ -525,6 +800,11 @@ export default function Simulator() {
         assemble();
         return;
       }
+      if (event.key === "F8" && event.ctrlKey) {
+        event.preventDefault();
+        skip();
+        return;
+      }
       if (event.key === "F7" && event.ctrlKey) {
         event.preventDefault();
         stepBack();
@@ -545,7 +825,7 @@ export default function Simulator() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [assemble, handleSave, reset, stepBack, stepInto, stepOver]);
+  }, [assemble, handleSave, reset, skip, stepBack, stepInto, stepOver]);
 
   /**
    * Impede o navegador de ABRIR um arquivo solto fora da biblioteca.
@@ -589,6 +869,9 @@ export default function Simulator() {
   // do codigo, por exemplo, nao tem linha a destacar.
   const currentLine = machine?.currentInstruction?.line ?? null;
   const canStepBack = Boolean(machine) && machine.history.length > 0;
+  // Pular vale mesmo PARADO: e o jeito de sair de uma instrucao que o
+  // simulador nao cobre. So nao vale quando nao ha instrucao sob o ponteiro.
+  const canSkip = Boolean(machine?.currentInstruction);
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#1e1e1e] text-[#d4d4d4]">
@@ -605,6 +888,31 @@ export default function Simulator() {
             className="rounded bg-[#3c3c3c] px-1.5 py-0.5 text-[11px] text-[#d4d4d4] outline-none"
           >
             {Object.values(ARCH).map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {/* Alvo: decide a tabela de syscalls. "Detectar" deixa o fonte falar;
+            escolher fixa, e o valor vai para o metadado do arquivo. */}
+        <label className="flex items-center gap-1.5 text-[11px] text-[#9a9a9a]">
+          {t("sim.os", "Target")}
+          {/* O glifo fica FORA do <select>: o navegador desenha a lista com a
+              fonte do sistema, onde ele nao existe. */}
+          {os && (
+            <span className="font-dump text-[13px] text-[#dcb67a]" title={OS[os]?.label}>
+              {osIcon(os)}
+            </span>
+          )}
+          <select
+            value={os || ""}
+            onChange={(event) => setOs(event.target.value || null)}
+            className="rounded bg-[#3c3c3c] px-1.5 py-0.5 text-[11px] text-[#d4d4d4] outline-none"
+          >
+            <option value="">{t("sim.osAuto", "Detect")}</option>
+            {OS_OPTIONS.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.label}
               </option>
@@ -658,14 +966,30 @@ export default function Simulator() {
 
       <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
 
+      <NtdllModal
+        open={ntdllOpen}
+        onClose={() => setNtdllOpen(false)}
+        arch={arch}
+        onLoaded={() => refresh()}
+      />
+
+      <ImportBinaryWizard
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={handleBinaryImported}
+        defaults={{ arch, os, baseAddress: codeBase }}
+      />
+
       <Toolbar
         onAssemble={assemble}
         onStepInto={stepInto}
         onStepOver={stepOver}
+        onSkip={skip}
         onStepBack={stepBack}
         onReset={reset}
         canStep={canStep}
         canStepBack={canStepBack}
+        canSkip={canSkip}
         busy={busy}
       />
 
@@ -714,6 +1038,8 @@ export default function Simulator() {
               onImported={handleImported}
               focusSource={focusSource}
               onBeforeOpen={confirmDiscardRun}
+              onCloseFile={handleCloseFile}
+              onImportBinary={openImport}
               messages={messages}
               busy={busy}
               currentLine={currentLine}
@@ -748,7 +1074,13 @@ export default function Simulator() {
           />
           {/* ...e este quando ela e `int 0x80`/`syscall`. Os dois se excluem:
               uma instrucao nao e chamada e porta de kernel ao mesmo tempo. */}
-          <SyscallPane machine={machine} count={argCount} tick={tick} />
+          <SyscallPane
+            machine={machine}
+            count={argCount}
+            tick={tick}
+            onImportNtdll={() => setNtdllOpen(true)}
+            onNameChange={refresh}
+          />
 
           <Splitter
             label={t("sim.resizeStack", "Resize stack panel")}

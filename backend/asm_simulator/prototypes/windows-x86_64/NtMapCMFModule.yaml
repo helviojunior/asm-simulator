@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtMapCMFModule
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "ULONG"
+    name: "What"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg1:
+    type: "ULONG"
+    name: "Index"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg2:
+    type: "PULONG"
+    name: "CacheIndexOut"
+    direction: "out/opt"
+    description: "Saida: PULONG. Opcional."
+  arg3:
+    type: "PULONG"
+    name: "CacheFlagsOut"
+    direction: "out/opt"
+    description: "Saida: PULONG. Opcional."
+  arg4:
+    type: "PULONG"
+    name: "ViewSizeOut"
+    direction: "out/opt"
+    description: "Saida: PULONG. Opcional."
+  arg5:
+    type: "PVOID *"
+    name: "BaseAddress"
+    direction: "out/opt"
+    description: "Endereco base da regiao de memoria. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  StepForward, CornerDownRight, Undo2, RotateCcw, Hammer,
+  StepForward, CornerDownRight, Undo2, RotateCcw, Hammer, SkipForward,
 } from "lucide-react";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
@@ -18,8 +18,8 @@ import { cn } from "lib/utils";
  * que de fato inicia a sessao.
  */
 export default function Toolbar({
-  onAssemble, onStepInto, onStepOver, onStepBack, onReset,
-  canStep, canStepBack, busy,
+  onAssemble, onStepInto, onStepOver, onSkip, onStepBack, onReset,
+  canStep, canStepBack, canSkip, busy,
 }) {
   const { t } = useI18n();
 
@@ -47,6 +47,16 @@ export default function Toolbar({
         shortcut="F8"
         onClick={onStepOver}
         disabled={!canStep}
+      />
+      {/* Pular NAO exige `canStep`: destravar uma parada e justamente o caso
+          de uso — o simulador nao cobre aquela instrucao e o que interessa
+          esta depois dela. */}
+      <ToolbarButton
+        icon={SkipForward}
+        label={t("sim.skip", "Skip instruction")}
+        shortcut="Ctrl+F8"
+        onClick={onSkip}
+        disabled={!canSkip}
       />
       <Separator />
       <ToolbarButton

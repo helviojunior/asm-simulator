@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 wait4
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: wait4
+ssn: 61
+summary: ""
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "pid"
+    description: "Identificador do processo."
+  arg1:
+    type: "int *_Nullable"
+    name: "wstatus"
+    description: "int *_Nullable wstatus."
+  arg2:
+    type: "int"
+    name: "options"
+    description: "int options."
+  arg3:
+    type: "struct rusage *_Nullable"
+    name: "rusage"
+    description: "struct rusage *_Nullable rusage."
+output_data:
+  type: "pid_t"
+  name: "result"
+  description: "Identificador do processo; negativo em erro (-errno)."

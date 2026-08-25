@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 semget
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: semget
+ssn: 64
+summary: ""
+input_args:
+  arg0:
+    type: "key_t"
+    name: "key"
+    description: "key_t key."
+  arg1:
+    type: "int"
+    name: "nsems"
+    description: "int nsems."
+  arg2:
+    type: "int"
+    name: "semflg"
+    description: "int semflg."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

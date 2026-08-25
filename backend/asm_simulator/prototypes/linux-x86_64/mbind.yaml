@@ -1,0 +1,36 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 mbind
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: mbind
+ssn: 237
+summary: ""
+input_args:
+  arg0:
+    type: "void *"
+    name: "addr"
+    description: "Endereco de memoria."
+  arg1:
+    type: "unsigned long"
+    name: "len"
+    description: "Tamanho em bytes."
+  arg2:
+    type: "int"
+    name: "mode"
+    description: "Permissoes do arquivo, em octal."
+  arg3:
+    type: "const unsigned long *"
+    name: "nodemask"
+    description: "const unsigned long * nodemask."
+  arg4:
+    type: "unsigned long"
+    name: "maxnode"
+    description: "unsigned long maxnode."
+  arg5:
+    type: "unsigned int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "long"
+  name: "result"
+  description: "Depende da operacao; negativo em erro (-errno)."

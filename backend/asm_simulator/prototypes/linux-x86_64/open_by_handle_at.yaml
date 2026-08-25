@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 open_by_handle_at
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: open_by_handle_at
+ssn: 304
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "mount_fd"
+    description: "int mount_fd."
+  arg1:
+    type: "struct file_handle *"
+    name: "handle"
+    description: "struct file_handle * handle."
+  arg2:
+    type: "int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

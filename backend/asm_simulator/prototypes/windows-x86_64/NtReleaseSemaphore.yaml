@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtReleaseSemaphore
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "SemaphoreHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "LONG"
+    name: "ReleaseCount"
+    direction: "in"
+    description: "Quantidade de itens."
+  arg2:
+    type: "PLONG"
+    name: "PreviousCount"
+    direction: "out/opt"
+    description: "Quantidade de itens. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

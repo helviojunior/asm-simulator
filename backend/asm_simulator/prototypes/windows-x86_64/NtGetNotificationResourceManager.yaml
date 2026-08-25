@@ -1,0 +1,47 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — nttmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtGetNotificationResourceManager
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ResourceManagerHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "PTRANSACTION_NOTIFICATION"
+    name: "TransactionNotification"
+    direction: "out"
+    description: "Saida: PTRANSACTION_NOTIFICATION."
+  arg2:
+    type: "ULONG"
+    name: "NotificationLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg3:
+    type: "PLARGE_INTEGER"
+    name: "Timeout"
+    direction: "in/opt"
+    description: "Tempo limite em unidades de 100ns. Negativo e relativo ao agora; NULL espera para sempre."
+  arg4:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler. Opcional."
+  arg5:
+    type: "ULONG"
+    name: "Asynchronous"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg6:
+    type: "ULONG_PTR"
+    name: "AsynchronousContext"
+    direction: "in/opt"
+    description: "Contexto opaco repassado sem interpretacao. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

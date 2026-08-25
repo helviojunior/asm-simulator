@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserGetMouseMovePointsEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "ULONG"
+    name: "MouseMovePointsSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg1:
+    type: "LPMOUSEMOVEPOINT"
+    name: "InputBuffer"
+    direction: "in"
+    description: "Entrada: LPMOUSEMOVEPOINT."
+  arg2:
+    type: "LPMOUSEMOVEPOINT"
+    name: "OutputBuffer"
+    direction: "out"
+    description: "Saida: LPMOUSEMOVEPOINT."
+  arg3:
+    type: "LONG"
+    name: "OutputBufferCount"
+    direction: "in"
+    description: "Quantidade de itens."
+  arg4:
+    type: "ULONG"
+    name: "Resolution"
+    direction: "in"
+    description: "Entrada: ULONG."
+output_data:
+  type: "LONG"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

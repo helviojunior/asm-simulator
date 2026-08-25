@@ -1,0 +1,12 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 restart_syscall
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: restart_syscall
+ssn: 219
+summary: ""
+input_args: {}
+output_data:
+  type: "long"
+  name: "result"
+  description: "Depende da operacao; negativo em erro (-errno)."

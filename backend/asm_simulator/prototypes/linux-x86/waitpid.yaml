@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 waitpid
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: waitpid
+ssn: 7
+summary: ""
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "pid"
+    description: "Identificador do processo."
+  arg1:
+    type: "int *_Nullable"
+    name: "wstatus"
+    description: "int *_Nullable wstatus."
+  arg2:
+    type: "int"
+    name: "options"
+    description: "int options."
+output_data:
+  type: "pid_t"
+  name: "result"
+  description: "Identificador do processo; negativo em erro (-errno)."

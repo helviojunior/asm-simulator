@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 clock_getres
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: clock_getres
+ssn: 266
+summary: ""
+input_args:
+  arg0:
+    type: "clockid_t"
+    name: "clockid"
+    description: "clockid_t clockid."
+  arg1:
+    type: "struct timespec *_Nullable"
+    name: "res"
+    description: "struct timespec *_Nullable res."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

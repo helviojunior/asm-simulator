@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtGetCompleteWnfStateSubscription
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PWNF_STATE_NAME"
+    name: "OldDescriptorStateName"
+    direction: "in/opt"
+    description: "Nome, em UNICODE_STRING. Opcional."
+  arg1:
+    type: "ULONG64 *"
+    name: "OldSubscriptionId"
+    direction: "in/opt"
+    description: "Entrada: ULONG64 *. Opcional."
+  arg2:
+    type: "ULONG"
+    name: "OldDescriptorEventMask"
+    direction: "in/opt"
+    description: "Entrada: ULONG. Opcional."
+  arg3:
+    type: "ULONG"
+    name: "OldDescriptorStatus"
+    direction: "in/opt"
+    description: "Entrada: ULONG. Opcional."
+  arg4:
+    type: "PWNF_DELIVERY_DESCRIPTOR"
+    name: "NewDeliveryDescriptor"
+    direction: "out"
+    description: "Saida: PWNF_DELIVERY_DESCRIPTOR."
+  arg5:
+    type: "ULONG"
+    name: "DescriptorSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

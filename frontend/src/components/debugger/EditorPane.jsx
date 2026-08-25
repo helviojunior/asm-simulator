@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Code2, Library, Save } from "lucide-react";
+import { Code2, Library, Save, X } from "lucide-react";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 import SourcePane from "components/debugger/SourcePane";
@@ -28,7 +28,7 @@ export default function EditorPane({
   // Sobe a cada acao de execucao: traz o fonte do programa em execucao a vista.
   focusSource = 0,
   // Guarda assincrona: a biblioteca a consulta ANTES de ler o arquivo.
-  onBeforeOpen,
+  onBeforeOpen, onCloseFile, onImportBinary,
 }) {
   const { t } = useI18n();
   // A biblioteca abre primeiro: com o editor vazio, o caminho natural de quem
@@ -78,9 +78,25 @@ export default function EditorPane({
 
         {/* O arquivo aberto vale nas duas abas: e o destino do "salvar". */}
         {openFile && (
-          <span className="ml-auto truncate px-3 text-[11px] text-[#6a9955]">
+          <span className="ml-auto truncate pl-3 text-[11px] text-[#6a9955]">
             {openFile.name}
           </span>
+        )}
+        {/* Fechar: devolve o editor em branco. Aparece havendo arquivo aberto
+            ou codigo escrito — nos dois casos ha o que limpar. */}
+        {(openFile || source) && (
+          <button
+            type="button"
+            onClick={onCloseFile}
+            title={t("sim.closeFile", "Close file")}
+            aria-label={t("sim.closeFile", "Close file")}
+            className={cn(
+              "rounded p-1 text-[#6b6b6b] transition-colors hover:bg-[#3c3c3c] hover:text-[#d4d4d4]",
+              openFile ? "ml-1 mr-2" : "ml-auto mr-2"
+            )}
+          >
+            <X size={13} />
+          </button>
         )}
         {tab === "source" && currentLine && (
           <span className={cn("px-3 text-[10px] text-[#6a9955]", openFile && "ml-0")}>
@@ -146,6 +162,7 @@ export default function EditorPane({
             onSaveAsHandled={onSaveAsHandled}
             savedTick={savedTick}
             onImported={onImported}
+            onImportBinary={onImportBinary}
             expanded={expanded}
             onExpandedChange={setExpanded}
             selectedFolder={selectedFolder}

@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 ustat
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: ustat
+ssn: 62
+summary: ""
+input_args:
+  arg0:
+    type: "dev_t"
+    name: "dev"
+    description: "dev_t dev."
+  arg1:
+    type: "struct ustat *"
+    name: "ubuf"
+    description: "struct ustat * ubuf."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -1,0 +1,47 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateWnfStateName
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PWNF_STATE_NAME"
+    name: "StateName"
+    direction: "out"
+    description: "Nome, em UNICODE_STRING."
+  arg1:
+    type: "WNF_STATE_NAME_LIFETIME"
+    name: "NameLifetime"
+    direction: "in"
+    description: "Entrada: WNF_STATE_NAME_LIFETIME."
+  arg2:
+    type: "WNF_DATA_SCOPE"
+    name: "DataScope"
+    direction: "in"
+    description: "Entrada: WNF_DATA_SCOPE."
+  arg3:
+    type: "BOOLEAN"
+    name: "PersistData"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg4:
+    type: "PCWNF_TYPE_ID"
+    name: "TypeId"
+    direction: "in/opt"
+    description: "Entrada: PCWNF_TYPE_ID. Opcional."
+  arg5:
+    type: "ULONG"
+    name: "MaximumStateSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg6:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    direction: "in"
+    description: "Descritor de seguranca do objeto."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

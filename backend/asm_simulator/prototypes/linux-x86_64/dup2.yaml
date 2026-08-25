@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 dup2
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: dup2
+ssn: 33
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "oldfd"
+    description: "int oldfd."
+  arg1:
+    type: "int"
+    name: "newfd"
+    description: "int newfd."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -4,7 +4,9 @@ from django.views.generic import RedirectView
 from asm_simulator.views.library import (
     LibraryDetailView, LibraryExportView, LibraryImportView, LibraryListView,
 )
-from asm_simulator.views.program import AssembleView, DisassembleView
+from asm_simulator.views.ntdll import NtdllView
+from asm_simulator.views.prototypes import PrototypeListView
+from asm_simulator.views.program import AssembleView, DisassembleView, ImportBinaryView
 
 app_name = 'asm_simulator'
 
@@ -18,6 +20,14 @@ urlpatterns = [
     # decodificadas. A execucao acontece no interpretador do frontend.
     path('api/program/assemble/', AssembleView.as_view(), name='program-assemble'),
     path('api/program/disassemble/', DisassembleView.as_view(), name='program-disassemble'),
+    # Binario cru -> codigo-fonte editavel (o import do wizard).
+    path('api/program/import/', ImportBinaryView.as_view(), name='program-import'),
+
+    # Prototipos das syscalls: nomes, tipos e o que cada argumento significa.
+    path('api/prototypes/', PrototypeListView.as_view(), name='prototypes'),
+
+    # ntdll.dll importada: resolve SSN -> nome no alvo Windows. VOLATIL.
+    path('api/ntdll/', NtdllView.as_view(), name='ntdll'),
 
     # Biblioteca: pastas e arquivos .asm do aluno.
     path('api/library/', LibraryListView.as_view(), name='library-list'),

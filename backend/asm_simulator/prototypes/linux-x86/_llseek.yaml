@@ -1,0 +1,12 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Sem pagina man 2 para esta chamada: so o numero e conhecido.
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: _llseek
+ssn: 140
+summary: ""
+input_args: {}
+output_data:
+  type: "long"
+  name: "result"
+  description: "Valor de retorno; negativo em erro (-errno)."

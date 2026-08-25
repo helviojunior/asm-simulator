@@ -1,0 +1,11 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 fork
+function_name: fork
+ssn: 2
+summary: "Duplica o processo."
+input_args: {}
+output_data:
+  type: "pid_t"
+  name: "pid"
+  description: "0 no filho, PID do filho no pai, negativo em erro."

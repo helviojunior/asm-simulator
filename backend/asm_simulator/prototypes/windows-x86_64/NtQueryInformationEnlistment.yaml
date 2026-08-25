@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — nttmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtQueryInformationEnlistment
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "EnlistmentHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "ENLISTMENT_INFORMATION_CLASS"
+    name: "EnlistmentInformationClass"
+    direction: "in"
+    description: "Entrada: ENLISTMENT_INFORMATION_CLASS."
+  arg2:
+    type: "PVOID"
+    name: "EnlistmentInformation"
+    direction: "out"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg3:
+    type: "ULONG"
+    name: "EnlistmentInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+  arg4:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

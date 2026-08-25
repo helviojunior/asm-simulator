@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntwmi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtTraceControl
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "ETWTRACECONTROLCODE"
+    name: "FunctionCode"
+    direction: "in"
+    description: "Entrada: ETWTRACECONTROLCODE."
+  arg1:
+    type: "PVOID"
+    name: "InputBuffer"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+  arg2:
+    type: "ULONG"
+    name: "InputBufferLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg3:
+    type: "PVOID"
+    name: "OutputBuffer"
+    direction: "out/opt"
+    description: "Saida: PVOID. Opcional."
+  arg4:
+    type: "ULONG"
+    name: "OutputBufferLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg5:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out"
+    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

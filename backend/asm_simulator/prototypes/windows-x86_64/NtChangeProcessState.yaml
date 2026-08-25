@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtChangeProcessState
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessStateChangeHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg2:
+    type: "PROCESS_STATE_CHANGE_TYPE"
+    name: "StateChangeType"
+    direction: "in"
+    description: "Entrada: PROCESS_STATE_CHANGE_TYPE."
+  arg3:
+    type: "PVOID"
+    name: "ExtendedInformation"
+    direction: "in/opt"
+    description: "Bloco de informacao. O formato depende da classe pedida. Opcional."
+  arg4:
+    type: "SIZE_T"
+    name: "ExtendedInformationLength"
+    direction: "in/opt"
+    description: "Tamanho do bloco de informacao, em bytes. Opcional."
+  arg5:
+    type: "ULONG"
+    name: "Reserved"
+    direction: "in/opt"
+    description: "Entrada: ULONG. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

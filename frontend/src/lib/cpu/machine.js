@@ -22,10 +22,37 @@ export { HALT, MachineHalt };
 // esperado — sem o teto, a aba do navegador congela.
 export const DEFAULT_RUN_LIMIT = 100000;
 
+/**
+ * Folga ACIMA do ponteiro de pilha inicial.
+ *
+ * Num processo de verdade existe o quadro de quem chamou logo acima do SP. Aqui
+ * nao existe nada, e sem folga o painel abre com metade vazia e um
+ * `mov rax, [rsp+0x30]` cairia "fora da pilha" — quando e exatamente onde o
+ * shellcode espera encontrar o que o chamador deixou.
+ */
+export const STACK_MARGIN = 0x100;
+
+/**
+ * Ate onde a pilha pode crescer sozinha.
+ *
+ * Um `and rsp, 0xFFFFFFFFFFFFFFF0` ou um `sub rsp, 0x400` legitimos nao podem
+ * esbarrar num limite arbitrario — mas recursao infinita tambem nao pode
+ * consumir a aba do navegador. Dai o teto: cresce quando faz sentido, para
+ * quando vira fuga.
+ */
+export const MAX_STACK_SIZE = 0x100000;
+
+// Granularidade do crescimento. Em blocos, e nao byte a byte, para o painel
+// nao mudar de tamanho a cada push.
+const STACK_GROWTH = 0x1000;
+
 export class Machine {
-  constructor({ arch = "x86", codeBase, stackTop, stackSize = 0x4000 } = {}) {
+  constructor({ arch = "x86", os = "linux", codeBase, stackTop, stackSize = 0x4000 } = {}) {
     this.archId = arch;
     this.arch = ARCH[arch];
+    // O alvo decide a tabela de syscalls: o mesmo numero em EAX resolve para
+    // funcoes diferentes no Linux, no macOS e no Windows.
+    this.osId = os;
     this.codeBase = BigInt(codeBase ?? 0);
     this.stackTop = BigInt(stackTop ?? 0);
     this.stackSize = BigInt(stackSize);
@@ -200,9 +227,38 @@ export class Machine {
     return this.stackTop - this.stackSize;
   }
 
+  /** Endereco mais alto que ainda conta como pilha (topo + folga). */
+  get stackCeiling() {
+    return this.stackTop + BigInt(STACK_MARGIN);
+  }
+
+  /** Piso absoluto: abaixo daqui e estouro, nao crescimento. */
+  get stackFloor() {
+    return this.stackTop - BigInt(MAX_STACK_SIZE);
+  }
+
+  /**
+   * Garante que `address` cabe na pilha, crescendo a regiao se preciso.
+   *
+   * Devolve false so quando o endereco passa do piso — ai e estouro de
+   * verdade. Existe porque a pilha aqui e ficticia: seu tamanho e uma escolha
+   * nossa, e recusar um `sub rsp` legitimo por causa dessa escolha seria o
+   * simulador reclamar de si mesmo.
+   */
+  ensureStack(address) {
+    const value = BigInt(address);
+    if (value >= this.stackLimit) return true;
+    if (value < this.stackFloor) return false;
+
+    const needed = this.stackTop - value;
+    const blocks = (needed + BigInt(STACK_GROWTH) - 1n) / BigInt(STACK_GROWTH);
+    this.stackSize = blocks * BigInt(STACK_GROWTH);
+    return true;
+  }
+
   push(value, size = this.arch.wordSize) {
     const sp = this.cpu.sp - BigInt(size);
-    if (sp < this.stackLimit) {
+    if (!this.ensureStack(sp)) {
       throw new MachineHalt(HALT.STACK_OVERFLOW, "Stack overflow.");
     }
     this.cpu.sp = sp;
@@ -223,6 +279,16 @@ export class Machine {
 
   get currentInstruction() {
     return this.byAddress.get(this.cpu.ip.toString()) || null;
+  }
+
+  /**
+   * Ha instrucao decodificada neste endereco?
+   *
+   * E mais estreito que `isCodeAddress`: um endereco DENTRO da regiao mas no
+   * meio de uma instrucao tambem nao tem o que executar.
+   */
+  hasCodeAt(address) {
+    return this.byAddress.has(BigInt(address).toString());
   }
 
   get nextAddress() {
@@ -262,21 +328,49 @@ export class Machine {
     const addressBefore = this.cpu.ip;
     const outputBefore = this.output.length;
     let halt = null;
+    let externalCall = null;
+    let unsimulated = null;
 
     try {
       const outcome = execute(this, insn);
-      // Instrucao que nao mexeu no RIP avanca para a proxima; salto, chamada
-      // e retorno ja escreveram o destino.
-      if (!outcome || !outcome.jumped) {
+      if (outcome && outcome.unsimulated) {
+        // Chamada de sistema sem simulacao: avisa e segue. Mesma decisao do
+        // `call` para fora do programa — o que interessa na aula quase sempre
+        // vem depois, e parar aqui a interromperia por algo que nem e o
+        // assunto. `exit` e `execve` continuam parando: ali o PROGRAMA acabou.
+        unsimulated = outcome.unsimulated;
+        this.cpu.ip = addressBefore + BigInt(insn.size);
+      } else if (outcome && outcome.externalCall) {
+        // Nao e parada: a execucao segue na proxima instrucao. O aviso sobe
+        // junto com o resultado do passo para a interface mostrar.
+        externalCall = outcome.externalCall;
+        this.cpu.ip = addressBefore + BigInt(insn.size);
+      } else if (outcome && outcome.halt) {
+        // Parou AQUI: o ponteiro fica na instrucao que parou, e nao na
+        // seguinte. E o que um debugger faz, e o que faz a desmontagem
+        // destacar a linha certa — e o que da sentido a "pular instrucao",
+        // que precisa ter o que pular.
+        halt = outcome.halt;
+      } else if (!outcome || !outcome.jumped) {
+        // Instrucao que nao mexeu no RIP avanca para a proxima; salto, chamada
+        // e retorno ja escreveram o destino.
         this.cpu.ip = addressBefore + BigInt(insn.size);
       }
-      if (outcome && outcome.halt) halt = outcome.halt;
     } catch (error) {
       halt =
         error instanceof MachineHalt
           ? { reason: error.reason, message: error.message }
           : { reason: HALT.ERROR, message: error.message };
     }
+
+    // O programa pode ter movido o SP DIRETO, sem push — e o que fazem o
+    // `and rsp, 0xFFFFFFFFFFFFFFF0` de alinhamento e o `sub rsp, 0x20` do
+    // shadow space. A regiao acompanha, senao o painel da pilha ficaria em
+    // branco justamente depois do prologo.
+    //
+    // Aqui nao ha recusa: um `sub rsp` alem do teto nao falha num processador
+    // real (a falha viria no primeiro acesso), e quem cobra o piso e o `push`.
+    this.ensureStack(this.cpu.sp);
 
     const journal = this.cpu.endStep();
     this.history.push({
@@ -292,6 +386,8 @@ export class Machine {
       instruction: insn,
       address: addressBefore,
       halted: this.halted,
+      externalCall,
+      unsimulated,
       changes: describeChanges(journal),
     };
   }
@@ -379,6 +475,51 @@ export class Machine {
     this.halted = entry.halted;
     this.stepCount = Math.max(0, this.stepCount - 1);
     return true;
+  }
+
+  /**
+   * Pula a instrucao atual SEM executa-la.
+   *
+   * Existe principalmente para destravar: o simulador parou numa instrucao que
+   * nao cobre (uma extensao SSE, uma syscall sem equivalente) e o que interessa
+   * na aula esta depois dela. Sem isto, a alternativa seria remontar o programa
+   * sem aquela linha — e perder todo o estado ja construido.
+   *
+   * Por isso pular LIMPA a parada: destravar e o proposito. E entra no
+   * historico como qualquer passo, entao `stepBack` desfaz o pulo e traz a
+   * parada de volta.
+   */
+  skip() {
+    const insn = this.currentInstruction;
+    if (!insn) {
+      // Nada sob o ponteiro: nao ha o que pular, e inventar um avanco levaria
+      // o RIP para o meio do nada.
+      return { halted: this.halted, changes: emptyChanges() };
+    }
+
+    const addressBefore = this.cpu.ip;
+    const haltedBefore = this.halted;
+
+    this.cpu.beginStep();
+    this.cpu.ip = addressBefore + BigInt(insn.size);
+    const journal = this.cpu.endStep();
+
+    this.history.push({
+      journal,
+      address: addressBefore,
+      halted: haltedBefore,
+      outputLength: this.output.length,
+    });
+    this.stepCount += 1;
+    this.halted = null;
+
+    return {
+      instruction: insn,
+      address: addressBefore,
+      halted: null,
+      skipped: true,
+      changes: describeChanges(journal),
+    };
   }
 
   /**

@@ -1,0 +1,57 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateProfile
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "ProfileHandle"
+    direction: "out"
+    description: "Handle do objeto."
+  arg1:
+    type: "HANDLE"
+    name: "Process"
+    direction: "in/opt"
+    description: "Entrada: HANDLE. Opcional."
+  arg2:
+    type: "PVOID"
+    name: "ProfileBase"
+    direction: "in"
+    description: "Entrada: PVOID."
+  arg3:
+    type: "SIZE_T"
+    name: "ProfileSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg4:
+    type: "ULONG"
+    name: "BucketSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg5:
+    type: "PULONG"
+    name: "Buffer"
+    direction: "in"
+    description: "Bloco de memoria da operacao."
+  arg6:
+    type: "ULONG"
+    name: "BufferSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg7:
+    type: "KPROFILE_SOURCE"
+    name: "ProfileSource"
+    direction: "in"
+    description: "Entrada: KPROFILE_SOURCE."
+  arg8:
+    type: "KAFFINITY"
+    name: "Affinity"
+    direction: "in"
+    description: "Entrada: KAFFINITY."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

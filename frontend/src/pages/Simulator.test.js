@@ -7,6 +7,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { I18nProvider } from "i18n";
 import { DialogProvider } from "contexts/DialogContext";
+import { ToastProvider } from "contexts/ToastContext";
 import Simulator from "pages/Simulator";
 import api from "lib/api";
 
@@ -17,7 +18,11 @@ jest.mock("lib/api", () => ({
 
 const A = "11111111-1111-4111-8111-111111111111";
 const B = "22222222-2222-4222-8222-222222222222";
-const META = { arch: "x86", code_base: "0x401000", stack_top: "0x800000", arg_count: 4 };
+const META = { arch: "x86", os: "linux", code_base: "0x401000", stack_top: "0x800000", arg_count: 4 };
+// `int 0x80` identifica o alvo sozinho: a montagem nao para para perguntar.
+const LINUX_SOURCE = "xor ebx, ebx\nmov eax, 1\nint 0x80\n";
+// Sem marca alguma — e o caso em que o simulador precisa perguntar.
+const NEUTRAL_SOURCE = "push eax\npop ebx\n";
 const row = (n, name) => ({ id: n, parent: null, kind: "file", name,
                             updated: "2026-08-25T10:00:00Z", metadata: META });
 
@@ -34,7 +39,7 @@ beforeEach(async () => {
     }
     if (url === `/api/library/${A}/`) {
       return Promise.resolve({ data: { id: A, name: "cheio.asm", kind: "file",
-                                       source: "nop\n", metadata: META } });
+                                       source: LINUX_SOURCE, metadata: META } });
     }
     if (url === `/api/library/${B}/`) {
       return Promise.resolve({ data: { id: B, name: "vazio.asm", kind: "file",
@@ -68,7 +73,7 @@ beforeEach(async () => {
   document.body.appendChild(container);
   root = createRoot(container);
   await act(async () => {
-    root.render(<I18nProvider><DialogProvider><Simulator /></DialogProvider></I18nProvider>);
+    root.render(<I18nProvider><DialogProvider><ToastProvider><Simulator /></ToastProvider></DialogProvider></I18nProvider>);
   });
   await act(async () => { await Promise.resolve(); });
 });
@@ -87,10 +92,10 @@ const click = async (element) => { await act(async () => { element.click(); }); 
 test("abrir arquivo vazio limpa o editor E descarta o programa montado", async () => {
   // 1. abre o arquivo com conteudo e monta
   await click(byText(/cheio\.asm/));
-  expect(textarea().value).toBe("nop\n");
+  expect(textarea().value).toBe(LINUX_SOURCE);
 
   await click(byText(/Montar|Assemble/));
-  expect(container.textContent).toMatch(/nop/);
+  expect(container.textContent).toMatch(/int/);
   // A desmontagem mostra o endereco do programa montado.
   expect(container.textContent).toMatch(/00401000/);
 
@@ -121,7 +126,7 @@ test("uma acao de execucao traz o codigo-fonte a vista", async () => {
 
   // O destaque da linha atual so serve com o fonte a vista.
   expect(textarea()).not.toBeNull();
-  expect(textarea().value).toBe("nop\n");
+  expect(textarea().value).toBe(LINUX_SOURCE);
 });
 
 test("a desmontagem fica esmaecida ao parar, e volta ao reiniciar", async () => {
@@ -220,4 +225,45 @@ test("sem passos dados, trocar de arquivo nao pergunta nada", async () => {
 
   expect(document.body.textContent).not.toMatch(/simulação em andamento|simulation in progress/i);
   expect(textarea().value).toBe("");
+});
+
+
+test("alvo desconhecido: o simulador pergunta antes de montar", async () => {
+  // Terceiro arquivo, sem nenhuma marca de sistema no fonte.
+  api.get.mockImplementation((url) => {
+    if (url === "/api/library/") {
+      return Promise.resolve({ data: { nodes: [row(A, "neutro.asm")] } });
+    }
+    return Promise.resolve({ data: { id: A, name: "neutro.asm", kind: "file",
+                                     source: NEUTRAL_SOURCE, metadata: { ...META, os: "" } } });
+  });
+
+  await act(async () => { root.unmount(); });
+  container.remove();
+  container = document.createElement("div");
+  document.body.appendChild(container);
+  root = createRoot(container);
+  await act(async () => {
+    root.render(<I18nProvider><DialogProvider><ToastProvider><Simulator /></ToastProvider></DialogProvider></I18nProvider>);
+  });
+  await flush();
+
+  await click(byText(/neutro\.asm/));
+  await click(byText(/Montar|Assemble/));
+
+  // Nada foi montado ainda: o simulador esta esperando a resposta.
+  expect(document.body.textContent).toMatch(/Para qual sistema|Which system/i);
+  expect(container.textContent).not.toMatch(/00401000/);
+
+  // Escolhido o alvo, a montagem segue.
+  // O rotulo vem precedido do glifo do sistema, entao nao ancorar no inicio.
+  const linux = [...document.querySelectorAll("button")].find((b) => /Linux/.test(b.textContent));
+  await act(async () => { linux.click(); });
+  await flush();
+
+  expect(container.textContent).toMatch(/00401000/);
+  // E a escolha fica registrada na barra superior, sem perguntar de novo.
+  const combo = [...container.querySelectorAll("select")]
+    .find((el) => [...el.options].some((o) => o.value === "linux"));
+  expect(combo.value).toBe("linux");
 });

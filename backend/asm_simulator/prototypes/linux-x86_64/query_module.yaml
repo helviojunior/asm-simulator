@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 query_module
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: query_module
+ssn: 178
+summary: ""
+input_args:
+  arg0:
+    type: "const char *"
+    name: "name"
+    description: "const char * name."
+  arg1:
+    type: "int"
+    name: "which"
+    description: "int which."
+  arg2:
+    type: "void *"
+    name: "buf"
+    description: "Bloco de memoria da operacao."
+  arg3:
+    type: "size_t"
+    name: "bufsize"
+    description: "size_t bufsize."
+  arg4:
+    type: "size_t *"
+    name: "ret"
+    description: "size_t * ret."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

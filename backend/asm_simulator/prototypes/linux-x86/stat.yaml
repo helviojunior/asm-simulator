@@ -1,0 +1,20 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 stat
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: stat
+ssn: 106
+summary: ""
+input_args:
+  arg0:
+    type: "const char *restrict"
+    name: "pathname"
+    description: "Caminho terminado em NUL."
+  arg1:
+    type: "struct stat *restrict"
+    name: "statbuf"
+    description: "struct stat *restrict statbuf."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -1,0 +1,23 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 socket
+function_name: socket
+ssn: 359
+summary: "Cria um socket. Primeiro passo de um shellcode de rede."
+input_args:
+  arg0:
+    type: "int"
+    name: "domain"
+    description: "AF_INET 2, AF_INET6 10, AF_UNIX 1."
+  arg1:
+    type: "int"
+    name: "type"
+    description: "SOCK_STREAM 1, SOCK_DGRAM 2."
+  arg2:
+    type: "int"
+    name: "protocol"
+    description: "0 escolhe o protocolo padrao do tipo."
+output_data:
+  type: "int"
+  name: "fd"
+  description: "Descritor do socket, ou negativo em erro (-errno)."

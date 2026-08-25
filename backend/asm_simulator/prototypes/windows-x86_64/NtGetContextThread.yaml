@@ -1,0 +1,21 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+function_name: NtGetContextThread
+ssn: null
+summary: "Le os registradores de uma thread."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ThreadHandle"
+    direction: "in"
+    description: "Handle da thread alvo."
+  arg1:
+    type: "PCONTEXT"
+    name: "ThreadContext"
+    direction: "inout"
+    description: "Estrutura CONTEXT com o estado dos registradores."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

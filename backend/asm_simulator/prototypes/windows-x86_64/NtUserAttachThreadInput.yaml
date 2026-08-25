@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserAttachThreadInput
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "ULONG"
+    name: "IdAttach"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg1:
+    type: "ULONG"
+    name: "IdAttachTo"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg2:
+    type: "BOOL"
+    name: "Attach"
+    direction: "in"
+    description: "Entrada: BOOL."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

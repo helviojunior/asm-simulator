@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 mlock2
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: mlock2
+ssn: 376
+summary: ""
+input_args:
+  arg0:
+    type: "const void *"
+    name: "addr"
+    description: "Endereco de memoria."
+  arg1:
+    type: "size_t"
+    name: "len"
+    description: "Tamanho em bytes."
+  arg2:
+    type: "unsigned int"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 quotactl
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: quotactl
+ssn: 179
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "cmd"
+    description: "int cmd."
+  arg1:
+    type: "const char *_Nullable"
+    name: "special"
+    description: "const char *_Nullable special."
+  arg2:
+    type: "int"
+    name: "id"
+    description: "int id."
+  arg3:
+    type: "caddr_t"
+    name: "addr"
+    description: "Endereco de memoria."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

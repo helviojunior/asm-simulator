@@ -1,0 +1,27 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntlpcapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAlpcCreatePort
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "PortHandle"
+    direction: "out"
+    description: "Handle da porta de comunicacao (LPC/ALPC)."
+  arg1:
+    type: "POBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags. Opcional."
+  arg2:
+    type: "PALPC_PORT_ATTRIBUTES"
+    name: "PortAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 shmctl
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: shmctl
+ssn: 31
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "shmid"
+    description: "int shmid."
+  arg1:
+    type: "int"
+    name: "cmd"
+    description: "int cmd."
+  arg2:
+    type: "struct shmid_ds *"
+    name: "buf"
+    description: "Bloco de memoria da operacao."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

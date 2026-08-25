@@ -1,0 +1,62 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntregapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtNotifyChangeKey
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "KeyHandle"
+    direction: "in"
+    description: "Handle da chave de registro."
+  arg1:
+    type: "HANDLE"
+    name: "Event"
+    direction: "in/opt"
+    description: "Evento sinalizado ao fim de uma operacao assincrona. NULL e o comum."
+  arg2:
+    type: "PIO_APC_ROUTINE"
+    name: "ApcRoutine"
+    direction: "in/opt"
+    description: "Rotina de conclusao assincrona. NULL e o comum."
+  arg3:
+    type: "PVOID"
+    name: "ApcContext"
+    direction: "in/opt"
+    description: "Valor entregue a ApcRoutine. Opcional."
+  arg4:
+    type: "PIO_STATUS_BLOCK"
+    name: "IoStatusBlock"
+    direction: "out"
+    description: "Recebe o status da operacao e a quantidade de bytes transferidos."
+  arg5:
+    type: "ULONG"
+    name: "CompletionFilter"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg6:
+    type: "BOOLEAN"
+    name: "WatchTree"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg7:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "out/opt"
+    description: "Bloco de memoria da operacao. Opcional."
+  arg8:
+    type: "ULONG"
+    name: "BufferSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg9:
+    type: "BOOLEAN"
+    name: "Asynchronous"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

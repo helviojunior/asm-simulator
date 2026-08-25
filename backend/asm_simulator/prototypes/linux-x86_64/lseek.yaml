@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 lseek
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: lseek
+ssn: 8
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "fd"
+    description: "Descritor de arquivo aberto. 0 stdin, 1 stdout, 2 stderr."
+  arg1:
+    type: "off_t"
+    name: "offset"
+    description: "Deslocamento em bytes."
+  arg2:
+    type: "int"
+    name: "whence"
+    description: "int whence."
+output_data:
+  type: "off_t"
+  name: "result"
+  description: "Valor de retorno; negativo em erro (-errno)."

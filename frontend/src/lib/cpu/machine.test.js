@@ -248,12 +248,16 @@ describe("paradas", () => {
     expect(m.halted.reason).toBe(HALT.UNSUPPORTED);
   });
 
-  it("syscall com numero desconhecido para em vez de fingir um retorno", () => {
-    // EAX=0 nao corresponde a nenhuma syscall de 32 bits.
-    const m = build([{ mnemonic: "syscall", size: 2 }]);
-    m.step();
-    expect(m.halted.reason).toBe(HALT.SYSCALL);
-    expect(m.halted.message).toContain("unknown");
+  it("syscall sem simulacao avisa mas NAO para", () => {
+    // EAX=0 nao corresponde a nenhuma syscall de 32 bits. Parar aqui
+    // interromperia a aula por algo que quase nunca e o assunto — o que
+    // interessa costuma vir depois.
+    const m = build([{ mnemonic: "syscall", size: 2 }, { mnemonic: "nop", size: 1 }]);
+    const result = m.step();
+
+    expect(m.halted).toBeNull();
+    expect(m.cpu.ip).toBe(CODE_BASE + 2n);
+    expect(result.unsimulated.reason).toBe("unknown");
   });
 
   it("run respeita o teto de passos em loop infinito", () => {
@@ -264,11 +268,19 @@ describe("paradas", () => {
     expect(m.halted.reason).toBe(HALT.STEP_LIMIT);
   });
 
-  it("estouro da pilha e detectado", () => {
-    const m = build([
-      { mnemonic: "push", size: 1, operands: [{ type: "reg", reg: "eax", size: 4 }] },
-    ]);
+  it("estouro da pilha e detectado no piso, nao no tamanho inicial", () => {
+    const push = { mnemonic: "push", size: 1,
+                   operands: [{ type: "reg", reg: "eax", size: 4 }] };
+    const m = build([push, push]);
+
+    // No limite ATUAL a pilha apenas cresce: o tamanho inicial e escolha nossa,
+    // e recusar um push por causa dela seria o simulador reclamar de si mesmo.
     m.cpu.sp = m.stackLimit;
+    m.step();
+    expect(m.halted).toBeNull();
+
+    // No piso, sim: dali para baixo e fuga, nao uso legitimo.
+    m.cpu.sp = m.stackFloor;
     m.step();
     expect(m.halted.reason).toBe(HALT.STACK_OVERFLOW);
   });
@@ -374,9 +386,10 @@ describe("chamadas de sistema", () => {
       { mnemonic: "int", size: 2, operands: [{ type: "imm", value: "128", size: 1 }] },
     ]);
     m.step();
-    m.step();
-    expect(m.halted.reason).toBe(HALT.SYSCALL);
-    expect(m.halted.message).toContain("open");
+    const result = m.step();
+    // Nao para: avisa com o nome resolvido e segue.
+    expect(m.halted).toBeNull();
+    expect(result.unsimulated.name).toBe("open");
   });
 
   it("numeros de syscall diferem entre 32 e 64 bits", () => {
@@ -395,5 +408,358 @@ describe("chamadas de sistema", () => {
     for (let i = 0; i < 5; i += 1) m.step();
     expect(m.halted).toBeNull();
     expect(m.output[0].text).toBe("OK");
+  });
+});
+
+describe("instrucoes sem efeito", () => {
+  // Aparecem o tempo todo em codigo real — `endbr64` em toda funcao que o
+  // compilador emite, `cld` antes de uma instrucao de string, barreiras de
+  // memoria. Parar em cada uma interromperia a aula por algo que, na maquina
+  // real, nao teria acontecido.
+  const BENIGN = [
+    "pause", "lfence", "sfence", "mfence", "endbr64", "endbr32",
+    "fnop", "fwait", "cli", "sti", "prefetcht0", "int3", "cld", "std",
+  ];
+
+  it.each(BENIGN)("%s avanca sem parar a execucao", (mnemonic) => {
+    const m = build([{ mnemonic, size: 4 }, { mnemonic: "nop", size: 1 }]);
+    m.step();
+
+    expect(m.halted).toBeNull();
+    expect(m.cpu.ip).toBe(CODE_BASE + 4n);
+  });
+
+  it("nao mexe em registrador, memoria nem flag", () => {
+    const m = build([{ mnemonic: "endbr64", size: 4 }]);
+    m.cpu.writeRegister("eax", 0x1234n);
+    m.cpu.setFlag("ZF", true);
+
+    const changes = m.step().changes;
+
+    expect(m.cpu.readRegister("eax")).toBe(0x1234n);
+    expect(m.cpu.getFlag("ZF")).toBe(true);
+    // O RIP muda em toda instrucao; o resto tem de ficar intacto.
+    expect(changes.memory).toEqual([]);
+    expect(changes.flags).toEqual([]);
+  });
+
+  it("uma instrucao realmente desconhecida continua parando", () => {
+    // A lista de benignas e estreita de proposito: aceitar qualquer coisa
+    // esconderia do aluno que o simulador nao cobre aquela instrucao.
+    const m = build([{ mnemonic: "vpxor", size: 4 }]);
+    m.step();
+    expect(m.halted.reason).toBe(HALT.UNSUPPORTED);
+  });
+});
+
+describe("flags de controle", () => {
+  // Ao contrario do DF, o CF E lido aqui — por `adc`, `sbb`, `jc`. Trata-las
+  // como nop nao seria "sem efeito", seria dar resultado errado.
+  it("clc, stc e cmc mexem no carry", () => {
+    const m = build([
+      { mnemonic: "stc", size: 1 },
+      { mnemonic: "cmc", size: 1 },
+      { mnemonic: "clc", size: 1 },
+    ]);
+
+    m.step();
+    expect(m.cpu.getFlag("CF")).toBe(true);
+    m.step();
+    expect(m.cpu.getFlag("CF")).toBe(false);
+    m.cpu.setFlag("CF", true);
+    m.step();
+    expect(m.cpu.getFlag("CF")).toBe(false);
+  });
+
+  it("voltar o passo desfaz a flag", () => {
+    const m = build([{ mnemonic: "stc", size: 1 }]);
+    m.step();
+    expect(m.cpu.getFlag("CF")).toBe(true);
+
+    m.stepBack();
+    expect(m.cpu.getFlag("CF")).toBe(false);
+  });
+
+  it("int 3 na forma de dois bytes tambem nao para", () => {
+    const m = build([{
+      mnemonic: "int", size: 2,
+      operands: [{ type: "imm", value: "3", size: 1 }],
+    }]);
+    m.step();
+    expect(m.halted).toBeNull();
+  });
+
+  it("int 0x80 continua sendo porta de chamada de sistema", () => {
+    // O `int` generico nao virou nop: so o vetor 3 e inofensivo. Com EAX=0 nao
+    // ha syscall correspondente, entao o resultado e um aviso — mas um aviso
+    // de SYSCALL, e nao o silencio de um nop.
+    const m = build([{
+      mnemonic: "int", size: 2,
+      operands: [{ type: "imm", value: "128", size: 1 }],
+    }]);
+    const result = m.step();
+    expect(result.unsimulated).toBeTruthy();
+    expect(result.unsimulated.via).toBe("int 0x80");
+  });
+});
+
+
+describe("pilha ficticia: folga e crescimento", () => {
+  const AND_RSP = (value) => ({
+    mnemonic: "and", size: 4,
+    operands: [{ type: "reg", reg: "rsp", size: 8 },
+               { type: "imm", value: String(value), size: 8 }],
+  });
+  const SUB_RSP = (value) => ({
+    mnemonic: "sub", size: 4,
+    operands: [{ type: "reg", reg: "rsp", size: 8 },
+               { type: "imm", value: String(value), size: 8 }],
+  });
+
+  const x64 = (list) => build(list, { arch: "x86_64", codeBase: 0x7ff700001000n });
+
+  it("ha pilha ACIMA do ponteiro inicial", () => {
+    const m = x64([{ mnemonic: "nop" }]);
+    // Num processo real o quadro de quem chamou esta ai. Sem a folga, um
+    // `[rsp+0x30]` logo depois do prologo cairia "fora da pilha".
+    expect(m.stackCeiling).toBeGreaterThan(m.stackTop);
+    expect(m.stackCeiling - m.stackTop).toBe(0x100n);
+  });
+
+  it("alinhar o RSP nao deixa o ponteiro fora da regiao", () => {
+    const m = x64([AND_RSP(-16)]);
+    // Topo desalinhado de proposito: o `and` desce o RSP.
+    m.cpu.sp = m.stackLimit + 8n;
+    m.step();
+
+    expect(m.halted).toBeNull();
+    expect(m.cpu.sp % 16n).toBe(0n);
+    // A regiao acompanhou o ponteiro, em vez de o painel ficar em branco.
+    expect(m.cpu.sp).toBeGreaterThanOrEqual(m.stackLimit);
+  });
+
+  it("um sub rsp grande estica a regiao em vez de parar", () => {
+    const m = x64([SUB_RSP(0x8000)]);
+    const before = m.stackLimit;
+    m.step();
+
+    expect(m.halted).toBeNull();
+    expect(m.stackLimit).toBeLessThan(before);
+    expect(m.cpu.sp).toBeGreaterThanOrEqual(m.stackLimit);
+  });
+
+  it("o crescimento tem teto", () => {
+    const m = x64([SUB_RSP(0x8000)]);
+    m.ensureStack(m.stackFloor);
+    expect(m.stackLimit).toBeGreaterThanOrEqual(m.stackFloor);
+    // Abaixo do piso nao cresce: dai em diante e recursao fugindo.
+    expect(m.ensureStack(m.stackFloor - 1n)).toBe(false);
+  });
+});
+
+describe("pular instrucao", () => {
+  const XOR_EAX = {
+    mnemonic: "xor", size: 2,
+    operands: [{ type: "reg", reg: "eax", size: 4 }, { type: "reg", reg: "eax", size: 4 }],
+  };
+
+  it("avanca sem executar", () => {
+    const m = build([
+      { mnemonic: "mov", size: 5,
+        operands: [{ type: "reg", reg: "eax", size: 4 },
+                   { type: "imm", value: "7", size: 4 }] },
+      { mnemonic: "nop", size: 1 },
+    ]);
+
+    m.skip();
+
+    // O efeito da instrucao NAO aconteceu; so o ponteiro andou.
+    expect(m.cpu.readRegister("eax")).toBe(0n);
+    expect(m.cpu.ip).toBe(CODE_BASE + 5n);
+    expect(m.halted).toBeNull();
+  });
+
+  it("destrava uma parada por instrucao nao suportada", () => {
+    // E o caso de uso principal: o simulador nao cobre aquela instrucao e o
+    // que interessa na aula esta depois dela.
+    const m = build([{ mnemonic: "vpxor", size: 4 }, XOR_EAX]);
+    m.step();
+    expect(m.halted.reason).toBe(HALT.UNSUPPORTED);
+
+    m.skip();
+
+    expect(m.halted).toBeNull();
+    expect(m.cpu.ip).toBe(CODE_BASE + 4n);
+    // E a execucao continua normalmente dali.
+    m.step();
+    expect(m.halted).toBeNull();
+  });
+
+  it("voltar o passo desfaz o pulo E traz a parada de volta", () => {
+    const m = build([{ mnemonic: "vpxor", size: 4 }, XOR_EAX]);
+    m.step();
+    m.skip();
+    expect(m.halted).toBeNull();
+
+    m.stepBack();
+
+    expect(m.cpu.ip).toBe(CODE_BASE);
+    expect(m.halted.reason).toBe(HALT.UNSUPPORTED);
+  });
+
+  it("sem instrucao sob o ponteiro nao ha o que pular", () => {
+    const m = build([{ mnemonic: "nop", size: 1 }]);
+    m.cpu.ip = CODE_BASE + 0x100n;
+
+    const before = m.cpu.ip;
+    m.skip();
+
+    // Inventar um avanco aqui levaria o ponteiro para o meio do nada.
+    expect(m.cpu.ip).toBe(before);
+    expect(m.history).toHaveLength(0);
+  });
+
+  it("pula dados sem tentar executa-los", () => {
+    const m = build([
+      { mnemonic: "db", size: 8, data: true, bytes: "2F 62 69 6E 2F 73 68 01" },
+      { mnemonic: "nop", size: 1 },
+    ]);
+    m.step();
+    expect(m.halted.reason).toBe(HALT.DATA);
+
+    m.skip();
+    expect(m.halted).toBeNull();
+    expect(m.cpu.ip).toBe(CODE_BASE + 8n);
+  });
+});
+
+describe("call para fora do programa", () => {
+  const CALL = (target) => ({
+    mnemonic: "call", size: 5, groups: ["call"],
+    operands: [{ type: "imm", value: String(target), size: 4 }],
+  });
+
+  it("nao para: passa direto e segue na instrucao seguinte", () => {
+    const m = build([CALL(0x7ffe1234), { mnemonic: "nop", size: 1 }]);
+    const spBefore = m.cpu.sp;
+
+    const result = m.step();
+
+    expect(m.halted).toBeNull();
+    expect(m.cpu.ip).toBe(CODE_BASE + 5n);
+    // Nada foi empilhado: nao ha retorno a guardar quando nao ha para onde ir.
+    expect(m.cpu.sp).toBe(spBefore);
+    expect(result.externalCall.address).toBe(0x7ffe1234n);
+  });
+
+  it("um call de verdade continua empilhando e desviando", () => {
+    // A mudanca nao pode ter afrouxado o caso normal.
+    const m = build([CALL(CODE_BASE + 5n), { mnemonic: "nop", size: 1 }]);
+    const spBefore = m.cpu.sp;
+
+    const result = m.step();
+
+    expect(result.externalCall).toBeFalsy();
+    expect(m.cpu.ip).toBe(CODE_BASE + 5n);
+    expect(m.cpu.sp).toBe(spBefore - 4n);
+    // O endereco de retorno na pilha e o que um overflow sobrescreve.
+    expect(m.readMemory(m.cpu.sp, 4)).toBe(CODE_BASE + 5n);
+  });
+
+  it("destino no MEIO de uma instrucao tambem conta como desconhecido", () => {
+    // Esta dentro da regiao de codigo, mas nao ha instrucao decodificada ali.
+    const m = build([CALL(CODE_BASE + 2n), { mnemonic: "nop", size: 1 }]);
+    const result = m.step();
+
+    expect(m.halted).toBeNull();
+    expect(result.externalCall.address).toBe(CODE_BASE + 2n);
+  });
+
+  it("voltar o passo desfaz a chamada ignorada", () => {
+    const m = build([CALL(0x7ffe1234), { mnemonic: "nop", size: 1 }]);
+    m.step();
+    m.stepBack();
+
+    expect(m.cpu.ip).toBe(CODE_BASE);
+    expect(m.halted).toBeNull();
+  });
+
+  it("passar por cima de uma chamada ignorada nao trava", () => {
+    const m = build([CALL(0x7ffe1234), { mnemonic: "nop", size: 1 }]);
+    m.stepOver();
+
+    expect(m.halted).toBeNull();
+    expect(m.cpu.ip).toBe(CODE_BASE + 5n);
+  });
+});
+
+describe("chamada de sistema sem simulacao", () => {
+  const SYSCALL = { mnemonic: "syscall", size: 2 };
+  const x64 = (list) => build(list, { arch: "x86_64", codeBase: 0x400000n });
+
+  it("uma syscall conhecida mas nao simulada segue em frente", () => {
+    // `open` (2 em x86-64) tem nome na tabela, mas abrir arquivo de verdade
+    // nao tem equivalente aqui.
+    const m = x64([SYSCALL, { mnemonic: "nop", size: 1 }]);
+    m.cpu.writeRegister("rax", 2n);
+
+    const result = m.step();
+
+    expect(m.halted).toBeNull();
+    expect(result.unsimulated.name).toBe("open");
+    expect(result.unsimulated.reason).toBe("notSimulated");
+    // Nenhum registrador mudou: o retorno nao existe, e inventar um ensinaria
+    // algo falso.
+    expect(m.cpu.readRegister("rax")).toBe(2n);
+  });
+
+  it("no Windows o aviso diz que o numero nao e estavel", () => {
+    const m = build([SYSCALL, { mnemonic: "nop", size: 1 }],
+                    { arch: "x86_64", codeBase: 0x400000n });
+    m.osId = "windows";
+    m.cpu.writeRegister("rax", 0x3bn);
+
+    const result = m.step();
+
+    expect(m.halted).toBeNull();
+    expect(result.unsimulated.reason).toBe("windows");
+  });
+
+  it("exit e execve continuam PARANDO — ali o programa acabou", () => {
+    const exit = x64([SYSCALL]);
+    exit.cpu.writeRegister("rax", 60n);
+    exit.step();
+    expect(exit.halted.reason).toBe(HALT.EXITED);
+
+    const execve = x64([SYSCALL]);
+    execve.cpu.writeRegister("rax", 59n);
+    execve.step();
+    expect(execve.halted.reason).toBe(HALT.EXECVE);
+  });
+
+  it("write continua sendo simulada de verdade", () => {
+    // A mudanca nao pode ter afrouxado o que JA funcionava.
+    const m = x64([SYSCALL]);
+    m.memory.writeBytes(0x500000n, [0x4f, 0x69]);
+    m.cpu.writeRegister("rax", 1n);
+    m.cpu.writeRegister("rdi", 1n);
+    m.cpu.writeRegister("rsi", 0x500000n);
+    m.cpu.writeRegister("rdx", 2n);
+
+    const result = m.step();
+
+    expect(result.unsimulated).toBeFalsy();
+    expect(m.output[0].text).toBe("Oi");
+    expect(m.cpu.readRegister("rax")).toBe(2n);
+  });
+
+  it("voltar o passo desfaz a chamada ignorada", () => {
+    const m = x64([SYSCALL, { mnemonic: "nop", size: 1 }]);
+    m.cpu.writeRegister("rax", 2n);
+    m.step();
+    m.stepBack();
+
+    expect(m.cpu.ip).toBe(0x400000n);
+    expect(m.halted).toBeNull();
   });
 });

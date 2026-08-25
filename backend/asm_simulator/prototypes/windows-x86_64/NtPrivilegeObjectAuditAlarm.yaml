@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtPrivilegeObjectAuditAlarm
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PCUNICODE_STRING"
+    name: "SubsystemName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg1:
+    type: "PVOID"
+    name: "HandleId"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+  arg2:
+    type: "HANDLE"
+    name: "ClientToken"
+    direction: "in"
+    description: "Entrada: HANDLE."
+  arg3:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg4:
+    type: "PPRIVILEGE_SET"
+    name: "Privileges"
+    direction: "in"
+    description: "Entrada: PPRIVILEGE_SET."
+  arg5:
+    type: "BOOLEAN"
+    name: "AccessGranted"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

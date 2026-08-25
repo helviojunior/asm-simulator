@@ -1,0 +1,17 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpoapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtRequestWakeupLatency
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "LATENCY_TIME"
+    name: "latency"
+    direction: "in"
+    description: "Entrada: LATENCY_TIME."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

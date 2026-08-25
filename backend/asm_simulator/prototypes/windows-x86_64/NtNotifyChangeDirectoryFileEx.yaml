@@ -1,0 +1,62 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntioapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtNotifyChangeDirectoryFileEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "FileHandle"
+    direction: "in"
+    description: "Handle do arquivo."
+  arg1:
+    type: "HANDLE"
+    name: "Event"
+    direction: "in/opt"
+    description: "Evento sinalizado ao fim de uma operacao assincrona. NULL e o comum."
+  arg2:
+    type: "PIO_APC_ROUTINE"
+    name: "ApcRoutine"
+    direction: "in/opt"
+    description: "Rotina de conclusao assincrona. NULL e o comum."
+  arg3:
+    type: "PVOID"
+    name: "ApcContext"
+    direction: "in/opt"
+    description: "Valor entregue a ApcRoutine. Opcional."
+  arg4:
+    type: "PIO_STATUS_BLOCK"
+    name: "IoStatusBlock"
+    direction: "out"
+    description: "Recebe o status da operacao e a quantidade de bytes transferidos."
+  arg5:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "out"
+    description: "Bloco de memoria da operacao."
+  arg6:
+    type: "ULONG"
+    name: "Length"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+  arg7:
+    type: "ULONG"
+    name: "CompletionFilter"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg8:
+    type: "BOOLEAN"
+    name: "WatchTree"
+    direction: "in"
+    description: "Entrada: BOOLEAN."
+  arg9:
+    type: "DIRECTORY_NOTIFY_INFORMATION_CLASS"
+    name: "DirectoryNotifyInformationClass"
+    direction: "in/opt"
+    description: "Entrada: DIRECTORY_NOTIFY_INFORMATION_CLASS. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

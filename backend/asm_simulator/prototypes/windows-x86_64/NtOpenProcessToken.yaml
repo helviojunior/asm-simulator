@@ -1,0 +1,26 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+function_name: NtOpenProcessToken
+ssn: null
+summary: "Abre o token de acesso de um processo."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "TOKEN_ADJUST_PRIVILEGES 0x20, TOKEN_QUERY 0x8."
+  arg2:
+    type: "PHANDLE"
+    name: "TokenHandle"
+    direction: "out"
+    description: "Handle do token de acesso."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

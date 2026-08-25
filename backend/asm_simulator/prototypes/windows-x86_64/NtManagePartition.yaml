@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtManagePartition
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "TargetHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "HANDLE"
+    name: "SourceHandle"
+    direction: "in/opt"
+    description: "Handle do objeto. Opcional."
+  arg2:
+    type: "PARTITION_INFORMATION_CLASS"
+    name: "PartitionInformationClass"
+    direction: "in"
+    description: "Entrada: PARTITION_INFORMATION_CLASS."
+  arg3:
+    type: "PVOID"
+    name: "PartitionInformation"
+    direction: "inout"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg4:
+    type: "ULONG"
+    name: "PartitionInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

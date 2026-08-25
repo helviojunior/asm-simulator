@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 readlink
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: readlink
+ssn: 85
+summary: ""
+input_args:
+  arg0:
+    type: "const char *restrict"
+    name: "pathname"
+    description: "Caminho terminado em NUL."
+  arg1:
+    type: "char *restrict"
+    name: "buf"
+    description: "Bloco de memoria da operacao."
+  arg2:
+    type: "size_t"
+    name: "bufsiz"
+    description: "size_t bufsiz."
+output_data:
+  type: "ssize_t"
+  name: "result"
+  description: "Quantidade de bytes, ou negativo em erro (-errno)."

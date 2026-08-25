@@ -74,6 +74,7 @@ export function toParams(metadata) {
   if (!metadata) return null;
   return {
     arch: metadata.arch || null,
+    os: metadata.os || null,
     codeBase: metadata.code_base || "",
     stackTop: metadata.stack_top || "",
     argCount: Number.isInteger(metadata.arg_count) ? metadata.arg_count : 4,
@@ -84,6 +85,8 @@ export function fromParams(params) {
   if (!params) return undefined;
   return {
     arch: params.arch,
+    // Vazio e legitimo: arquivo salvo antes de o alvo ser resolvido.
+    os: params.os || "",
     code_base: params.codeBase,
     stack_top: params.stackTop,
     arg_count: params.argCount,

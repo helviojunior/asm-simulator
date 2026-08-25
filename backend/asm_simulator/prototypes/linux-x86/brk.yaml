@@ -1,0 +1,15 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 brk
+function_name: brk
+ssn: 45
+summary: "Move o fim do segmento de dados (heap)."
+input_args:
+  arg0:
+    type: "void *"
+    name: "addr"
+    description: "Novo fim do segmento de dados. 0 apenas consulta o valor atual."
+output_data:
+  type: "void *"
+  name: "brk"
+  description: "Fim do segmento apos a chamada."

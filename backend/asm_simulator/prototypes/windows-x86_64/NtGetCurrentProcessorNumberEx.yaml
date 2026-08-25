@@ -1,0 +1,17 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtGetCurrentProcessorNumberEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PPROCESSOR_NUMBER"
+    name: "ProcessorNumber"
+    direction: "out/opt"
+    description: "Saida: PPROCESSOR_NUMBER. Opcional."
+output_data:
+  type: "ULONG"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

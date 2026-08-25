@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 msgsnd
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: msgsnd
+ssn: 69
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "msqid"
+    description: "int msqid."
+  arg1:
+    type: "const void *"
+    name: "msgp"
+    description: "const void * msgp."
+  arg2:
+    type: "size_t"
+    name: "msgsz"
+    description: "size_t msgsz."
+  arg3:
+    type: "int"
+    name: "msgflg"
+    description: "int msgflg."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

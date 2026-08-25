@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 preadv
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: preadv
+ssn: 333
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "fd"
+    description: "Descritor de arquivo aberto. 0 stdin, 1 stdout, 2 stderr."
+  arg1:
+    type: "const struct iovec *"
+    name: "iov"
+    description: "const struct iovec * iov."
+  arg2:
+    type: "int"
+    name: "iovcnt"
+    description: "int iovcnt."
+  arg3:
+    type: "off_t"
+    name: "offset"
+    description: "Deslocamento em bytes."
+output_data:
+  type: "ssize_t"
+  name: "result"
+  description: "Quantidade de bytes, ou negativo em erro (-errno)."

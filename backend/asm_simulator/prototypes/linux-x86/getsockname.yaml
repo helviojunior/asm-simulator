@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 getsockname
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: getsockname
+ssn: 367
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "sockfd"
+    description: "Descritor do socket."
+  arg1:
+    type: "struct sockaddr *restrict"
+    name: "addr"
+    description: "Endereco de memoria."
+  arg2:
+    type: "socklen_t *restrict"
+    name: "addrlen"
+    description: "Tamanho da estrutura de endereco, em bytes."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

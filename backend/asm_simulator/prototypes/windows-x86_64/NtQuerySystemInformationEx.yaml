@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtQuerySystemInformationEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "SYSTEM_INFORMATION_CLASS"
+    name: "SystemInformationClass"
+    direction: "in"
+    description: "Entrada: SYSTEM_INFORMATION_CLASS."
+  arg1:
+    type: "PVOID"
+    name: "InputBuffer"
+    direction: "in"
+    description: "Entrada: PVOID."
+  arg2:
+    type: "ULONG"
+    name: "InputBufferLength"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg3:
+    type: "PVOID"
+    name: "SystemInformation"
+    direction: "out/opt"
+    description: "Bloco de informacao. O formato depende da classe pedida. Opcional."
+  arg4:
+    type: "ULONG"
+    name: "SystemInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+  arg5:
+    type: "PULONG"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,16 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 personality
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: personality
+ssn: 136
+summary: ""
+input_args:
+  arg0:
+    type: "unsigned long"
+    name: "persona"
+    description: "unsigned long persona."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

@@ -1,0 +1,52 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntseapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAccessCheck
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    direction: "in"
+    description: "Descritor de seguranca do objeto."
+  arg1:
+    type: "HANDLE"
+    name: "ClientToken"
+    direction: "in"
+    description: "Entrada: HANDLE."
+  arg2:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg3:
+    type: "PGENERIC_MAPPING"
+    name: "GenericMapping"
+    direction: "in"
+    description: "Entrada: PGENERIC_MAPPING."
+  arg4:
+    type: "PPRIVILEGE_SET"
+    name: "PrivilegeSet"
+    direction: "out"
+    description: "Saida: PPRIVILEGE_SET."
+  arg5:
+    type: "PULONG"
+    name: "PrivilegeSetLength"
+    direction: "inout"
+    description: "Tamanho em bytes."
+  arg6:
+    type: "PACCESS_MASK"
+    name: "GrantedAccess"
+    direction: "out"
+    description: "Recebe os direitos efetivamente concedidos."
+  arg7:
+    type: "PNTSTATUS"
+    name: "AccessStatus"
+    direction: "out"
+    description: "Saida: PNTSTATUS."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

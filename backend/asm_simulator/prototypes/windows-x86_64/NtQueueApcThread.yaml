@@ -1,0 +1,36 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+function_name: NtQueueApcThread
+ssn: null
+summary: "Enfileira uma chamada assincrona numa thread. Base do \"APC injection\"."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ThreadHandle"
+    direction: "in"
+    description: "Handle da thread alvo."
+  arg1:
+    type: "PPS_APC_ROUTINE"
+    name: "ApcRoutine"
+    direction: "in"
+    description: "Rotina enfileirada na thread alvo. E a base do \"APC injection\"."
+  arg2:
+    type: "PVOID"
+    name: "ApcArgument1"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+  arg3:
+    type: "PVOID"
+    name: "ApcArgument2"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+  arg4:
+    type: "PVOID"
+    name: "ApcArgument3"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

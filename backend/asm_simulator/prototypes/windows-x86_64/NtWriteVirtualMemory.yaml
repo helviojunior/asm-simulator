@@ -1,0 +1,36 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+function_name: NtWriteVirtualMemory
+ssn: null
+summary: "Escreve na memoria de outro processo. Passo central de uma injecao."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PVOID"
+    name: "BaseAddress"
+    direction: "in/opt"
+    description: "Endereco no processo ALVO, e nao no chamador. Opcional."
+  arg2:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "in"
+    description: "Origem, no processo chamador."
+  arg3:
+    type: "SIZE_T"
+    name: "NumberOfBytesToWrite"
+    direction: "in"
+    description: "Quantidade de bytes a escrever."
+  arg4:
+    type: "PSIZE_T"
+    name: "NumberOfBytesWritten"
+    direction: "out/opt"
+    description: "Recebe quantos bytes foram escritos. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

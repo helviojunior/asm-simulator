@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtWaitForWorkViaWorkerFactory
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "WorkerFactoryHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "PFILE_IO_COMPLETION_INFORMATION"
+    name: "MiniPackets"
+    direction: "out"
+    description: "Saida: PFILE_IO_COMPLETION_INFORMATION."
+  arg2:
+    type: "ULONG"
+    name: "Count"
+    direction: "in"
+    description: "Quantidade de itens."
+  arg3:
+    type: "PULONG"
+    name: "PacketsReturned"
+    direction: "out"
+    description: "Saida: PULONG."
+  arg4:
+    type: "PVOID"
+    name: "DeferredWork"
+    direction: "in"
+    description: "Entrada: PVOID."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

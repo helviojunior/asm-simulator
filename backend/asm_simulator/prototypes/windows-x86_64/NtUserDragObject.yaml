@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserDragObject
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HWND"
+    name: "WindowHandleParent"
+    direction: "in"
+    description: "Entrada: HWND."
+  arg1:
+    type: "HWND"
+    name: "WindowHandleFrom"
+    direction: "in"
+    description: "Entrada: HWND."
+  arg2:
+    type: "ULONG"
+    name: "fmt"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg3:
+    type: "ULONG_PTR"
+    name: "data"
+    direction: "in"
+    description: "Entrada: ULONG_PTR."
+  arg4:
+    type: "HCURSOR"
+    name: "hcur"
+    direction: "in"
+    description: "Entrada: HCURSOR."
+output_data:
+  type: "ULONG"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

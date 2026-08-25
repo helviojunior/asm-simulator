@@ -1,0 +1,21 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntpsapi.h
+function_name: NtTerminateProcess
+ssn: null
+summary: "Encerra um processo."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in/opt"
+    description: "Processo a encerrar. NtCurrentProcess (-1) e o proprio. Opcional."
+  arg1:
+    type: "NTSTATUS"
+    name: "ExitStatus"
+    direction: "in"
+    description: "Codigo de saida entregue a quem espera pelo processo."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

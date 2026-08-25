@@ -1,0 +1,36 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 process_vm_writev
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: process_vm_writev
+ssn: 348
+summary: ""
+input_args:
+  arg0:
+    type: "pid_t"
+    name: "pid"
+    description: "Identificador do processo."
+  arg1:
+    type: "const struct iovec *"
+    name: "local_iov"
+    description: "const struct iovec * local_iov."
+  arg2:
+    type: "unsigned long"
+    name: "liovcnt"
+    description: "unsigned long liovcnt."
+  arg3:
+    type: "const struct iovec *"
+    name: "remote_iov"
+    description: "const struct iovec * remote_iov."
+  arg4:
+    type: "unsigned long"
+    name: "riovcnt"
+    description: "unsigned long riovcnt."
+  arg5:
+    type: "unsigned long"
+    name: "flags"
+    description: "Combinacao de flags da chamada."
+output_data:
+  type: "ssize_t"
+  name: "result"
+  description: "Quantidade de bytes, ou negativo em erro (-errno)."

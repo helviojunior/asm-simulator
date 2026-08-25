@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntuser.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtUserDrawAnimatedRects
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HWND"
+    name: "WindowHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "int"
+    name: "idAni"
+    direction: "in"
+    description: "Entrada: int."
+  arg2:
+    type: "const RECT *"
+    name: "lprcFrom"
+    direction: "in"
+    description: "Entrada: const RECT *."
+  arg3:
+    type: "const RECT *"
+    name: "lprcTo"
+    direction: "in"
+    description: "Entrada: const RECT *."
+output_data:
+  type: "BOOL"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

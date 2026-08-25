@@ -63,7 +63,7 @@ function RegisterRow({ row, digits }) {
           "shrink-0 tabular-nums",
           // Vermelho para o que mudou: mesma convencao do x64dbg.
           row.changed
-            ? "-mx-1 bg-[#5a1d1d] px-1 font-bold text-[#ff6b6b]"
+            ? "rounded-sm bg-[#5a1d1d] font-bold text-[#ff6b6b]"
             : "text-[#d4d4d4]"
         )}
       >

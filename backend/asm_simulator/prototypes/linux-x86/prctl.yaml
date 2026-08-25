@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 prctl
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: prctl
+ssn: 172
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "option"
+    description: "int option."
+  arg1:
+    type: "unsigned long"
+    name: "arg2"
+    description: "unsigned long arg2."
+  arg2:
+    type: "unsigned long"
+    name: "arg3"
+    description: "unsigned long arg3."
+  arg3:
+    type: "unsigned long"
+    name: "arg4"
+    description: "unsigned long arg4."
+  arg4:
+    type: "unsigned long"
+    name: "arg5"
+    description: "unsigned long arg5."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

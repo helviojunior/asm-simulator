@@ -1,0 +1,62 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntexapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateWorkerFactory
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "WorkerFactoryHandleReturn"
+    direction: "out"
+    description: "Saida: PHANDLE."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "PCOBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags. Opcional."
+  arg3:
+    type: "HANDLE"
+    name: "CompletionPortHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg4:
+    type: "HANDLE"
+    name: "WorkerProcessHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg5:
+    type: "PVOID"
+    name: "StartRoutine"
+    direction: "in"
+    description: "Endereco da rotina."
+  arg6:
+    type: "PVOID"
+    name: "StartParameter"
+    direction: "in/opt"
+    description: "Entrada: PVOID. Opcional."
+  arg7:
+    type: "ULONG"
+    name: "MaxThreadCount"
+    direction: "in/opt"
+    description: "Quantidade de itens. Opcional."
+  arg8:
+    type: "SIZE_T"
+    name: "StackReserve"
+    direction: "in/opt"
+    description: "Entrada: SIZE_T. Opcional."
+  arg9:
+    type: "SIZE_T"
+    name: "StackCommit"
+    direction: "in/opt"
+    description: "Entrada: SIZE_T. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

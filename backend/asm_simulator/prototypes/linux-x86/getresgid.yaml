@@ -1,0 +1,24 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 getresgid
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: getresgid
+ssn: 171
+summary: ""
+input_args:
+  arg0:
+    type: "gid_t *"
+    name: "rgid"
+    description: "gid_t * rgid."
+  arg1:
+    type: "gid_t *"
+    name: "egid"
+    description: "gid_t * egid."
+  arg2:
+    type: "gid_t *"
+    name: "sgid"
+    description: "gid_t * sgid."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

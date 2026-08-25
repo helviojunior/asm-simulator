@@ -1,0 +1,62 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntioapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCopyFileChunk
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "SourceHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "HANDLE"
+    name: "DestinationHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg2:
+    type: "HANDLE"
+    name: "EventHandle"
+    direction: "in/opt"
+    description: "Handle do evento. Opcional."
+  arg3:
+    type: "PIO_STATUS_BLOCK"
+    name: "IoStatusBlock"
+    direction: "out"
+    description: "Recebe o status da operacao e a quantidade de bytes transferidos."
+  arg4:
+    type: "ULONG"
+    name: "Length"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+  arg5:
+    type: "PLARGE_INTEGER"
+    name: "SourceOffset"
+    direction: "in"
+    description: "Deslocamento em bytes."
+  arg6:
+    type: "PLARGE_INTEGER"
+    name: "DestOffset"
+    direction: "in"
+    description: "Deslocamento em bytes."
+  arg7:
+    type: "PULONG"
+    name: "SourceKey"
+    direction: "in/opt"
+    description: "Entrada: PULONG. Opcional."
+  arg8:
+    type: "PULONG"
+    name: "DestKey"
+    direction: "in/opt"
+    description: "Entrada: PULONG. Opcional."
+  arg9:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Combinacao de flags."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

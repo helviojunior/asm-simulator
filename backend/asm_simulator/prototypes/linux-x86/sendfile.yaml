@@ -1,0 +1,28 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+# Assinatura: man 2 sendfile
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: sendfile
+ssn: 187
+summary: ""
+input_args:
+  arg0:
+    type: "int"
+    name: "out_fd"
+    description: "int out_fd."
+  arg1:
+    type: "int"
+    name: "in_fd"
+    description: "int in_fd."
+  arg2:
+    type: "off_t *_Nullable"
+    name: "offset"
+    description: "Deslocamento em bytes."
+  arg3:
+    type: "size_t"
+    name: "count"
+    description: "Quantidade de bytes."
+output_data:
+  type: "ssize_t"
+  name: "result"
+  description: "Quantidade de bytes, ou negativo em erro (-errno)."

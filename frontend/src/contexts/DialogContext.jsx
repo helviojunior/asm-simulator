@@ -94,6 +94,25 @@ export function DialogProvider({ children }) {
     [open]
   );
 
+  /**
+   * Escolha entre varias opcoes; resolve com o `value` escolhido, ou null se
+   * o usuario fechar sem escolher.
+   *
+   * `confirm` responde sim/nao — nao serve quando a pergunta e "qual dos
+   * tres?". Cada opcao e `{ value, label, description? }`.
+   */
+  const choose = useCallback(
+    (options = {}) =>
+      open({
+        type: "choose",
+        variant: "info",
+        cancelLabel: t("common.cancel"),
+        options: [],
+        ...options,
+      }),
+    [open, t]
+  );
+
   const handleConfirm = async () => {
     // onConfirm opcional: mantem o modal aberto enquanto a acao executa.
     if (dialog?.onConfirm) {
@@ -109,9 +128,10 @@ export function DialogProvider({ children }) {
   };
 
   const isConfirm = dialog?.type === "confirm";
+  const isChoose = dialog?.type === "choose";
 
   return (
-    <DialogContext.Provider value={{ confirm, alert }}>
+    <DialogContext.Provider value={{ confirm, alert, choose }}>
       {children}
       <Modal
         open={!!dialog}
@@ -122,6 +142,13 @@ export function DialogProvider({ children }) {
         size={dialog?.size || "sm"}
         footer={
           <>
+            {/* Numa escolha, o cancelar e a UNICA acao do rodape: as opcoes
+                sao os botoes do corpo. */}
+            {isChoose && (
+              <Button variant="outline" onClick={() => close(null)} disabled={busy}>
+                {dialog?.cancelLabel}
+              </Button>
+            )}
             {isConfirm && (
               <Button
                 variant="outline"
@@ -131,17 +158,47 @@ export function DialogProvider({ children }) {
                 {dialog?.cancelLabel}
               </Button>
             )}
-            <Button
-              variant={dialog?.variant === "danger" ? "destructive" : "default"}
-              onClick={handleConfirm}
-              loading={busy}
-              autoFocus
-            >
-              {dialog?.confirmLabel}
-            </Button>
+            {!isChoose && (
+              <Button
+                variant={dialog?.variant === "danger" ? "destructive" : "default"}
+                onClick={handleConfirm}
+                loading={busy}
+                autoFocus
+              >
+                {dialog?.confirmLabel}
+              </Button>
+            )}
           </>
         }
-      />
+      >
+        {isChoose && (
+          <div className="mt-2 grid gap-2">
+            {dialog.options.map((option, index) => (
+              <button
+                key={option.value}
+                type="button"
+                autoFocus={index === 0}
+                onClick={() => close(option.value)}
+                className="w-full rounded-lg border border-border px-3 py-2 text-left transition-colors hover:border-primary hover:bg-accent"
+              >
+                <span className="flex items-center gap-2 font-medium">
+                  {/* `font-dump` e a face embarcada, de cobertura conhecida: um
+                      glifo de icone nao existe na fonte do sistema. */}
+                  {option.icon && (
+                    <span className="font-dump text-base leading-none">{option.icon}</span>
+                  )}
+                  {option.label}
+                </span>
+                {option.description && (
+                  <span className="block text-xs text-muted-foreground">
+                    {option.description}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </Modal>
     </DialogContext.Provider>
   );
 }

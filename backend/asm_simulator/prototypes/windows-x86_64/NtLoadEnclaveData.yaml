@@ -1,0 +1,57 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtLoadEnclaveData
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "PVOID"
+    name: "BaseAddress"
+    direction: "in"
+    description: "Endereco base da regiao de memoria."
+  arg2:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "in"
+    description: "Bloco de memoria da operacao."
+  arg3:
+    type: "SIZE_T"
+    name: "BufferSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg4:
+    type: "ULONG"
+    name: "Protect"
+    direction: "in"
+    description: "Protecao de pagina. PAGE_READWRITE 0x04, PAGE_EXECUTE_READWRITE 0x40."
+  arg5:
+    type: "PVOID"
+    name: "PageInformation"
+    direction: "in"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg6:
+    type: "ULONG"
+    name: "PageInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+  arg7:
+    type: "PSIZE_T"
+    name: "NumberOfBytesWritten"
+    direction: "out/opt"
+    description: "Recebe quantos bytes foram escritos. Opcional."
+  arg8:
+    type: "PULONG"
+    name: "EnclaveError"
+    direction: "out/opt"
+    description: "Saida: PULONG. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

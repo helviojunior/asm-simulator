@@ -1,0 +1,42 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtSetInformationVirtualMemory
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg1:
+    type: "VIRTUAL_MEMORY_INFORMATION_CLASS"
+    name: "VmInformationClass"
+    direction: "in"
+    description: "Entrada: VIRTUAL_MEMORY_INFORMATION_CLASS."
+  arg2:
+    type: "SIZE_T"
+    name: "NumberOfEntries"
+    direction: "in"
+    description: "Entrada: SIZE_T."
+  arg3:
+    type: "PMEMORY_RANGE_ENTRY"
+    name: "VirtualAddresses"
+    direction: "in"
+    description: "Entrada: PMEMORY_RANGE_ENTRY."
+  arg4:
+    type: "PVOID"
+    name: "VmInformation"
+    direction: "in"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg5:
+    type: "ULONG"
+    name: "VmInformationLength"
+    direction: "in"
+    description: "Tamanho do bloco de informacao, em bytes."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

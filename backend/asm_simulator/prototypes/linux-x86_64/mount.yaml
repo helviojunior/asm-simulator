@@ -1,0 +1,32 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Numero: /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+# Assinatura: man 2 mount
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: mount
+ssn: 165
+summary: ""
+input_args:
+  arg0:
+    type: "const char *"
+    name: "source"
+    description: "const char * source."
+  arg1:
+    type: "const char *"
+    name: "target"
+    description: "const char * target."
+  arg2:
+    type: "const char *"
+    name: "filesystemtype"
+    description: "const char * filesystemtype."
+  arg3:
+    type: "unsigned long"
+    name: "mountflags"
+    description: "unsigned long mountflags."
+  arg4:
+    type: "const void *_Nullable"
+    name: "data"
+    description: "const void *_Nullable data."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 ou um descritor em sucesso; negativo em erro (-errno)."

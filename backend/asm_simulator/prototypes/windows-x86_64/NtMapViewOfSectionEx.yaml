@@ -1,0 +1,57 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntmmapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtMapViewOfSectionEx
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "SectionHandle"
+    direction: "in"
+    description: "Handle da secao (objeto de memoria compartilhavel)."
+  arg1:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    direction: "in"
+    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio."
+  arg2:
+    type: "PVOID *"
+    name: "BaseAddress"
+    direction: "inout"
+    description: "Endereco base da regiao de memoria."
+  arg3:
+    type: "PLARGE_INTEGER"
+    name: "SectionOffset"
+    direction: "inout/opt"
+    description: "Deslocamento em bytes. Opcional."
+  arg4:
+    type: "PSIZE_T"
+    name: "ViewSize"
+    direction: "inout"
+    description: "Tamanho em bytes."
+  arg5:
+    type: "ULONG"
+    name: "AllocationType"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg6:
+    type: "ULONG"
+    name: "PageProtection"
+    direction: "in"
+    description: "Protecao de pagina. PAGE_READWRITE 0x04, PAGE_EXECUTE_READWRITE 0x40."
+  arg7:
+    type: "PMEM_EXTENDED_PARAMETER"
+    name: "ExtendedParameters"
+    direction: "inout/opt"
+    description: "Entra e sai: PMEM_EXTENDED_PARAMETER. Opcional."
+  arg8:
+    type: "ULONG"
+    name: "ExtendedParameterCount"
+    direction: "in"
+    description: "Quantidade de itens."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

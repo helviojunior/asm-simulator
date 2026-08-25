@@ -1,0 +1,67 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntlpcapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtAlpcConnectPort
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "PortHandle"
+    direction: "out"
+    description: "Handle da porta de comunicacao (LPC/ALPC)."
+  arg1:
+    type: "PCUNICODE_STRING"
+    name: "PortName"
+    direction: "in"
+    description: "Nome, em UNICODE_STRING."
+  arg2:
+    type: "POBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags. Opcional."
+  arg3:
+    type: "PALPC_PORT_ATTRIBUTES"
+    name: "PortAttributes"
+    direction: "in/opt"
+    description: "Atributos do objeto. Opcional."
+  arg4:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Combinacao de flags."
+  arg5:
+    type: "PSID"
+    name: "RequiredServerSid"
+    direction: "in/opt"
+    description: "Entrada: PSID. Opcional."
+  arg6:
+    type: "PPORT_MESSAGE"
+    name: "ConnectionMessage"
+    direction: "inout/opt"
+    description: "Entra e sai: PPORT_MESSAGE. Opcional."
+  arg7:
+    type: "PSIZE_T"
+    name: "BufferLength"
+    direction: "inout/opt"
+    description: "Tamanho do buffer, em bytes. Opcional."
+  arg8:
+    type: "PALPC_MESSAGE_ATTRIBUTES"
+    name: "OutMessageAttributes"
+    direction: "inout/opt"
+    description: "Atributos do objeto. Opcional."
+  arg9:
+    type: "PALPC_MESSAGE_ATTRIBUTES"
+    name: "InMessageAttributes"
+    direction: "inout/opt"
+    description: "Atributos do objeto. Opcional."
+  arg10:
+    type: "PLARGE_INTEGER"
+    name: "Timeout"
+    direction: "in/opt"
+    description: "Tempo limite em unidades de 100ns. Negativo e relativo ao agora; NULL espera para sempre."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

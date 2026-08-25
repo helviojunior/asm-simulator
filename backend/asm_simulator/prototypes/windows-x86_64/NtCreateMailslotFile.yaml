@@ -1,0 +1,52 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntioapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtCreateMailslotFile
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "PHANDLE"
+    name: "FileHandle"
+    direction: "out"
+    description: "Handle do arquivo."
+  arg1:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg2:
+    type: "PCOBJECT_ATTRIBUTES"
+    name: "ObjectAttributes"
+    direction: "in"
+    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags."
+  arg3:
+    type: "PIO_STATUS_BLOCK"
+    name: "IoStatusBlock"
+    direction: "out"
+    description: "Recebe o status da operacao e a quantidade de bytes transferidos."
+  arg4:
+    type: "ULONG"
+    name: "CreateOptions"
+    direction: "in"
+    description: "FILE_SYNCHRONOUS_IO_NONALERT 0x20 faz a E/S ser sincrona."
+  arg5:
+    type: "ULONG"
+    name: "MailslotQuota"
+    direction: "in"
+    description: "Entrada: ULONG."
+  arg6:
+    type: "ULONG"
+    name: "MaximumMessageSize"
+    direction: "in"
+    description: "Tamanho em bytes."
+  arg7:
+    type: "PLARGE_INTEGER"
+    name: "ReadTimeout"
+    direction: "in"
+    description: "Entrada: PLARGE_INTEGER."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

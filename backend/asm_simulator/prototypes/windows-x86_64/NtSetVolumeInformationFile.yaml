@@ -1,0 +1,37 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntioapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtSetVolumeInformationFile
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "FileHandle"
+    direction: "in"
+    description: "Handle do arquivo."
+  arg1:
+    type: "PIO_STATUS_BLOCK"
+    name: "IoStatusBlock"
+    direction: "out"
+    description: "Recebe o status da operacao e a quantidade de bytes transferidos."
+  arg2:
+    type: "PVOID"
+    name: "FsInformation"
+    direction: "in"
+    description: "Bloco de informacao. O formato depende da classe pedida."
+  arg3:
+    type: "ULONG"
+    name: "Length"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+  arg4:
+    type: "FSINFOCLASS"
+    name: "FsInformationClass"
+    direction: "in"
+    description: "Entrada: FSINFOCLASS."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

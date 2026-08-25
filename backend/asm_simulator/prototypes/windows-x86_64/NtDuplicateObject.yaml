@@ -1,0 +1,47 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntobapi.h
+# TODO: resumo e descricoes derivados da assinatura; revisar.
+function_name: NtDuplicateObject
+ssn: null
+summary: ""
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "SourceProcessHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg1:
+    type: "HANDLE"
+    name: "SourceHandle"
+    direction: "in"
+    description: "Handle do objeto."
+  arg2:
+    type: "HANDLE"
+    name: "TargetProcessHandle"
+    direction: "in/opt"
+    description: "Handle do objeto. Opcional."
+  arg3:
+    type: "PHANDLE"
+    name: "TargetHandle"
+    direction: "out/opt"
+    description: "Handle do objeto. Opcional."
+  arg4:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    direction: "in"
+    description: "Direitos pedidos sobre o objeto."
+  arg5:
+    type: "ULONG"
+    name: "HandleAttributes"
+    direction: "in"
+    description: "Atributos do objeto."
+  arg6:
+    type: "ULONG"
+    name: "Options"
+    direction: "in"
+    description: "Entrada: ULONG."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

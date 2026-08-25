@@ -1,0 +1,56 @@
+# Prototipo de syscall. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntioapi.h
+function_name: NtReadFile
+ssn: null
+summary: "Le de um arquivo ou dispositivo."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "FileHandle"
+    direction: "in"
+    description: "Handle do arquivo."
+  arg1:
+    type: "HANDLE"
+    name: "Event"
+    direction: "in/opt"
+    description: "Evento sinalizado ao fim de uma operacao assincrona. NULL e o comum."
+  arg2:
+    type: "PIO_APC_ROUTINE"
+    name: "ApcRoutine"
+    direction: "in/opt"
+    description: "Rotina de conclusao assincrona. NULL e o comum."
+  arg3:
+    type: "PVOID"
+    name: "ApcContext"
+    direction: "in/opt"
+    description: "Valor entregue a ApcRoutine. Opcional."
+  arg4:
+    type: "PIO_STATUS_BLOCK"
+    name: "IoStatusBlock"
+    direction: "out"
+    description: "Recebe o status da operacao e a quantidade de bytes transferidos."
+  arg5:
+    type: "PVOID"
+    name: "Buffer"
+    direction: "out"
+    description: "Bloco de memoria da operacao."
+  arg6:
+    type: "ULONG"
+    name: "Length"
+    direction: "in"
+    description: "Tamanho do buffer, em bytes."
+  arg7:
+    type: "PLARGE_INTEGER"
+    name: "ByteOffset"
+    direction: "in/opt"
+    description: "Posicao no arquivo, ou NULL para a posicao corrente."
+  arg8:
+    type: "PULONG"
+    name: "Key"
+    direction: "in/opt"
+    description: "Chave de lock do arquivo. NULL e o comum."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."
