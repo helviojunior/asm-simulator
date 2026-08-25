@@ -14,7 +14,7 @@ import {
 import { ntdllSummary, resolveSyscall } from "lib/ntdll";
 import { syscallNameOverride } from "./syscallNames";
 import { callKey, callNameOverride } from "./callNames";
-import { prototypeByName } from "lib/prototypes";
+import { prototypeByName, syscallNameByNumber } from "lib/prototypes";
 
 // Quantos bytes olhar a frente ao tentar reconhecer uma string.
 const STRING_SCAN = 24;
@@ -420,8 +420,16 @@ export function syscallInvocation(machine, { count = 4 } = {}) {
     !chosen && abi.resolvable === false
       ? resolveSyscall(machine.archId, number)
       : null;
+  // O catalogo vem antes da tabela embutida: ele tem as 440 syscalls do i386 e
+  // as 362 do x86-64, e a tabela em `syscalls.js` e so o punhado que resolve
+  // antes de a lista chegar do servidor.
+  const fromCatalog =
+    !chosen && !fromNtdll && abi.resolvable !== false
+      ? syscallNameByNumber(machine.osId, machine.archId, number)
+      : null;
   const name =
-    chosen || fromNtdll || (abi.resolvable === false ? null : abi.names[number] || null);
+    chosen || fromNtdll || fromCatalog
+    || (abi.resolvable === false ? null : abi.names[number] || null);
 
   // O prototipo do catalogo (YAML) tem nome, tipo e descricao de cada
   // argumento; a tabela embutida so tem os nomes. O catalogo vem primeiro, e o

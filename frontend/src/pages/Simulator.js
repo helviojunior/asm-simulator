@@ -29,6 +29,7 @@ import AboutModal, { AboutButton } from "components/AboutModal";
 import ImportBinaryWizard from "components/ImportBinaryWizard";
 import NtdllModal from "components/NtdllModal";
 import { ntdllSummary, refreshNtdll } from "lib/ntdll";
+import { loadPrototypes } from "lib/prototypes";
 import { clearSyscallNames } from "lib/cpu/syscallNames";
 import { clearCallNames } from "lib/cpu/callNames";
 import { usePaneSizes } from "lib/usePaneSizes";
@@ -223,6 +224,22 @@ export default function Simulator() {
       confirmLabel: t("sim.discardRunConfirm", "Stop and open"),
     });
   }, [confirm, t, tf]);
+
+  /**
+   * Carrega o catalogo do alvo para o painel de syscall resolver NUMERO -> NOME.
+   *
+   * Sao as 440 syscalls do i386 e as 362 do x86-64, com o numero de cada uma.
+   * A tabela embutida em `lib/cpu/syscalls` cobre uma duzia — o suficiente para
+   * o primeiro render, e nao para o programa do aluno, que pode chamar
+   * qualquer uma. Carregado aqui, na troca de alvo, e nao no primeiro passo:
+   * assim o nome ja esta la quando a execucao chega no `int 0x80`.
+   */
+  useEffect(() => {
+    if (!os || !arch) return;
+    loadPrototypes(os, arch, "syscall").then((list) => {
+      if (list.length) refresh();
+    });
+  }, [os, arch, refresh]);
 
   /** Volta ao estado "nada montado": nao ha programa a inspecionar. */
   const discardProgram = () => {

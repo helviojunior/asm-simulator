@@ -196,7 +196,10 @@ export const SYSCALL_ABI = {
       argumentsOn: 'registers',
       argumentRegisters: ['ebx', 'ecx', 'edx', 'esi', 'edi', 'ebp'],
       table: 'Linux i386 (int 0x80)',
-      // /usr/include/x86_64-linux-gnu/asm/unistd_32.h
+      // Punhado de numeros que resolve ANTES de a lista do servidor chegar. A
+      // tabela completa (as 440 do unistd_32.h) vem do catalogo de prototipos,
+      // por `syscallNameByNumber` — manter as 440 aqui seria uma segunda copia
+      // para sair de sincronia com a primeira.
       names: {
         1: 'exit', 2: 'fork', 3: 'read', 4: 'write', 5: 'open', 6: 'close',
         11: 'execve', 20: 'getpid', 37: 'kill', 45: 'brk', 91: 'munmap',
@@ -209,7 +212,7 @@ export const SYSCALL_ABI = {
       argumentsOn: 'registers',
       argumentRegisters: ['rdi', 'rsi', 'rdx', 'r10', 'r8', 'r9'],
       table: 'Linux x86-64 (syscall)',
-      // /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+      // Idem: o resto das 362 do unistd_64.h vem do catalogo de prototipos.
       names: {
         0: 'read', 1: 'write', 2: 'open', 3: 'close', 9: 'mmap', 10: 'mprotect',
         11: 'munmap', 12: 'brk', 39: 'getpid', 41: 'socket', 42: 'connect',

@@ -16,8 +16,35 @@ import api from "lib/api";
 
 const CACHE = new Map();
 const PENDING = new Map();
+// Numero -> nome, por alvo. E o MESMO catalogo YAML que alimenta o
+// auto-completar: as 440 syscalls do i386 e as 362 do x86-64 ja vem na lista,
+// cada uma com o seu `ssn`. Indexa-las aqui evita a tabela paralela que
+// inevitavelmente cobre so um punhado de numeros e envelhece sozinha.
+const BY_NUMBER = new Map();
 
 const keyOf = (os, arch, kind) => `${os}:${arch}:${kind || "all"}`;
+const numberKeyOf = (os, arch) => `${os}:${arch}`;
+
+/** Indexa por numero o que veio do servidor. */
+function indexByNumber(os, arch, list) {
+  const key = numberKeyOf(os, arch);
+  const index = BY_NUMBER.get(key) || new Map();
+  for (const item of list) {
+    if (item.ssn !== null && item.ssn !== undefined) index.set(item.ssn, item.function_name);
+  }
+  BY_NUMBER.set(key, index);
+}
+
+/**
+ * Nome da syscall numero `ssn` no alvo, ou null.
+ *
+ * Sincrono, para o painel resolver enquanto desenha. Antes de a lista chegar
+ * responde null, e quem chama cai na tabela embutida de `lib/cpu/syscalls`.
+ */
+export function syscallNameByNumber(os, arch, ssn) {
+  if (!os || !arch || ssn === null || ssn === undefined) return null;
+  return BY_NUMBER.get(numberKeyOf(os, arch))?.get(Number(ssn)) || null;
+}
 
 /** Prototipos ja carregados para o alvo, ou lista vazia. */
 export function prototypesFor(os, arch, kind) {
@@ -46,6 +73,7 @@ export async function loadPrototypes(os, arch, kind) {
     .then(({ data }) => {
       const list = data.prototypes || [];
       CACHE.set(key, list);
+      indexByNumber(os, arch, list);
       return list;
     })
     .catch(() => {

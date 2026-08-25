@@ -4,6 +4,10 @@ import {
   clearSyscallNames, setSyscallName, syscallNameOverride,
 } from "lib/cpu/syscallNames";
 import { detectOs } from "lib/cpu/os";
+import api from "lib/api";
+import { loadPrototypes, syscallNameByNumber } from "lib/prototypes";
+
+jest.mock("lib/api", () => ({ __esModule: true, default: { get: jest.fn() } }));
 
 describe("ABI de syscall por sistema", () => {
   // O mesmo `mov eax, 4` significa coisas diferentes em cada alvo — e o erro
@@ -156,5 +160,30 @@ describe("nome escolhido a mao", () => {
     clearSyscallNames();
 
     expect(syscallNameOverride("windows", "x86_64", 5)).toBeNull();
+  });
+});
+
+describe("numero -> nome vem do catalogo", () => {
+  // A tabela embutida em `lib/cpu/syscalls` cobre uma duzia de numeros; o
+  // programa do aluno pode chamar qualquer uma das 440 do i386. O resto vem do
+  // catalogo de prototipos, servido pelo backend.
+  test("o que a tabela embutida nao tem, o catalogo resolve", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        prototypes: [
+          { function_name: "getdents64", ssn: 220, kind: "syscall", summary: "", args: 3 },
+          { function_name: "socketcall", ssn: 102, kind: "syscall", summary: "", args: 2 },
+        ],
+      },
+    });
+
+    // Antes de carregar nao ha o que responder — e ai vale a tabela embutida.
+    expect(syscallNameByNumber("linux", "x86", 220)).toBeNull();
+
+    await loadPrototypes("linux", "x86", "syscall");
+
+    expect(syscallNameByNumber("linux", "x86", 220)).toBe("getdents64");
+    // O numero pertence ao ALVO: 220 no i386 nao diz nada sobre o x86-64.
+    expect(syscallNameByNumber("linux", "x86_64", 220)).toBeNull();
   });
 });
