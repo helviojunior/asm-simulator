@@ -144,10 +144,13 @@ export default function PrototypeNameField({
                     <span className="ml-2 text-[10px] text-[#6b6b6b]">#{item.ssn}</span>
                   )}
                   {/* Sem numero, o que distingue as duas listas e a natureza da
-                      funcao: `RtlInitUnicodeString` nao entra no kernel. */}
+                      funcao: `RtlInitUnicodeString` nao entra no kernel. E o
+                      MODULO importa tanto quanto o nome — achar a base da
+                      kernel32 e resolver o export dela e o passo anterior a
+                      chamada. */}
                   {item.kind === "function" && (
                     <span className="ml-2 text-[10px] text-[#6a9955]">
-                      {t("sim.protoUserMode", "user mode")}
+                      {item.library || t("sim.protoUserMode", "user mode")}
                     </span>
                   )}
                 </span>

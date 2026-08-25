@@ -1,0 +1,208 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntldr.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: LDR_DATA_TABLE_ENTRY
+kind: struct
+size: 312
+align: 8
+summary: "Um modulo carregado, na forma ATUAL do phnt. Ate TimeDateStamp e igual ao LDR_MODULE classico; o resto foi crescendo por versao do Windows — deste ponto em diante os offsets so valem para builds recentes."
+fields:
+  field0:
+    type: "LIST_ENTRY"
+    name: "InLoadOrderLinks"
+    offset: 0
+    size: 16
+    description: "Elo da lista por ordem de carga."
+  field1:
+    type: "LIST_ENTRY"
+    name: "InMemoryOrderLinks"
+    offset: 16
+    size: 16
+    description: "Elo da lista por ordem de endereco."
+  field2:
+    type: "LIST_ENTRY"
+    name: "InInitializationOrderLinks"
+    offset: 32
+    size: 16
+    description: "Elo da lista por ordem de inicializacao."
+  field3:
+    type: "PVOID"
+    name: "DllBase"
+    offset: 48
+    size: 8
+    description: "Base do modulo — o mesmo BaseAddress do LDR_MODULE."
+  field4:
+    type: "PVOID"
+    name: "EntryPoint"
+    offset: 56
+    size: 8
+    description: "Ponto de entrada do modulo."
+  field5:
+    type: "ULONG"
+    name: "SizeOfImage"
+    offset: 64
+    size: 4
+    description: "Tamanho da imagem mapeada, em bytes."
+  field6:
+    type: "UNICODE_STRING"
+    name: "FullDllName"
+    offset: 72
+    size: 16
+    description: "Caminho completo do modulo."
+  field7:
+    type: "UNICODE_STRING"
+    name: "BaseDllName"
+    offset: 88
+    size: 16
+    description: "So o nome do arquivo."
+  field8:
+    type: "ULONG"
+    name: "Flags"
+    offset: 104
+    size: 4
+    description: "Uniao de bits do carregador: LDRP_IMAGE_DLL 4, LDRP_ENTRY_PROCESSED 0x4000, entre outros."
+  field9:
+    type: "USHORT"
+    name: "ObsoleteLoadCount"
+    offset: 108
+    size: 2
+    description: "Antiga contagem de referencias. Hoje quem conta e o DdagNode."
+  field10:
+    type: "USHORT"
+    name: "TlsIndex"
+    offset: 110
+    size: 2
+    description: "Indice de TLS do modulo."
+  field11:
+    type: "LIST_ENTRY"
+    name: "HashLinks"
+    offset: 112
+    size: 16
+    description: "Elo da tabela de hash de nomes."
+  field12:
+    type: "ULONG"
+    name: "TimeDateStamp"
+    offset: 128
+    size: 4
+    description: "Carimbo de data do cabecalho PE. Ultimo campo compativel com o LDR_MODULE classico."
+  field13:
+    type: "PACTIVATION_CONTEXT"
+    name: "EntryPointActivationContext"
+    offset: 136
+    size: 8
+    description: "Contexto de ativacao usado ao chamar o ponto de entrada."
+  field14:
+    type: "PVOID"
+    name: "Lock"
+    offset: 144
+    size: 8
+    description: "Trava do carregador para este modulo."
+  field15:
+    type: "PLDR_DDAG_NODE"
+    name: "DdagNode"
+    offset: 152
+    size: 8
+    description: "No do grafo de dependencias. E onde a contagem de referencias vive nas versoes novas."
+  field16:
+    type: "LIST_ENTRY"
+    name: "NodeModuleLink"
+    offset: 160
+    size: 16
+    description: "Elo da lista de modulos daquele no do grafo."
+  field17:
+    type: "PVOID"
+    name: "LoadContext"
+    offset: 176
+    size: 8
+    description: "Contexto da carga em andamento."
+  field18:
+    type: "PVOID"
+    name: "ParentDllBase"
+    offset: 184
+    size: 8
+    description: "Base do modulo que causou esta carga."
+  field19:
+    type: "PVOID"
+    name: "SwitchBackContext"
+    offset: 192
+    size: 8
+    description: "Contexto de compatibilidade (shim)."
+  field20:
+    type: "RTL_BALANCED_NODE"
+    name: "BaseAddressIndexNode"
+    offset: 200
+    size: 24
+    description: "No da arvore indexada por endereco base — como o carregador acha o modulo de um endereco."
+  field21:
+    type: "RTL_BALANCED_NODE"
+    name: "MappingInfoIndexNode"
+    offset: 224
+    size: 24
+    description: "No da arvore indexada por informacao de mapeamento."
+  field22:
+    type: "PVOID"
+    name: "OriginalBase"
+    offset: 248
+    size: 8
+    description: "Base preferida no cabecalho PE, antes da relocacao (ASLR)."
+  field23:
+    type: "LARGE_INTEGER"
+    name: "LoadTime"
+    offset: 256
+    size: 8
+    description: "Quando o modulo foi carregado, em unidades de 100 ns."
+  field24:
+    type: "ULONG"
+    name: "BaseNameHashValue"
+    offset: 264
+    size: 4
+    description: "Hash do BaseDllName, usado na tabela de hash."
+  field25:
+    type: "LDR_DLL_LOAD_REASON"
+    name: "LoadReason"
+    offset: 268
+    size: 4
+    description: "Por que o modulo foi carregado: estatico, dinamico, delay-load, forwarder."
+  field26:
+    type: "ULONG"
+    name: "ImplicitPathOptions"
+    offset: 272
+    size: 4
+    description: "Opcoes de caminho implicito da carga."
+  field27:
+    type: "ULONG"
+    name: "ReferenceCount"
+    offset: 276
+    size: 4
+    description: "Contagem de referencias atual."
+  field28:
+    type: "ULONG"
+    name: "DependentLoadFlags"
+    offset: 280
+    size: 4
+    description: "Flags herdadas pelas dependencias."
+  field29:
+    type: "UCHAR"
+    name: "SigningLevel"
+    offset: 284
+    size: 1
+    description: "Nivel de assinatura da imagem."
+  field30:
+    type: "ULONG"
+    name: "CheckSum"
+    offset: 288
+    size: 4
+    description: "Checksum do cabecalho PE. Windows 11 em diante."
+  field31:
+    type: "PVOID"
+    name: "ActivePatchImageBase"
+    offset: 296
+    size: 8
+    description: "Base da imagem de hotpatch ativa."
+  field32:
+    type: "LDR_HOT_PATCH_STATE"
+    name: "HotPatchState"
+    offset: 304
+    size: 4
+    description: "Estado do hotpatch do modulo."

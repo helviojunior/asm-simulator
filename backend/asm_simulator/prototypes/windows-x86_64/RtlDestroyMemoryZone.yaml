@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlDestroyMemoryZone
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Destroi a zona e libera a memoria dela."
 input_args:

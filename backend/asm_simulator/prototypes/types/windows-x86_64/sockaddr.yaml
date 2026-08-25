@@ -1,0 +1,22 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Tipo da API do Windows (nao da API nativa, entao nao esta no phnt).
+# Offsets conferidos pelo compilador: ver types/probes/win32.c —
+# valor errado ali nao compila.
+type_name: sockaddr
+kind: struct
+size: 16
+align: 2
+summary: "Endereco de socket generico. So os dois primeiros bytes tem significado fixo; o resto depende da familia — para AF_INET o layout real e o do sockaddr_in."
+fields:
+  field0:
+    type: "u_short"
+    name: "sa_family"
+    offset: 0
+    size: 2
+    description: "Familia do endereco: AF_INET 2, AF_INET6 23. E o que diz como ler os 14 bytes seguintes."
+  field1:
+    type: "char[14]"
+    name: "sa_data"
+    offset: 2
+    size: 14
+    description: "Endereco propriamente dito, no formato da familia. Em AF_INET sao porta (2 bytes) e IP (4 bytes), ambos em BIG-endian, mais 8 de preenchimento."

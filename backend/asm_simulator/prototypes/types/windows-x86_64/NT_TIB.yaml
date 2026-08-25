@@ -1,0 +1,52 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntpebteb.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: NT_TIB
+kind: struct
+size: 56
+align: 8
+summary: "Primeiros 56 bytes do TEB — a parte que o hardware e o tratador de excecao usam. Em x64 chega-se a ela por GS:[0]."
+fields:
+  field0:
+    type: "PVOID"
+    name: "ExceptionList"
+    offset: 0
+    size: 8
+    description: "Cadeia SEH. So vale em 32 bits (FS:[0]); em x64 o desenrolamento e por tabela, e este campo fica NULL."
+  field1:
+    type: "PVOID"
+    name: "StackBase"
+    offset: 8
+    size: 8
+    description: "Topo da pilha da thread — o endereco MAIS ALTO, porque a pilha cresce para baixo."
+  field2:
+    type: "PVOID"
+    name: "StackLimit"
+    offset: 16
+    size: 8
+    description: "Fim da pilha efetivada. Abaixo disto so ha a pagina de guarda."
+  field3:
+    type: "PVOID"
+    name: "SubSystemTib"
+    offset: 24
+    size: 8
+    description: "Bloco do subsistema. Normalmente NULL."
+  field4:
+    type: "PVOID"
+    name: "FiberData"
+    offset: 32
+    size: 8
+    description: "Dados da fibra, quando a thread e uma fibra. E uniao com Version."
+  field5:
+    type: "PVOID"
+    name: "ArbitraryUserPointer"
+    offset: 40
+    size: 8
+    description: "Espaco livre para o programa. Tambem usado por depuradores para esconder dado."
+  field6:
+    type: "PNT_TIB"
+    name: "Self"
+    offset: 48
+    size: 8
+    description: "Aponta para o proprio TIB. E o truque que resolve o endereco linear do TEB: mov rax, gs:[0x30]."

@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlGetOwnerSecurityDescriptor
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Le o SID do dono de um security descriptor."
 input_args:

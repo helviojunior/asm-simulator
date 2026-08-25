@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlCopyUnicodeString
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Copia o conteudo de uma UNICODE_STRING para outra, truncando no MaximumLength do destino — o destino precisa ter buffer proprio."
 input_args:

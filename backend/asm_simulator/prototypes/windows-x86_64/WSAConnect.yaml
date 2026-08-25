@@ -1,0 +1,48 @@
+# Prototipo de funcao da API do Windows (ws2_32.dll). Ver prototypes/README.md.
+# Assinatura da documentacao da Microsoft e do SDK (winsock2.h);
+# layout dos tipos conferido pelo compilador — ver types/windows-x86_64/.
+function_name: WSAConnect
+kind: function
+library: "ws2_32.dll"
+ssn: null
+summary: "Conecta o socket a um endereco remoto. Versao estendida de connect(): aceita dados na propria conexao e qualidade de servico."
+input_args:
+  arg0:
+    type: "SOCKET"
+    name: "s"
+    direction: "in"
+    description: "Socket a conectar."
+  arg1:
+    type: "const sockaddr*"
+    name: "name"
+    direction: "in"
+    description: "Endereco de destino. Para IPv4 e um sockaddr_in com porta e IP em BIG-endian."
+  arg2:
+    type: "int"
+    name: "namelen"
+    direction: "in"
+    description: "Tamanho da estrutura, em bytes: 16 para sockaddr_in."
+  arg3:
+    type: "LPWSABUF"
+    name: "lpCallerData"
+    direction: "in/opt"
+    description: "Dados a enviar durante o estabelecimento da conexao. NULL e o normal — poucos protocolos suportam isso."
+  arg4:
+    type: "LPWSABUF"
+    name: "lpCalleeData"
+    direction: "out/opt"
+    description: "Recebe os dados que o outro lado mandou no estabelecimento. NULL e o normal."
+  arg5:
+    type: "LPQOS"
+    name: "lpSQOS"
+    direction: "in/opt"
+    description: "Qualidade de servico do fluxo de saida. NULL nao pede nenhuma."
+  arg6:
+    type: "LPQOS"
+    name: "lpGQOS"
+    direction: "in/opt"
+    description: "Qualidade de servico do grupo. NULL nao pede nenhuma."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 em sucesso; SOCKET_ERROR (-1) em erro, com o motivo em WSAGetLastError (WSAECONNREFUSED 10061 e o classico)."

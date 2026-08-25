@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlEqualUnicodeString
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Compara duas UNICODE_STRING. Compara por Length, entao funciona com texto sem terminador nulo — que e o caso do que vem do kernel."
 input_args:

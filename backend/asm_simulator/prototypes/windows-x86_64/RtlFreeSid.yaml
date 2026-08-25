@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlFreeSid
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Libera um SID vindo de RtlAllocateAndInitializeSid."
 input_args:

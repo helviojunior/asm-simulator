@@ -1,0 +1,89 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Nome CLASSICO da literatura de shellcode. O phnt declara a versao atual
+# como LDR_DATA_TABLE_ENTRY, em ntldr.h — os campos daqui sao o prefixo dela.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: LDR_MODULE
+kind: struct
+size: 136
+align: 8
+summary: "Um modulo carregado, na forma CLASSICA — a que a literatura de shellcode usa. E o prefixo do LDR_DATA_TABLE_ENTRY moderno: os campos ate TimeDateStamp ficam nos mesmos offsets."
+fields:
+  field0:
+    type: "LIST_ENTRY"
+    name: "InLoadOrderModuleList"
+    offset: 0
+    size: 16
+    description: "Elo da lista por ordem de carga. Flink aponta para o PROXIMO elo, nao para o inicio do registro."
+  field1:
+    type: "LIST_ENTRY"
+    name: "InMemoryOrderModuleList"
+    offset: 16
+    size: 16
+    description: "Elo da lista por ordem de endereco. Andar por ela e chegar aqui com 16 bytes a menos no ponteiro."
+  field2:
+    type: "LIST_ENTRY"
+    name: "InInitializationOrderModuleList"
+    offset: 32
+    size: 16
+    description: "Elo da lista por ordem de inicializacao."
+  field3:
+    type: "PVOID"
+    name: "BaseAddress"
+    offset: 48
+    size: 8
+    description: "Base do modulo — o HMODULE. E o que se procura ao varrer a lista atras da kernel32."
+  field4:
+    type: "PVOID"
+    name: "EntryPoint"
+    offset: 56
+    size: 8
+    description: "Ponto de entrada do modulo (o DllMain, para DLL)."
+  field5:
+    type: "ULONG"
+    name: "SizeOfImage"
+    offset: 64
+    size: 4
+    description: "Tamanho da imagem mapeada, em bytes."
+  field6:
+    type: "UNICODE_STRING"
+    name: "FullDllName"
+    offset: 72
+    size: 16
+    description: "Caminho completo do modulo."
+  field7:
+    type: "UNICODE_STRING"
+    name: "BaseDllName"
+    offset: 88
+    size: 16
+    description: "So o nome do arquivo (\"KERNEL32.DLL\"). E o campo que se compara na busca."
+  field8:
+    type: "ULONG"
+    name: "Flags"
+    offset: 104
+    size: 4
+    description: "Flags do carregador."
+  field9:
+    type: "SHORT"
+    name: "LoadCount"
+    offset: 108
+    size: 2
+    description: "Contagem de referencias. -1 significa carregado permanentemente."
+  field10:
+    type: "SHORT"
+    name: "TlsIndex"
+    offset: 110
+    size: 2
+    description: "Indice de TLS do modulo."
+  field11:
+    type: "LIST_ENTRY"
+    name: "HashTableEntry"
+    offset: 112
+    size: 16
+    description: "Elo da tabela de hash de nomes do carregador."
+  field12:
+    type: "ULONG"
+    name: "TimeDateStamp"
+    offset: 128
+    size: 4
+    description: "Carimbo de data do cabecalho PE."

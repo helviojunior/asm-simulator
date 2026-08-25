@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlLengthSecurityDescriptor
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Tamanho em bytes de um security descriptor — o quanto copiar ou gravar."
 input_args:

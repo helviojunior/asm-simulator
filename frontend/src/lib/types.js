@@ -25,11 +25,18 @@ export function isParseable(os, arch, name) {
   const known = NAMES.get(keyOf(os, arch));
   if (!known || !name) return false;
 
-  const candidate = String(name).replace(/[*]/g, "").replace(/\b(const|CONST)\b/g, "").trim();
-  // Convencao do Windows: `PFOO` e ponteiro para `FOO`, `PCFOO` para const FOO.
+  const candidate = String(name)
+    .replace(/[*]/g, "")
+    .replace(/\b(const|CONST|struct)\b/g, "")
+    .trim();
+  // Convencao do Windows: `PFOO`, `PCFOO` e `LPFOO` sao ponteiro para o MESMO
+  // `FOO`. E o backend que guarda o layout sob o nome sem prefixo — a lista
+  // aqui precisa enxergar igual, senao o botao de estrutura some justo nos
+  // tipos da API do Windows (LPSTARTUPINFOA, LPWSADATA).
   return known.has(candidate)
-    || (candidate.startsWith("P") && known.has(candidate.slice(1)))
-    || (candidate.startsWith("PC") && known.has(candidate.slice(2)));
+    || ["P", "PC", "LP", "LPC"].some(
+      (prefix) => candidate.startsWith(prefix) && known.has(candidate.slice(prefix.length))
+    );
 }
 
 /** Layout ja carregado, ou null. */

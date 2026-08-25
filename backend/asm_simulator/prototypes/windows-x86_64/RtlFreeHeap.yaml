@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlFreeHeap
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Libera um bloco alocado por RtlAllocateHeap. O heap tem de ser o MESMO da alocacao."
 input_args:

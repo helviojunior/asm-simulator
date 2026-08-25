@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlInitUnicodeString
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Prepara uma UNICODE_STRING apontando para um literal wide. NAO copia nada: Buffer passa a apontar para o texto original."
 input_args:

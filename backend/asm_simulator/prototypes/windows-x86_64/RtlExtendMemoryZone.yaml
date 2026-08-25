@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlExtendMemoryZone
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Acrescenta espaco a uma zona que encheu."
 input_args:

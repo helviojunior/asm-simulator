@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlAppendUnicodeStringToString
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Concatena uma UNICODE_STRING no fim de outra. E como se monta \"\\??\\\" + caminho sem mexer em ponteiro na mao."
 input_args:

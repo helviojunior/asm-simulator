@@ -1,0 +1,23 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Tipo da literatura CLASSICA da API nativa (ntinternals/ReactOS): o phnt
+# de hoje nao o declara com este nome — ver a nota no summary.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: USER_APC_OPTION
+kind: union
+size: 8
+align: 8
+summary: "Como uma APC de usuario e entregue: ou flags, ou o handle de um objeto de reserva de memoria ja alocado. Uniao — os dois campos ocupam os MESMOS 8 bytes. O phnt declara este parametro direto como HANDLE ReserveHandle em NtQueueApcThreadEx."
+fields:
+  field0:
+    type: "ULONG_PTR"
+    name: "UserApcFlags"
+    offset: 0
+    size: 8
+    description: "Flags de entrega quando nao se usa objeto de reserva: QUEUE_USER_APC_FLAGS_NONE 0, e o valor especial QUEUE_USER_APC_SPECIAL_USER_APC (1), que enfileira uma APC especial."
+  field1:
+    type: "HANDLE"
+    name: "MemoryReserveHandle"
+    offset: 0
+    size: 8
+    description: "Handle vindo de NtAllocateReserveObject. Garante que a fila da APC nao falha por falta de memoria."

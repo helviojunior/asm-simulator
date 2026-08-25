@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlExitUserProcess
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Encerra o processo passando pelo carregador: notifica as DLLs (DLL_PROCESS_DETACH) antes de chamar NtTerminateProcess. E o ExitProcess da ntdll."
 input_args:

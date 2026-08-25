@@ -1,0 +1,34 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntpsapi.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: INITIAL_TEB
+kind: struct
+size: 40
+align: 8
+summary: "Descricao da pilha entregue a uma thread nova. E o que NtCreateThread recebe para saber onde a thread vai empilhar."
+fields:
+  field0:
+    type: "struct"
+    name: "OldInitialTeb"
+    offset: 0
+    size: 16
+    description: "Bloco antigo (OldStackBase, OldStackLimit), mantido por compatibilidade. Zerado nas versoes atuais."
+  field1:
+    type: "PVOID"
+    name: "StackBase"
+    offset: 16
+    size: 8
+    description: "Topo da pilha nova — o endereco mais alto."
+  field2:
+    type: "PVOID"
+    name: "StackLimit"
+    offset: 24
+    size: 8
+    description: "Fim da parte efetivada da pilha."
+  field3:
+    type: "PVOID"
+    name: "StackAllocationBase"
+    offset: 32
+    size: 8
+    description: "Inicio da RESERVA. Abaixo do StackLimit: e o quanto a pilha ainda pode crescer."

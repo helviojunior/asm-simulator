@@ -37,6 +37,12 @@ FIELD_FIELDS = ('type', 'name', 'description')
 KINDS = ('syscall', 'function')
 DEFAULT_KIND = 'syscall'
 
+# DLL que exporta a funcao, quando ela nao entra no kernel. Nao e enfeite: no
+# Windows o caminho de uma chamada COMECA pela biblioteca — achar a base da
+# kernel32 e resolver o export dela e metade do trabalho de um shellcode, e o
+# painel precisa dizer em qual modulo aquele nome mora.
+LIBRARY_BY_KIND = {'function'}
+
 # Direcao do argumento, quando declarada. Vem das anotacoes SAL dos headers
 # (`_In_`, `_Out_`, `_Inout_`, com `_opt_` para opcional) e diz o que o nome
 # sozinho nao diz: `BaseAddress` no NtAllocateVirtualMemory entra E sai.
@@ -99,6 +105,14 @@ def parse(path):
     if kind == 'function' and data.get('ssn') is not None:
         raise PrototypeError(f'{path.name}: a user-mode function has no syscall number.')
 
+    library = data.get('library')
+    if library is not None and (not isinstance(library, str) or not library.strip()):
+        raise PrototypeError(f'{path.name}: library must be a non-empty string.')
+    if kind in LIBRARY_BY_KIND and not library:
+        # Sem o modulo, o nome sozinho nao diz onde procurar — e no Windows
+        # procurar o export e o passo anterior a chamada.
+        raise PrototypeError(f'{path.name}: a user-mode function must name its library.')
+
     args = data['input_args'] or {}
     if not isinstance(args, dict):
         raise PrototypeError(f'{path.name}: input_args must be a mapping (arg0, arg1, ...).')
@@ -118,6 +132,7 @@ def parse(path):
     return {
         'function_name': name,
         'kind': kind,
+        'library': library,
         'ssn': data.get('ssn'),
         'summary': data.get('summary', ''),
         'input_args': ordered,
@@ -169,6 +184,7 @@ def summaries(os_id, arch_id, kind=None):
         {
             'function_name': item['function_name'],
             'kind': item['kind'],
+            'library': item['library'],
             'ssn': item['ssn'],
             'summary': item['summary'],
             'args': len(item['input_args']),
@@ -313,16 +329,25 @@ def load_types(os_id, arch_id):
     return found
 
 
+# Prefixos de ponteiro do Windows. `PFOO`, `PCFOO` e `LPFOO` sao o MESMO tipo
+# apontado — a estrutura a ler e sempre `FOO`. Sem isto, um `LPPROCESS_INFORMATION`
+# no painel nao acharia o layout que esta no catalogo como PROCESS_INFORMATION.
+POINTER_PREFIXES = ('P', 'PC', 'LP', 'LPC')
+
+
 def load_type(os_id, arch_id, type_name):
-    """Um tipo, ou None. Aceita a convencao `PFOO`/`PCFOO` do Windows."""
+    """Um tipo, ou None. Aceita a convencao `PFOO`/`PCFOO`/`LPFOO` do Windows."""
     if not type_name:
         return None
     known = load_types(os_id, arch_id)
 
-    candidate = type_name.replace('*', '').strip()
-    for name in (candidate,
-                 candidate[1:] if candidate.startswith('P') else None,
-                 candidate[2:] if candidate.startswith('PC') else None):
+    # `const sockaddr*` e `struct sockaddr *` chegam assim, escritos como no
+    # header; o que interessa e o nome do tipo no meio.
+    candidate = type_name.replace('*', '').replace('const', '').replace('struct', '').strip()
+    names = [candidate]
+    names += [candidate[len(prefix):] for prefix in POINTER_PREFIXES
+              if candidate.startswith(prefix)]
+    for name in names:
         if name and name in known:
             return known[name]
     return None

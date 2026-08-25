@@ -1,0 +1,18 @@
+# Prototipo de funcao da API do Windows (kernel32.dll). Ver prototypes/README.md.
+# Assinatura da documentacao da Microsoft e do SDK (processthreadsapi.h);
+# layout dos tipos conferido pelo compilador — ver types/windows-x86_64/.
+function_name: ExitProcess
+kind: function
+library: "kernel32.dll"
+ssn: null
+summary: "Encerra o processo atual e todas as suas threads. Avisa as DLLs (DLL_PROCESS_DETACH) antes de sair, ao contrario de TerminateProcess."
+input_args:
+  arg0:
+    type: "UINT"
+    name: "uExitCode"
+    direction: "in"
+    description: "Codigo de saida do processo, visto por quem esperar por ele."
+output_data:
+  type: "VOID"
+  name: "none"
+  description: "Nao retorna: a execucao termina aqui. A instrucao seguinte nunca roda."

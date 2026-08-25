@@ -1,0 +1,40 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntsxs.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: ACTIVATION_CONTEXT_STACK
+kind: struct
+size: 40
+align: 8
+summary: "A pilha de contextos de ativacao da thread. Apontada pelo TEB, decide qual versao de DLL side-by-side o codigo enxerga."
+fields:
+  field0:
+    type: "PRTL_ACTIVATION_CONTEXT_STACK_FRAME"
+    name: "ActiveFrame"
+    offset: 0
+    size: 8
+    description: "Quadro no topo — o contexto em vigor agora."
+  field1:
+    type: "LIST_ENTRY"
+    name: "FrameListCache"
+    offset: 8
+    size: 16
+    description: "Quadros ja alocados e reaproveitados, para nao alocar a cada ativacao."
+  field2:
+    type: "ULONG"
+    name: "Flags"
+    offset: 24
+    size: 4
+    description: "ACTIVATION_CONTEXT_STACK_FLAG_QUERIES_DISABLED 1 desliga as consultas."
+  field3:
+    type: "ULONG"
+    name: "NextCookieSequenceNumber"
+    offset: 28
+    size: 4
+    description: "Proximo numero de sequencia dos cookies de ativacao."
+  field4:
+    type: "ULONG"
+    name: "StackId"
+    offset: 32
+    size: 4
+    description: "Identificador desta pilha."

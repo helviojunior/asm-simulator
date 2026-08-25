@@ -1,0 +1,23 @@
+# Prototipo de funcao da API do Windows (ws2_32.dll). Ver prototypes/README.md.
+# Assinatura da documentacao da Microsoft e do SDK (winsock2.h);
+# layout dos tipos conferido pelo compilador — ver types/windows-x86_64/.
+function_name: WSAStartup
+kind: function
+library: "ws2_32.dll"
+ssn: null
+summary: "Inicializa o Winsock no processo. Nenhuma outra funcao de socket funciona antes desta — e o passo que falta quando o socket devolve erro logo de cara."
+input_args:
+  arg0:
+    type: "WORD"
+    name: "wVersionRequired"
+    direction: "in"
+    description: "Versao pedida, byte baixo maior e byte alto menor: 0x0202 e a versao 2.2."
+  arg1:
+    type: "LPWSADATA"
+    name: "lpWSAData"
+    direction: "out"
+    description: "Recebe a WSADATA com os dados da implementacao. Nao da para passar NULL, mesmo sem interesse no conteudo: sao 408 bytes de pilha a reservar."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 em sucesso. Diferente de zero e o proprio codigo de erro — aqui NAO se chama WSAGetLastError, que ainda nao vale nada."

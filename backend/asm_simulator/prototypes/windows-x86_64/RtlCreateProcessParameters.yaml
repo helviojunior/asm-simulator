@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlCreateProcessParameters
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Monta o bloco RTL_USER_PROCESS_PARAMETERS — linha de comando, diretorio e ambiente — que o novo processo vera no PEB."
 input_args:

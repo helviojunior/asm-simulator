@@ -1,0 +1,63 @@
+# Prototipo de funcao da API do Windows (kernel32.dll). Ver prototypes/README.md.
+# Assinatura da documentacao da Microsoft e do SDK (processthreadsapi.h);
+# layout dos tipos conferido pelo compilador — ver types/windows-x86_64/.
+function_name: CreateProcessA
+kind: function
+library: "kernel32.dll"
+ssn: null
+summary: "Cria um processo e sua thread inicial, a partir de uma linha de comando ANSI. E o caminho normal do Windows para \"executar um programa\"."
+input_args:
+  arg0:
+    type: "LPCSTR"
+    name: "lpApplicationName"
+    direction: "in/opt"
+    description: "Caminho do executavel. NULL faz o sistema tirar o programa do inicio de lpCommandLine."
+  arg1:
+    type: "LPSTR"
+    name: "lpCommandLine"
+    direction: "inout/opt"
+    description: "Linha de comando. NAO e const: a funcao ESCREVE nesse buffer, entao ele nao pode estar em memoria so-leitura (nem ser um literal)."
+  arg2:
+    type: "LPSECURITY_ATTRIBUTES"
+    name: "lpProcessAttributes"
+    direction: "in/opt"
+    description: "Seguranca e herdabilidade do handle do processo. NULL usa o padrao."
+  arg3:
+    type: "LPSECURITY_ATTRIBUTES"
+    name: "lpThreadAttributes"
+    direction: "in/opt"
+    description: "Seguranca e herdabilidade do handle da thread. NULL usa o padrao."
+  arg4:
+    type: "BOOL"
+    name: "bInheritHandles"
+    direction: "in"
+    description: "TRUE repassa ao filho os handles herdaveis do processo atual — e assim que um pipe chega ao processo criado."
+  arg5:
+    type: "DWORD"
+    name: "dwCreationFlags"
+    direction: "in"
+    description: "CREATE_SUSPENDED 4 (nasce parado, para injetar antes de rodar), CREATE_NO_WINDOW 0x8000000, DETACHED_PROCESS 8."
+  arg6:
+    type: "LPVOID"
+    name: "lpEnvironment"
+    direction: "in/opt"
+    description: "Bloco de ambiente do filho. NULL herda o do processo atual."
+  arg7:
+    type: "LPCSTR"
+    name: "lpCurrentDirectory"
+    direction: "in/opt"
+    description: "Diretorio atual do filho. NULL herda o do processo atual."
+  arg8:
+    type: "LPSTARTUPINFOA"
+    name: "lpStartupInfo"
+    direction: "in"
+    description: "STARTUPINFOA com cb = 104 preenchido. E onde se redireciona a E/S: STARTF_USESTDHANDLES 0x100 em dwFlags faz valerem hStdInput/hStdOutput/hStdError."
+  arg9:
+    type: "LPPROCESS_INFORMATION"
+    name: "lpProcessInformation"
+    direction: "out"
+    description: "Recebe os handles e os IDs do processo e da thread. Os DOIS handles sao seus e precisam de CloseHandle."
+output_data:
+  type: "BOOL"
+  name: "ok"
+  description: "Diferente de zero em sucesso; 0 em erro (GetLastError diz por que). Cuidado: nao e o PID — ele sai em lpProcessInformation."

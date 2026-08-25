@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlGetControlSecurityDescriptor
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Le os bits de controle e a revisao de um security descriptor."
 input_args:

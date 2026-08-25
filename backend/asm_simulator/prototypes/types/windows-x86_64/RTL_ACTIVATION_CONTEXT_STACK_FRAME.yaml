@@ -1,0 +1,28 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntsxs.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: RTL_ACTIVATION_CONTEXT_STACK_FRAME
+kind: struct
+size: 24
+align: 8
+summary: "Um quadro da pilha de contextos de ativacao (side-by-side): qual manifesto vale enquanto aquele codigo roda."
+fields:
+  field0:
+    type: "PRTL_ACTIVATION_CONTEXT_STACK_FRAME"
+    name: "Previous"
+    offset: 0
+    size: 8
+    description: "Quadro anterior da pilha."
+  field1:
+    type: "PACTIVATION_CONTEXT"
+    name: "ActivationContext"
+    offset: 8
+    size: 8
+    description: "Contexto de ativacao deste quadro."
+  field2:
+    type: "ULONG"
+    name: "Flags"
+    offset: 16
+    size: 4
+    description: "RTL_ACTIVATION_CONTEXT_STACK_FRAME_FLAG_* — se o quadro foi liberado no desenrolamento, por exemplo."

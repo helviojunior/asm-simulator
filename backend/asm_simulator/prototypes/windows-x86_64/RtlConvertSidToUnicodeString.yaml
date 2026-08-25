@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlConvertSidToUnicodeString
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Escreve um SID na forma textual S-1-5-..."
 input_args:

@@ -1,0 +1,43 @@
+# Prototipo de funcao da API do Windows (ws2_32.dll). Ver prototypes/README.md.
+# Assinatura da documentacao da Microsoft e do SDK (winsock2.h);
+# layout dos tipos conferido pelo compilador — ver types/windows-x86_64/.
+function_name: WSASocketA
+kind: function
+library: "ws2_32.dll"
+ssn: null
+summary: "Cria um socket. Versao estendida de socket(): e a que aceita WSA_FLAG_OVERLAPPED e, por isso, a usada quando o socket vira handle de E/S padrao de um processo."
+input_args:
+  arg0:
+    type: "int"
+    name: "af"
+    direction: "in"
+    description: "Familia de enderecos: AF_INET 2 (IPv4), AF_INET6 23."
+  arg1:
+    type: "int"
+    name: "type"
+    direction: "in"
+    description: "SOCK_STREAM 1 (TCP), SOCK_DGRAM 2 (UDP)."
+  arg2:
+    type: "int"
+    name: "protocol"
+    direction: "in"
+    description: "IPPROTO_TCP 6, IPPROTO_UDP 17. 0 deixa o sistema escolher pelo par (af, type)."
+  arg3:
+    type: "LPWSAPROTOCOL_INFOA"
+    name: "lpProtocolInfo"
+    direction: "in/opt"
+    description: "Provedor especifico a usar. NULL usa o padrao — o normal."
+  arg4:
+    type: "GROUP"
+    name: "g"
+    direction: "in"
+    description: "Grupo de sockets. 0 e o valor comum."
+  arg5:
+    type: "DWORD"
+    name: "dwFlags"
+    direction: "in"
+    description: "0 cria um socket que pode ser usado como handle de arquivo — e o que permite ligar stdin/stdout do cmd.exe direto nele. WSA_FLAG_OVERLAPPED 1 pede E/S sobreposta."
+output_data:
+  type: "SOCKET"
+  name: "socket"
+  description: "O socket, ou INVALID_SOCKET (-1) em erro. Diferente das outras: erro NAO e zero — zero e um socket valido."

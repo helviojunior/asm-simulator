@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlCreateMemoryZone
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Cria uma \"zona\": alocador de arena, onde os blocos saem em sequencia e sao descartados todos de uma vez."
 input_args:

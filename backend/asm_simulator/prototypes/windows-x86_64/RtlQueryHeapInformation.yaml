@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlQueryHeapInformation
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Le uma propriedade de um heap — ou, com HeapHandle NULL, o resumo de todos os heaps do processo."
 input_args:

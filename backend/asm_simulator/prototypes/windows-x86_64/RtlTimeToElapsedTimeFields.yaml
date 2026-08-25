@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlTimeToElapsedTimeFields
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Quebra um INTERVALO em dias, horas, minutos e segundos. E a funcao para duracao (tempo de CPU, uptime) — nao para data."
 input_args:

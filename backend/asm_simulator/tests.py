@@ -745,6 +745,13 @@ class PrototypeTests(TransactionTestCase):
         rtl = self.prototypes.load('windows', 'x86_64', 'RtlInitUnicodeString')
         self.assertEqual(rtl['kind'], 'function')
         self.assertIsNone(rtl['ssn'])
+        self.assertEqual(rtl['library'], 'ntdll.dll')
+
+        # A API do Windows entra no mesmo catalogo, separada pela DLL de origem.
+        self.assertEqual(
+            self.prototypes.load('windows', 'x86_64', 'WinExec')['library'], 'kernel32.dll')
+        self.assertEqual(
+            self.prototypes.load('windows', 'x86_64', 'bind')['library'], 'ws2_32.dll')
 
         self.assertEqual(
             self.prototypes.load('windows', 'x86_64', 'NtClose')['kind'], 'syscall')
@@ -754,12 +761,30 @@ class PrototypeTests(TransactionTestCase):
         functions = self.prototypes.summaries('windows', 'x86_64', 'function')
 
         self.assertTrue(all(item['function_name'].startswith('Nt') for item in syscalls))
-        self.assertTrue(all(item['function_name'].startswith(('Rtl', 'Ldr'))
-                            for item in functions))
+        # A funcao de modo usuario nao tem numero, e tem de dizer de qual DLL
+        # sai: no Windows, achar o export e o passo anterior a chamada.
+        self.assertTrue(all(item['ssn'] is None and item['library'] for item in functions))
+        self.assertEqual(
+            {item['library'] for item in functions},
+            {'ntdll.dll', 'kernel32.dll', 'ws2_32.dll'})
         # Sem filtro vem tudo: e o que o painel de `call` usa, onde os dois
         # sao alvos legitimos.
         self.assertEqual(len(self.prototypes.summaries('windows', 'x86_64')),
                          len(syscalls) + len(functions))
+
+    def test_a_pointer_typedef_finds_the_type_it_points_to(self):
+        # `PFOO`, `PCFOO` e `LPFOO` sao o MESMO layout. Sem isto, o painel nao
+        # oferece "ler como estrutura" justo nos tipos da API do Windows.
+        for written in ('STARTUPINFOA', 'LPSTARTUPINFOA'):
+            with self.subTest(type=written):
+                found = self.prototypes.load_type('windows', 'x86_64', written)
+                self.assertIsNotNone(found)
+                self.assertEqual(found['type_name'], 'STARTUPINFOA')
+                self.assertEqual(found['size'], 104)
+
+        # Escrito como no header, com `const` e `*` no meio do caminho.
+        found = self.prototypes.load_type('windows', 'x86_64', 'const sockaddr*')
+        self.assertEqual(found['type_name'], 'sockaddr')
 
     def test_a_user_mode_function_with_a_syscall_number_is_refused(self):
         import tempfile

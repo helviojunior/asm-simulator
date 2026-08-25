@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlGetVersion
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Versao real do Windows, lida do PEB. Nao mente com shim de compatibilidade, ao contrario de GetVersionEx."
 input_args:

@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntldr.h
 function_name: LdrGetProcedureAddress
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Endereco de um export, pelo nome ou pelo ordinal. E o GetProcAddress do carregador, sem passar pela kernel32."
 input_args:

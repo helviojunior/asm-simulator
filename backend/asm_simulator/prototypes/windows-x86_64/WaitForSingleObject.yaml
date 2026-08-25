@@ -1,0 +1,23 @@
+# Prototipo de funcao da API do Windows (kernel32.dll). Ver prototypes/README.md.
+# Assinatura da documentacao da Microsoft e do SDK (synchapi.h);
+# layout dos tipos conferido pelo compilador — ver types/windows-x86_64/.
+function_name: WaitForSingleObject
+kind: function
+library: "kernel32.dll"
+ssn: null
+summary: "Espera ate o objeto ser sinalizado, ou ate o tempo limite. Um processo/thread e sinalizado quando TERMINA — e assim que se espera um filho."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "hHandle"
+    direction: "in"
+    description: "Objeto a esperar: processo, thread, mutex, evento, semaforo, job ou timer. Precisa de SYNCHRONIZE."
+  arg1:
+    type: "DWORD"
+    name: "dwMilliseconds"
+    direction: "in"
+    description: "Tempo limite em MILISSEGUNDOS (aqui nao ha unidade de 100 ns). 0 so testa e volta; INFINITE (0xFFFFFFFF) espera sem limite."
+output_data:
+  type: "DWORD"
+  name: "result"
+  description: "WAIT_OBJECT_0 (0) sinalizado; WAIT_TIMEOUT (0x102) tempo esgotado; WAIT_ABANDONED (0x80) mutex abandonado; WAIT_FAILED (0xFFFFFFFF) erro."

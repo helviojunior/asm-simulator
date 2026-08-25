@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlTimeToTimeFields
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Quebra um tempo de 64 bits em ano, mes, dia, hora, minuto, segundo e milissegundo."
 input_args:

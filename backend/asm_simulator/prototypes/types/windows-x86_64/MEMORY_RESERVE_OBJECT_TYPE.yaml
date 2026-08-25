@@ -1,0 +1,17 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Tipo da literatura CLASSICA da API nativa (ntinternals/ReactOS): o phnt
+# de hoje nao o declara com este nome — ver a nota no summary.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: MEMORY_RESERVE_OBJECT_TYPE
+kind: enum
+size: 4
+align: 4
+summary: "Que tipo de objeto NtAllocateReserveObject deve pre-alocar. E um ENUM de 4 bytes — o \"campo\" abaixo e o proprio valor. O phnt chama este tipo de MEMORY_RESERVE_TYPE."
+fields:
+  field0:
+    type: "ULONG"
+    name: "Value"
+    offset: 0
+    size: 4
+    description: "0 MemoryReserveUserApc (reserva para enfileirar APC de usuario); 1 MemoryReserveIoCompletion (pacote de conclusao de E/S); 2 MemoryReserveTypeMax, o limite."

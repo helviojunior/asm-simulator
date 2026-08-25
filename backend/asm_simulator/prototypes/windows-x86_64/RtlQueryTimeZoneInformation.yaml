@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlQueryTimeZoneInformation
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Fuso horario em vigor: nome, deslocamento e as regras de troca do horario de verao."
 input_args:

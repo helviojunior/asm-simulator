@@ -1,0 +1,28 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntpebteb.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: TEB_ACTIVE_FRAME
+kind: struct
+size: 24
+align: 8
+summary: "Um quadro na pilha de quadros ativos da thread. Encadeamento simples, para diagnostico — nao e a pilha de chamadas do processador."
+fields:
+  field0:
+    type: "ULONG"
+    name: "Flags"
+    offset: 0
+    size: 4
+    description: "Flags do quadro."
+  field1:
+    type: "PTEB_ACTIVE_FRAME"
+    name: "Previous"
+    offset: 8
+    size: 8
+    description: "Quadro anterior. NULL marca o fundo da pilha."
+  field2:
+    type: "PTEB_ACTIVE_FRAME_CONTEXT"
+    name: "Context"
+    offset: 16
+    size: 8
+    description: "Contexto (nome e flags) deste quadro."

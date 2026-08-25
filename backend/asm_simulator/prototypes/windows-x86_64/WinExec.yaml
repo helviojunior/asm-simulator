@@ -1,0 +1,23 @@
+# Prototipo de funcao da API do Windows (kernel32.dll). Ver prototypes/README.md.
+# Assinatura da documentacao da Microsoft e do SDK (winbase.h);
+# layout dos tipos conferido pelo compilador — ver types/windows-x86_64/.
+function_name: WinExec
+kind: function
+library: "kernel32.dll"
+ssn: null
+summary: "Executa uma linha de comando. Sobrevivente do Windows de 16 bits: uma chamada, dois argumentos, nenhuma estrutura — por isso e a predileta em shellcode."
+input_args:
+  arg0:
+    type: "LPCSTR"
+    name: "lpCmdLine"
+    direction: "in"
+    description: "Linha de comando (\"cmd.exe /c whoami\"). Sem caminho, procura no diretorio atual, no do sistema e no PATH."
+  arg1:
+    type: "UINT"
+    name: "uCmdShow"
+    direction: "in"
+    description: "Como a janela aparece: SW_HIDE 0 (sem janela), SW_SHOW 5, SW_SHOWNORMAL 1."
+output_data:
+  type: "UINT"
+  name: "result"
+  description: "MAIOR que 31 em sucesso. Valores de 0 a 31 sao erro: 0 sem memoria, 2 arquivo nao encontrado, 3 caminho nao encontrado, 11 formato invalido."

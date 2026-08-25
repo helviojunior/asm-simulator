@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlGetDaclSecurityDescriptor
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Le a DACL de um security descriptor — a lista que decide quem tem acesso."
 input_args:

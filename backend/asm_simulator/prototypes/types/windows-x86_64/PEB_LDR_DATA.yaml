@@ -1,0 +1,64 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntpebteb.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: PEB_LDR_DATA
+kind: struct
+size: 88
+align: 8
+summary: "Onde o carregador guarda a lista dos modulos do processo. Chega-se aqui por PEB->Ldr, e e o caminho classico para achar a base da kernel32 sem chamar API."
+fields:
+  field0:
+    type: "ULONG"
+    name: "Length"
+    offset: 0
+    size: 4
+    description: "Tamanho da estrutura, em bytes (88 em x64)."
+  field1:
+    type: "BOOLEAN"
+    name: "Initialized"
+    offset: 4
+    size: 1
+    description: "TRUE depois de o carregador montar as listas."
+  field2:
+    type: "HANDLE"
+    name: "SsHandle"
+    offset: 8
+    size: 8
+    description: "Uso interno do carregador."
+  field3:
+    type: "LIST_ENTRY"
+    name: "InLoadOrderModuleList"
+    offset: 16
+    size: 16
+    description: "Modulos na ordem em que foram CARREGADOS. O primeiro e sempre o proprio executavel."
+  field4:
+    type: "LIST_ENTRY"
+    name: "InMemoryOrderModuleList"
+    offset: 32
+    size: 16
+    description: "Mesmos modulos na ordem de ENDERECO. E a lista mais usada em shellcode: 3o elemento costuma ser a kernel32."
+  field5:
+    type: "LIST_ENTRY"
+    name: "InInitializationOrderModuleList"
+    offset: 48
+    size: 16
+    description: "Ordem em que os DllMain rodaram. O executavel NAO aparece aqui."
+  field6:
+    type: "PVOID"
+    name: "EntryInProgress"
+    offset: 64
+    size: 8
+    description: "Modulo cuja inicializacao esta em curso."
+  field7:
+    type: "BOOLEAN"
+    name: "ShutdownInProgress"
+    offset: 72
+    size: 1
+    description: "TRUE enquanto o processo esta terminando."
+  field8:
+    type: "HANDLE"
+    name: "ShutdownThreadId"
+    offset: 80
+    size: 8
+    description: "Thread que conduz o encerramento."

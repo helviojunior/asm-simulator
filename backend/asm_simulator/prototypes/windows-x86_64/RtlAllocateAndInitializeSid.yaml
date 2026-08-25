@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlAllocateAndInitializeSid
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Aloca e preenche um SID com a autoridade e as sub-autoridades dadas. O par e RtlFreeSid."
 input_args:

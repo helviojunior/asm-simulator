@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlInitAnsiString
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Mesma coisa da versao Unicode, para texto de 8 bits. E o formato que LdrGetProcedureAddress espera para o nome do export."
 input_args:

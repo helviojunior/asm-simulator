@@ -1,0 +1,18 @@
+# Prototipo de funcao da API do Windows (kernel32.dll). Ver prototypes/README.md.
+# Assinatura da documentacao da Microsoft e do SDK (libloaderapi.h);
+# layout dos tipos conferido pelo compilador — ver types/windows-x86_64/.
+function_name: LoadLibraryA
+kind: function
+library: "kernel32.dll"
+ssn: null
+summary: "Carrega um modulo no processo e devolve a base dele. Se ja estiver carregado, so incrementa a contagem de referencias."
+input_args:
+  arg0:
+    type: "LPCSTR"
+    name: "lpLibFileName"
+    direction: "in"
+    description: "Nome ou caminho do modulo (\"ws2_32.dll\"). Sem caminho, vale a ordem de busca de DLL — que e por onde passa o DLL hijacking."
+output_data:
+  type: "HMODULE"
+  name: "module"
+  description: "Base do modulo (o endereco onde o PE foi mapeado), ou NULL em erro. E o primeiro argumento de GetProcAddress."

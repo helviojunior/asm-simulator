@@ -20,6 +20,7 @@ sem precisar de um índice à parte que possa sair de sincronia.
 ```yaml
 function_name: write        # igual ao nome do arquivo
 kind: syscall               # syscall (padrão) | function — ver abaixo
+library: null               # obrigatório quando kind é function ("kernel32.dll")
 ssn: 4                      # null no Windows: o número muda entre builds
 summary: "..."              # uma linha sobre o que a função faz
 input_args:
@@ -81,10 +82,27 @@ A API filtra com `?kind=syscall` (ou `function`); sem o parâmetro vêm os dois 
 é o que o painel de `call` usa, onde tanto o stub `Nt*` quanto a função de modo
 usuário são alvos legítimos.
 
-As `Rtl*`/`Ldr*` presentes são as usadas pelos samples do livro *Windows Native
-API* (zodiacon/winnativeapibooksamples): heap, zona de memória, UNICODE_STRING,
-criação de processo e thread, privilégio, SID, security descriptor, tempo e
-resolução de export. Assinaturas do `ntrtl.h` e do `ntldr.h` do phnt.
+### `library`: de qual DLL sai a função
+
+Toda função `kind: function` **precisa** dizer o módulo que a exporta — o
+carregador recusa uma que não diga. No Windows, achar a base do módulo e
+resolver o export dele é o passo *anterior* à chamada; um nome solto não diz
+onde procurar. É o que o auto-completar mostra ao lado do nome, no lugar do
+número que a syscall tem.
+
+As `Rtl*`/`Ldr*` (`ntdll.dll`) são as usadas pelos samples do livro *Windows
+Native API* (zodiacon/winnativeapibooksamples): heap, zona de memória,
+UNICODE_STRING, criação de processo e thread, privilégio, SID, security
+descriptor, tempo e resolução de export. Assinaturas do `ntrtl.h` e do
+`ntldr.h` do phnt.
+
+Além delas, a **API do Windows** propriamente dita, com assinatura da
+documentação da Microsoft:
+
+| `library` | funções |
+|---|---|
+| `kernel32.dll` | `CreateProcessA`, `ExitProcess`, `LoadLibraryA`, `WaitForSingleObject`, `WinExec` |
+| `ws2_32.dll` | `WSAStartup`, `WSASocketA`, `bind`, `WSAConnect` |
 
 Ficam **fora** o que não é função exportada: `RtlProcessHeap` é macro para
 `NtCurrentPeb()->ProcessHeap`, `RtlConvertUlongToLuid` é `FORCEINLINE` no
@@ -129,6 +147,26 @@ fields:
 Um campo pode ter `fields` próprios — é como um bloco anônimo (a union dentro
 do `IO_STATUS_BLOCK`) aparece: mesmo endereço da struct, campos como filhos.
 
+`kind` aceita `struct`, `union` e `enum`. O `enum` é um caso de borda honesto:
+não tem campo nenhum, então entra como **um** campo de 4 bytes no offset 0,
+cuja descrição lista os valores possíveis (ver `MEMORY_RESERVE_OBJECT_TYPE`).
+
+### Ponteiro para o tipo
+
+`PFOO`, `PCFOO`, `LPFOO` e `const FOO*` são o **mesmo layout**: o carregador
+tira o prefixo e acha `FOO`. Por isso um argumento declarado
+`LPSTARTUPINFOA` abre o painel de estrutura com o `STARTUPINFOA` do catálogo.
+
+### PEB e TEB são RECORTADOS
+
+O `TEB` real passa de 6 KB e o `PEB` de 1900 bytes, e a maior parte desses
+campos muda de posição a cada versão do Windows. O catálogo traz o **prefixo
+estável** de cada um — `TEB` até `FpSoftwareStatusRegister` (0x10C) e `PEB` até
+`NtGlobalFlag` (0xBC), que é onde estão os campos que uma aula usa
+(`ProcessEnvironmentBlock`, `ClientId`, `Ldr`, `ProcessHeap`, `BeingDebugged`).
+O corte está dito no `summary` de cada um, para ninguém ler o fim da struct
+como se fosse o fim do objeto.
+
 `offset` e `size` não são documentação, são o que **lê a memória**. Um erro aqui
 não aparece como falha: aparece como um campo mostrando o byte errado, com toda
 a aparência de estar certo. Por isso o carregador recusa um campo que termine
@@ -146,6 +184,11 @@ Os do phnt são calculados porque ele não compila fora do SDK da Microsoft (usa
 sufixos literais do MSVC). O cálculo é conferido contra tamanhos conhecidos —
 `OBJECT_ATTRIBUTES` 48, `UNICODE_STRING` 16, `IO_STATUS_BLOCK` 16 — e a suíte
 falha se uma regra de alinhamento sair errada.
+
+Os tipos do **PEB/TEB e do carregador** não são calculados: são medidos. As
+structs foram reescritas em C portável e impressas com `offsetof` — ver
+`types/probes/`, que traz as duas sondas (mingw para os tipos do SDK, gcc para
+os do phnt) e o comando para rodar cada uma.
 
 O mesmo tipo pode ter layouts diferentes por arquitetura: `iovec` tem 16 bytes
 em 64 bits e 8 em 32. Por isso o agrupamento por alvo vale aqui também.

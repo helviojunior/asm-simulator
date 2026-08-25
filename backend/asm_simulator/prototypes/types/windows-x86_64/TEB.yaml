@@ -1,0 +1,100 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntpebteb.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: TEB
+kind: struct
+size: 272
+align: 8
+summary: "Thread Environment Block: o que a thread sabe sobre si mesma. RECORTADO ate FpSoftwareStatusRegister (0x10C) — o TEB real passa de 6 KB, e depois deste ponto vem GDI_TEB_BATCH e centenas de campos que mudam por versao. Em x64 o TEB e alcancado por GS:[0x30]."
+fields:
+  field0:
+    type: "NT_TIB"
+    name: "NtTib"
+    offset: 0
+    size: 56
+    description: "A parte que o hardware usa. NtTib.Self (offset 0x30) e o proprio endereco do TEB — e o que gs:[0x30] devolve."
+  field1:
+    type: "PVOID"
+    name: "EnvironmentPointer"
+    offset: 56
+    size: 8
+    description: "Reservado."
+  field2:
+    type: "CLIENT_ID"
+    name: "ClientId"
+    offset: 64
+    size: 16
+    description: "Par (PID, TID) da thread. E daqui que GetCurrentProcessId e GetCurrentThreadId leem, sem syscall."
+  field3:
+    type: "PVOID"
+    name: "ActiveRpcHandle"
+    offset: 80
+    size: 8
+    description: "Handle da chamada RPC em curso."
+  field4:
+    type: "PVOID"
+    name: "ThreadLocalStoragePointer"
+    offset: 88
+    size: 8
+    description: "Vetor dos slots de TLS da thread — o array que __declspec(thread) usa."
+  field5:
+    type: "PPEB"
+    name: "ProcessEnvironmentBlock"
+    offset: 96
+    size: 8
+    description: "Ponteiro para o PEB. E o passo 1 de todo shellcode em x64: mov rax, gs:[0x60]."
+  field6:
+    type: "ULONG"
+    name: "LastErrorValue"
+    offset: 104
+    size: 4
+    description: "O valor de GetLastError. Fica AQUI, na thread — por isso ele nao vaza entre threads."
+  field7:
+    type: "ULONG"
+    name: "CountOfOwnedCriticalSections"
+    offset: 108
+    size: 4
+    description: "Quantas secoes criticas a thread detem."
+  field8:
+    type: "PVOID"
+    name: "CsrClientThread"
+    offset: 112
+    size: 8
+    description: "Estado da thread junto ao csrss."
+  field9:
+    type: "PVOID"
+    name: "Win32ThreadInfo"
+    offset: 120
+    size: 8
+    description: "Bloco THREADINFO do win32k, quando a thread ja tocou a GUI."
+  field10:
+    type: "ULONG[26]"
+    name: "User32Reserved"
+    offset: 128
+    size: 104
+    description: "Reservado para a user32."
+  field11:
+    type: "ULONG[5]"
+    name: "UserReserved"
+    offset: 232
+    size: 20
+    description: "Reservado para o programa."
+  field12:
+    type: "PVOID"
+    name: "WOW32Reserved"
+    offset: 256
+    size: 8
+    description: "Em processos WOW64, o salto para o modo de 64 bits (o \"Heaven's Gate\")."
+  field13:
+    type: "LCID"
+    name: "CurrentLocale"
+    offset: 264
+    size: 4
+    description: "Locale da thread."
+  field14:
+    type: "ULONG"
+    name: "FpSoftwareStatusRegister"
+    offset: 268
+    size: 4
+    description: "Estado de ponto flutuante emulado. Ultimo campo desta versao recortada."

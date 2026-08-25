@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlCreateUserThread
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Cria uma thread em qualquer processo, inclusive em outro. E o CreateRemoteThread do lado nativo — a via classica da injecao de DLL."
 input_args:

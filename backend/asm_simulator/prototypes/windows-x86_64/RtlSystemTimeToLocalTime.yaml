@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlSystemTimeToLocalTime
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Converte tempo UTC em tempo local, aplicando o fuso e o horario de verao vigentes."
 input_args:

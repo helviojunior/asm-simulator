@@ -1,0 +1,28 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntpebteb.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: GDI_TEB_BATCH
+kind: struct
+size: 1256
+align: 8
+summary: "Lote de comandos GDI acumulados na thread antes de irem ao kernel de uma vez. Ocupa 1256 bytes no meio do TEB — e o que faz o TEB ser tao grande."
+fields:
+  field0:
+    type: "ULONG"
+    name: "Offset"
+    offset: 0
+    size: 4
+    description: "Quantos ULONG do buffer ja estao em uso."
+  field1:
+    type: "ULONG_PTR"
+    name: "HDC"
+    offset: 8
+    size: 8
+    description: "Contexto de dispositivo dono do lote."
+  field2:
+    type: "ULONG[310]"
+    name: "Buffer"
+    offset: 16
+    size: 1240
+    description: "Os comandos acumulados. 310 ULONG — o tamanho fixo de GDI_BATCH_BUFFER_SIZE."

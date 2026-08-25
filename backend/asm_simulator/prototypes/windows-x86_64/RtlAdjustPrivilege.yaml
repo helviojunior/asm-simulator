@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlAdjustPrivilege
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Liga ou desliga um privilegio no token, pelo NUMERO do privilegio. Uma chamada no lugar do trio Open/Lookup/AdjustTokenPrivileges."
 input_args:

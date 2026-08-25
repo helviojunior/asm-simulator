@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlFreeUnicodeString
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Libera o buffer de uma UNICODE_STRING que a propria ntdll alocou (a de RtlConvertSidToUnicodeString, por exemplo)."
 input_args:

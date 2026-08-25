@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlAllocateMemoryZone
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Tira um bloco da zona. Nao ha como devolver um bloco isolado: a zona so se esvazia inteira."
 input_args:

@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlGetAce
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Devolve a ACE de indice N de uma ACL, sem percorrer a lista na mao."
 input_args:

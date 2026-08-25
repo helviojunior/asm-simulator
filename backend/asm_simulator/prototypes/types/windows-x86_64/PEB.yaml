@@ -1,0 +1,184 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntpebteb.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: PEB
+kind: struct
+size: 192
+align: 8
+summary: "Process Environment Block: o que o processo sabe sobre si mesmo, em modo usuario. RECORTADO — so os campos ate NtGlobalFlag (0xBC). O PEB real continua por mais de 1900 bytes, e o resto muda de posicao a cada versao do Windows."
+fields:
+  field0:
+    type: "BOOLEAN"
+    name: "InheritedAddressSpace"
+    offset: 0
+    size: 1
+    description: "TRUE quando o espaco de enderecos veio de um fork/clone."
+  field1:
+    type: "BOOLEAN"
+    name: "ReadImageFileExecOptions"
+    offset: 1
+    size: 1
+    description: "TRUE quando o processo tem opcoes de IFEO no registro."
+  field2:
+    type: "BOOLEAN"
+    name: "BeingDebugged"
+    offset: 2
+    size: 1
+    description: "TRUE quando ha depurador anexado. E o que IsDebuggerPresent le — uma instrucao, e a checagem anti-debug mais simples que existe."
+  field3:
+    type: "BOOLEAN"
+    name: "BitField"
+    offset: 3
+    size: 1
+    description: "Bits do processo: ImageUsesLargePages 0x01, IsProtectedProcess 0x02, IsImageDynamicallyRelocated 0x04 (ASLR aplicado), IsAppContainerProcess 0x20."
+  field4:
+    type: "HANDLE"
+    name: "Mutant"
+    offset: 8
+    size: 8
+    description: "Mutante usado na criacao do processo."
+  field5:
+    type: "PVOID"
+    name: "ImageBaseAddress"
+    offset: 16
+    size: 8
+    description: "Base do EXECUTAVEL. Mesmo valor que a primeira entrada da lista de modulos."
+  field6:
+    type: "PPEB_LDR_DATA"
+    name: "Ldr"
+    offset: 24
+    size: 8
+    description: "Dados do carregador. O caminho classico: PEB->Ldr->InMemoryOrderModuleList ate achar a kernel32."
+  field7:
+    type: "PRTL_USER_PROCESS_PARAMETERS"
+    name: "ProcessParameters"
+    offset: 32
+    size: 8
+    description: "Linha de comando, diretorio atual, ambiente e handles padrao."
+  field8:
+    type: "PVOID"
+    name: "SubSystemData"
+    offset: 40
+    size: 8
+    description: "Dado do subsistema. Reservado."
+  field9:
+    type: "PVOID"
+    name: "ProcessHeap"
+    offset: 48
+    size: 8
+    description: "Heap padrao do processo. E o handle que RtlAllocateHeap espera — e o mesmo que GetProcessHeap devolve."
+  field10:
+    type: "PRTL_CRITICAL_SECTION"
+    name: "FastPebLock"
+    offset: 56
+    size: 8
+    description: "Trava que protege o proprio PEB."
+  field11:
+    type: "PSLIST_HEADER"
+    name: "AtlThunkSListPtr"
+    offset: 64
+    size: 8
+    description: "Lista de thunks da ATL."
+  field12:
+    type: "HANDLE"
+    name: "IFEOKey"
+    offset: 72
+    size: 8
+    description: "Chave de registro de Image File Execution Options do processo."
+  field13:
+    type: "ULONG"
+    name: "CrossProcessFlags"
+    offset: 80
+    size: 4
+    description: "ProcessInJob 0x01, ProcessInitializing 0x02, ProcessUsingVEH 0x04."
+  field14:
+    type: "PVOID"
+    name: "KernelCallbackTable"
+    offset: 88
+    size: 8
+    description: "Tabela de callbacks do win32k. Alvo classico de sequestro em exploracao de kernel. Uniao com UserSharedInfoPtr."
+  field15:
+    type: "ULONG"
+    name: "SystemReserved"
+    offset: 96
+    size: 4
+    description: "Reservado."
+  field16:
+    type: "ULONG"
+    name: "AtlThunkSListPtr32"
+    offset: 100
+    size: 4
+    description: "Versao de 32 bits do ponteiro de thunks."
+  field17:
+    type: "PAPI_SET_NAMESPACE"
+    name: "ApiSetMap"
+    offset: 104
+    size: 8
+    description: "Mapa de API sets: e o que traduz \"api-ms-win-core-*.dll\" para a DLL de verdade."
+  field18:
+    type: "ULONG"
+    name: "TlsExpansionCounter"
+    offset: 112
+    size: 4
+    description: "Contador de expansao dos slots de TLS."
+  field19:
+    type: "PRTL_BITMAP"
+    name: "TlsBitmap"
+    offset: 120
+    size: 8
+    description: "Bitmap dos slots de TLS em uso."
+  field20:
+    type: "ULONG[2]"
+    name: "TlsBitmapBits"
+    offset: 128
+    size: 8
+    description: "Os 64 primeiros bits do bitmap, embutidos aqui."
+  field21:
+    type: "PVOID"
+    name: "ReadOnlySharedMemoryBase"
+    offset: 136
+    size: 8
+    description: "Base da regiao compartilhada so-leitura do sistema."
+  field22:
+    type: "PSILO_USER_SHARED_DATA"
+    name: "SharedData"
+    offset: 144
+    size: 8
+    description: "Dados compartilhados do silo (container)."
+  field23:
+    type: "PVOID*"
+    name: "ReadOnlyStaticServerData"
+    offset: 152
+    size: 8
+    description: "Vetor de dados estaticos dos servidores do subsistema."
+  field24:
+    type: "PCPTABLEINFO"
+    name: "AnsiCodePageData"
+    offset: 160
+    size: 8
+    description: "Tabela da code page ANSI."
+  field25:
+    type: "PCPTABLEINFO"
+    name: "OemCodePageData"
+    offset: 168
+    size: 8
+    description: "Tabela da code page OEM."
+  field26:
+    type: "PNLSTABLEINFO"
+    name: "UnicodeCaseTableData"
+    offset: 176
+    size: 8
+    description: "Tabela de maiusculas/minusculas Unicode."
+  field27:
+    type: "ULONG"
+    name: "NumberOfProcessors"
+    offset: 184
+    size: 4
+    description: "Quantos processadores logicos o sistema tem."
+  field28:
+    type: "ULONG"
+    name: "NtGlobalFlag"
+    offset: 188
+    size: 4
+    description: "Flags globais do processo. Sob depurador o carregador liga 0x70 (heap com verificacao) — a segunda checagem anti-debug mais conhecida, depois de BeingDebugged."

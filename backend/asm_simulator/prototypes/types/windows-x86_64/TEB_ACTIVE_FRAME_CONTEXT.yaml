@@ -1,0 +1,22 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT): ntpebteb.h.
+# Offsets MEDIDOS pelo compilador (gcc x86-64, mesmas regras de
+# alinhamento do MS x64 para estes campos) — ver types/probes/ntpebteb.c.
+type_name: TEB_ACTIVE_FRAME_CONTEXT
+kind: struct
+size: 16
+align: 8
+summary: "Rotulo de um quadro ativo do TEB: so um nome e flags, usado em diagnostico."
+fields:
+  field0:
+    type: "ULONG"
+    name: "Flags"
+    offset: 0
+    size: 4
+    description: "TEB_ACTIVE_FRAME_CONTEXT_FLAG_EXTENDED 1 indica que a estrutura e a versao EX."
+  field1:
+    type: "PCSTR"
+    name: "FrameName"
+    offset: 8
+    size: 8
+    description: "Nome do quadro, em ASCII terminado em nulo."

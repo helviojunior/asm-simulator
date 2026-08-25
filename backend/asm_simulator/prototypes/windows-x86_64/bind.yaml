@@ -1,0 +1,28 @@
+# Prototipo de funcao da API do Windows (ws2_32.dll). Ver prototypes/README.md.
+# Assinatura da documentacao da Microsoft e do SDK (winsock2.h);
+# layout dos tipos conferido pelo compilador — ver types/windows-x86_64/.
+function_name: bind
+kind: function
+library: "ws2_32.dll"
+ssn: null
+summary: "Associa um socket a um endereco e porta locais. E o passo do lado que ESPERA conexao (bind shell); quem so conecta nao precisa dele."
+input_args:
+  arg0:
+    type: "SOCKET"
+    name: "s"
+    direction: "in"
+    description: "Socket recem-criado, ainda sem endereco."
+  arg1:
+    type: "const sockaddr*"
+    name: "name"
+    direction: "in"
+    description: "Endereco local. Para IPv4 e um sockaddr_in: familia AF_INET, porta e IP em BIG-endian (4444 vira 0x5C11 na memoria)."
+  arg2:
+    type: "int"
+    name: "namelen"
+    direction: "in"
+    description: "Tamanho da estrutura, em bytes: 16 para sockaddr_in."
+output_data:
+  type: "int"
+  name: "result"
+  description: "0 em sucesso; SOCKET_ERROR (-1) em erro, com o motivo em WSAGetLastError (WSAEADDRINUSE 10048 e o classico)."

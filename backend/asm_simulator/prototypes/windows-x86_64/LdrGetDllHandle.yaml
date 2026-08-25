@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntldr.h
 function_name: LdrGetDllHandle
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Handle de um modulo JA carregado no processo, pelo nome. Nao carrega nada: e o LoadLibrary que ja aconteceu."
 input_args:

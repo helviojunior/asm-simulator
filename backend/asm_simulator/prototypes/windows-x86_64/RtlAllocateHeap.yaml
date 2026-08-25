@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlAllocateHeap
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Aloca um bloco num heap do processo. E o motor por tras de HeapAlloc e, mais abaixo, de malloc."
 input_args:

@@ -3,6 +3,7 @@
 #   https://github.com/winsiderss/phnt — ntrtl.h
 function_name: RtlCreateUserProcess
 kind: function
+library: "ntdll.dll"
 ssn: null
 summary: "Cria um processo sem passar pela kernel32: monta secao, processo, thread inicial e parametros. E o caminho nativo do CreateProcess."
 input_args:

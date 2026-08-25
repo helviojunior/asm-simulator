@@ -1,6 +1,6 @@
 # Prototipo de TIPO. Ver prototypes/README.md.
 # Tipo da API do Windows (nao da API nativa, entao nao esta no phnt).
-# Offsets conferidos pelo compilador: ver scratchpad/verify_win32.c —
+# Offsets conferidos pelo compilador: ver types/probes/win32.c —
 # valor errado ali nao compila.
 type_name: OVERLAPPED
 kind: struct
