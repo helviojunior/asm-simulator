@@ -3,7 +3,7 @@ import { Braces, ChevronDown, ChevronRight, X } from "lucide-react";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 import { hex } from "lib/cpu/format";
-import { parseStruct, previewBytes } from "lib/cpu/parseStruct";
+import { parseStruct, previewBytes, variantOf } from "lib/cpu/parseStruct";
 import { isParseable, layoutOf, loadType } from "lib/types";
 
 /**
@@ -16,6 +16,27 @@ import { isParseable, layoutOf, loadType } from "lib/types";
  * Campo que aponta para outro tipo conhecido expande no lugar, seguindo o
  * ponteiro — e como se percorre uma cadeia de estruturas sem sair do painel.
  */
+/**
+ * Layout a usar para ler `address` — o do tipo pedido, ou o do tipo DERIVADO
+ * quando ele e generico.
+ *
+ * Devolve tambem `pending`: o tipo derivado que o catalogo ainda nao trouxe.
+ * Quem chama dispara o carregamento; ate la o painel mostra o generico, que
+ * nao esta errado — so diz menos.
+ */
+function resolveLayout(machine, os, arch, typeName, address) {
+  const base = layoutOf(os, arch, typeName);
+  if (!base?.variants) return { layout: base, derived: null, pending: null };
+
+  const name = variantOf(machine, address, base);
+  if (!name) return { layout: base, derived: null, pending: null };
+
+  const derived = layoutOf(os, arch, name);
+  return derived
+    ? { layout: derived, derived: name, pending: null }
+    : { layout: base, derived: null, pending: name };
+}
+
 export default function StructPane({ machine, target, onClose, tick }) {
   const { t } = useI18n();
   const [expanded, setExpanded] = useState(() => new Set());
@@ -27,13 +48,21 @@ export default function StructPane({ machine, target, onClose, tick }) {
 
   const os = machine?.osId;
   const arch = machine?.archId;
-  const layout = target ? layoutOf(os, arch, target.type) : null;
+  const { layout, derived, pending } = target
+    ? resolveLayout(machine, os, arch, target.type, target.address)
+    : { layout: null, derived: null, pending: null };
 
   useEffect(() => {
     if (target && !layout) {
       loadType(os, arch, target.type).then(() => setLoaded((n) => n + 1));
     }
   }, [target, layout, os, arch]);
+
+  // O tipo derivado (o `sockaddr_in` de um `sockaddr` com familia 2) chega numa
+  // segunda ida ao servidor — a familia so se conhece depois de ler a memoria.
+  useEffect(() => {
+    if (pending) loadType(os, arch, pending).then(() => setLoaded((n) => n + 1));
+  }, [pending, os, arch]);
 
   if (!machine || !target) return null;
 
@@ -54,6 +83,9 @@ export default function StructPane({ machine, target, onClose, tick }) {
         <Braces size={12} className="shrink-0 text-[#9cdcfe]" />
         <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-[#9cdcfe]">
           {target.type}
+          {/* Dito, e nao silencioso: o aluno pediu `sockaddr` e esta vendo os
+              campos de outro tipo. A seta explica de onde ele veio. */}
+          {derived && <span className="text-[#dcdcaa]"> → {derived}</span>}
         </span>
         <span className="shrink-0 font-mono text-[10px] text-[#6b6b6b]">
           @ {hex(target.address, digits)}
@@ -99,11 +131,13 @@ function Field({ node, depth, machine, digits, expanded, onToggle }) {
   const arch = machine.archId;
 
   // Filhos vêm de duas origens: bloco anonimo (mesmo endereco) ou ponteiro
-  // para outro tipo conhecido (endereco novo).
-  const pointed =
-    !node.inline && node.type && isParseable(os, arch, node.type)
-      ? layoutOf(os, arch, node.type)
-      : null;
+  // para outro tipo conhecido (endereco novo). No segundo caso vale o mesmo
+  // desvio do painel: um ponteiro para `sockaddr` abre como `sockaddr_in`.
+  const followable =
+    !node.inline && node.type && node.value && isParseable(os, arch, node.type);
+  const { layout: pointed, derived, pending } = followable
+    ? resolveLayout(machine, os, arch, node.type, node.value)
+    : { layout: null, derived: null, pending: null };
   const canExpand = Boolean(node.children || pointed);
   const open = expanded.has(node.path);
 
@@ -112,6 +146,10 @@ function Field({ node, depth, machine, digits, expanded, onToggle }) {
       loadType(os, arch, node.type);
     }
   }, [open, node.inline, node.type, pointed, os, arch]);
+
+  useEffect(() => {
+    if (open && pending) loadType(os, arch, pending);
+  }, [open, pending, os, arch]);
 
   const children = node.children
     ? node.children
@@ -136,7 +174,10 @@ function Field({ node, depth, machine, digits, expanded, onToggle }) {
         </button>
 
         <span className="w-[6ch] shrink-0 text-right text-[#6b6b6b]">+{node.offset}</span>
-        <span className="w-[18ch] shrink-0 truncate text-[#4ec9b0]">{node.type}</span>
+        <span className="w-[18ch] shrink-0 truncate text-[#4ec9b0]">
+          {node.type}
+          {derived && open && <span className="text-[#dcdcaa]"> → {derived}</span>}
+        </span>
         <span className="w-[20ch] shrink-0 truncate text-[#4fc1ff]">{node.name}</span>
 
         {node.inline ? (

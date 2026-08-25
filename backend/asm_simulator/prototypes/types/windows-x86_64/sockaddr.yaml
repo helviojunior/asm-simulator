@@ -7,6 +7,12 @@ kind: struct
 size: 16
 align: 2
 summary: "Endereco de socket generico. So os dois primeiros bytes tem significado fixo; o resto depende da familia — para AF_INET o layout real e o do sockaddr_in."
+variants:
+  # `sockaddr` e generico: o layout de verdade sai da familia. No Windows
+  # AF_INET e 2 (como no Linux), mas AF_INET6 e 23, e nao 10.
+  field: sa_family
+  cases:
+    2: sockaddr_in
 fields:
   field0:
     type: "u_short"

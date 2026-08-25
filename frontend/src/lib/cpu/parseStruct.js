@@ -50,6 +50,33 @@ export function parseStruct(machine, address, type, path = "") {
   });
 }
 
+/**
+ * Tipo DERIVADO de um tipo generico, lido do proprio objeto.
+ *
+ * `sockaddr` e o caso: os 16 bytes nao dizem nada ate se saber a familia, e ai
+ * o layout de verdade e o do `sockaddr_in`, `sockaddr_in6` ou `sockaddr_un`.
+ * Mostrar o generico deixaria a porta e o IP escondidos dentro de um `sa_data`
+ * de 14 bytes crus.
+ *
+ * O mapa numero -> tipo vem do catalogo, e nao daqui: AF_INET6 e 10 no Linux e
+ * 23 no Windows, e quem sabe disso e o arquivo do alvo.
+ */
+export function variantOf(machine, address, layout) {
+  const variants = layout?.variants;
+  if (!machine || !variants) return null;
+
+  const field = layout.fields.find((item) => item.name === variants.field);
+  if (!field) return null;
+
+  try {
+    const value = machine.readMemory(BigInt(address) + BigInt(field.offset), field.size);
+    return variants.cases[String(Number(value))] || null;
+  } catch {
+    // Endereco invalido: o painel segue mostrando o tipo generico.
+    return null;
+  }
+}
+
 /** Texto legivel de um bloco de bytes, ate o primeiro NUL. */
 export function previewBytes(bytes) {
   const out = [];

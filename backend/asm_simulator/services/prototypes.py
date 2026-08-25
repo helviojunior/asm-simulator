@@ -264,6 +264,40 @@ def _parse_fields(where, raw, depth=0):
     return out
 
 
+def _parse_variants(where, raw, fields):
+    """Tipo GENERICO que so se resolve lendo um campo dele.
+
+    `sockaddr` e o caso: os 16 bytes nao querem dizer nada ate se saber a
+    familia, e ai o layout de verdade e o do `sockaddr_in`, `sockaddr_in6` ou
+    `sockaddr_un`. Ler o generico e mostrar `sa_data` como 14 bytes crus seria
+    esconder justamente a porta e o IP que interessam.
+
+    Os numeros mudam por sistema (AF_INET6 e 10 no Linux, 23 no Windows, 30 no
+    macOS) — por isso o mapa vive no arquivo do ALVO, e nao no codigo.
+    """
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise PrototypeError(f'{where}: variants must be a mapping.')
+
+    field = raw.get('field')
+    names = {item['name'] for item in fields}
+    if field not in names:
+        raise PrototypeError(
+            f'{where}: variants.field is {field!r}; it must be one of {sorted(names)}.')
+
+    cases = raw.get('cases')
+    if not isinstance(cases, dict) or not cases:
+        raise PrototypeError(f'{where}: variants.cases must be a non-empty mapping.')
+    for value, type_name in cases.items():
+        if not isinstance(value, int):
+            raise PrototypeError(f'{where}: variants.cases key {value!r} must be an integer.')
+        if not isinstance(type_name, str) or not type_name.strip():
+            raise PrototypeError(f'{where}: variants.cases[{value}] must name a type.')
+
+    return {'field': field, 'cases': {str(k): v for k, v in cases.items()}}
+
+
 def parse_type(path):
     """Le e VALIDA um arquivo de tipo.
 
@@ -289,6 +323,7 @@ def parse_type(path):
         raise PrototypeError(f'{path.name}: size must be a positive integer.')
 
     fields = _parse_fields(path.name, data['fields'])
+    variants = _parse_variants(path.name, data.get('variants'), fields)
 
     # Campo que termina depois do fim da struct significa layout errado, e
     # levaria o painel a ler memoria de fora do objeto.
@@ -305,6 +340,7 @@ def parse_type(path):
         'align': data.get('align'),
         'summary': data.get('summary', ''),
         'fields': fields,
+        'variants': variants,
     }
 
 

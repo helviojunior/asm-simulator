@@ -5,6 +5,14 @@ kind: struct
 size: 16
 align: 2
 summary: "Forma generica de endereco de socket; o campo de familia diz qual estrutura de verdade esta ali."
+variants:
+  # `sockaddr` e generico: o layout de verdade sai da familia. Numeros do
+  # Linux — AF_UNIX 1, AF_INET 2, AF_INET6 10.
+  field: sa_family
+  cases:
+    1: sockaddr_un
+    2: sockaddr_in
+    10: sockaddr_in6
 fields:
   field0:
     type: "sa_family_t"

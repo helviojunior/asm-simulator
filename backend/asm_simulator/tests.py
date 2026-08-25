@@ -986,3 +986,45 @@ class TypePrototypeTests(TransactionTestCase):
         self.assertEqual(
             self.client.get('/api/types/?os=linux&arch=x86_64&name=NaoExiste').status_code,
             404)
+
+    def test_a_generic_type_names_the_layouts_it_can_be(self):
+        # `sockaddr` sozinho nao diz nada: os 14 bytes de `sa_data` so tomam
+        # forma depois de ler a familia. O mapa numero -> tipo vive no arquivo
+        # do ALVO porque os numeros mudam: AF_INET6 e 10 no Linux e 23 no
+        # Windows.
+        for target, expected in ((('linux', 'x86_64'), {'1': 'sockaddr_un',
+                                                        '2': 'sockaddr_in',
+                                                        '10': 'sockaddr_in6'}),
+                                 (('windows', 'x86_64'), {'2': 'sockaddr_in'})):
+            os_id, arch_id = target
+            with self.subTest(target=target):
+                found = self.prototypes.load_type(os_id, arch_id, 'sockaddr')
+                self.assertEqual(found['variants']['field'], 'sa_family')
+                self.assertEqual(found['variants']['cases'], expected)
+
+    def test_every_variant_points_to_a_type_that_exists(self):
+        # Um caso apontando para tipo inexistente deixaria o painel preso no
+        # generico, sem dizer por que.
+        for os_id, arch_id in self.prototypes.TARGETS:
+            known = self.prototypes.load_types(os_id, arch_id)
+            for name, layout in known.items():
+                for value, derived in (layout.get('variants') or {}).get('cases', {}).items():
+                    with self.subTest(target=f'{os_id}-{arch_id}', type=name, case=value):
+                        self.assertIn(derived, known)
+
+    def test_a_variant_on_an_unknown_field_is_refused(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'x.yaml'
+            path.write_text(
+                'type_name: x\n'
+                'size: 4\n'
+                'variants: {field: nao_existe, cases: {1: y}}\n'
+                'fields:\n'
+                '  field0: {name: a, offset: 0, size: 4}\n',
+                encoding='utf-8')
+
+            with self.assertRaises(self.prototypes.PrototypeError):
+                self.prototypes.parse_type(path)

@@ -151,6 +151,31 @@ do `IO_STATUS_BLOCK`) aparece: mesmo endereço da struct, campos como filhos.
 não tem campo nenhum, então entra como **um** campo de 4 bytes no offset 0,
 cuja descrição lista os valores possíveis (ver `MEMORY_RESERVE_OBJECT_TYPE`).
 
+### `variants`: tipo genérico que só se resolve lendo um campo
+
+`sockaddr` não diz nada sozinho: os 14 bytes de `sa_data` só tomam forma depois
+de ler a família. Ler o genérico esconderia justamente a porta e o IP. O bloco
+`variants` diz qual campo decide e para que tipo cada valor leva:
+
+```yaml
+type_name: sockaddr
+variants:
+  field: sa_family
+  cases:
+    1: sockaddr_un
+    2: sockaddr_in
+    10: sockaddr_in6
+```
+
+O painel lê o campo na memória e abre o layout derivado, mostrando
+`sockaddr → sockaddr_in` no cabeçalho — o desvio é dito, não silencioso. Valor
+fora do mapa mantém o genérico, que diz menos mas não inventa.
+
+Os números **mudam por sistema** — `AF_INET6` é 10 no Linux e 23 no Windows —,
+e é por isso que o mapa vive no arquivo do alvo e não no código. O carregador
+recusa um `field` que não exista na struct, e a suíte confere que todo tipo
+citado em `cases` existe naquele alvo.
+
 ### Ponteiro para o tipo
 
 `PFOO`, `PCFOO`, `LPFOO` e `const FOO*` são o **mesmo layout**: o carregador
