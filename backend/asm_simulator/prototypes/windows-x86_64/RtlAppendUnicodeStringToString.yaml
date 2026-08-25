@@ -1,0 +1,22 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlAppendUnicodeStringToString
+kind: function
+ssn: null
+summary: "Concatena uma UNICODE_STRING no fim de outra. E como se monta \"\\??\\\" + caminho sem mexer em ponteiro na mao."
+input_args:
+  arg0:
+    type: "PUNICODE_STRING"
+    name: "Destination"
+    direction: "inout"
+    description: "Destino, que cresce. Sem espaco ate MaximumLength, o status e STATUS_BUFFER_TOO_SMALL e nada e escrito."
+  arg1:
+    type: "PCUNICODE_STRING"
+    name: "Source"
+    direction: "in"
+    description: "Texto a acrescentar."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

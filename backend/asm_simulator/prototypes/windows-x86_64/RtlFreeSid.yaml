@@ -1,0 +1,17 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlFreeSid
+kind: function
+ssn: null
+summary: "Libera um SID vindo de RtlAllocateAndInitializeSid."
+input_args:
+  arg0:
+    type: "PSID"
+    name: "Sid"
+    direction: "in"
+    description: "SID a liberar. O ponteiro fica invalido depois da chamada."
+output_data:
+  type: "PVOID"
+  name: "result"
+  description: "Sempre NULL. Serve para zerar a variavel na mesma linha: sid = RtlFreeSid(sid)."

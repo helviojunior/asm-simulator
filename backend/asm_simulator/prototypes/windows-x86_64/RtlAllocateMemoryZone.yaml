@@ -1,0 +1,27 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlAllocateMemoryZone
+kind: function
+ssn: null
+summary: "Tira um bloco da zona. Nao ha como devolver um bloco isolado: a zona so se esvazia inteira."
+input_args:
+  arg0:
+    type: "PVOID"
+    name: "MemoryZone"
+    direction: "in"
+    description: "Zona vinda de RtlCreateMemoryZone."
+  arg1:
+    type: "SIZE_T"
+    name: "BlockSize"
+    direction: "in"
+    description: "Tamanho do bloco, em bytes."
+  arg2:
+    type: "PVOID*"
+    name: "Block"
+    direction: "out"
+    description: "Recebe o endereco do bloco. Sem espaco livre, o status e STATUS_NO_MEMORY e cabe estender a zona."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

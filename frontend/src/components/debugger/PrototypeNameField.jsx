@@ -8,18 +8,26 @@ import { loadPrototypes, prototypesFor } from "lib/prototypes";
 const MAX_SUGGESTIONS = 8;
 
 /**
- * O nome da funcao de uma syscall — resolvido automaticamente, ou dito pelo
+ * O nome da funcao de uma chamada — resolvido automaticamente, ou dito pelo
  * aluno.
  *
  * A resolucao automatica cobre o que da: a tabela fixa no Linux, a ntdll
- * importada no Windows. Fora disso nao ha o que deduzir, e quem sabe do que se
- * trata e quem esta lendo o codigo. Clicar no nome (ou no lugar dele) abre um
- * campo com auto-completar sobre os prototipos que temos.
+ * importada no Windows. Fora disso nao ha o que deduzir — e num `call` para um
+ * endereco nao ha sequer numero a consultar. Quem sabe do que se trata e quem
+ * esta lendo o codigo: clicar no nome (ou no lugar dele) abre um campo com
+ * auto-completar sobre os prototipos que temos.
  *
  * Vale TAMBEM quando o nome ja foi resolvido: a tabela pode estar certa e o
  * aluno querer anotar outra coisa, ou a ntdll ser de outra build.
+ *
+ * `kind` estreita o auto-completar. O painel de syscall pede `"syscall"`:
+ * oferecer `RtlInitUnicodeString` para um numero em RAX sugeriria que aquilo
+ * se chama por `syscall`, e nao se chama. O painel de `call` nao filtra — ali
+ * tanto o stub `Nt*` quanto a funcao de modo usuario sao alvos legitimos.
  */
-export default function SyscallNameField({ os, arch, number, name, origin, onChange }) {
+export default function PrototypeNameField({
+  os, arch, kind, name, origin, onChange, emptyLabel, editTitle,
+}) {
   const { t } = useI18n();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -29,18 +37,18 @@ export default function SyscallNameField({ os, arch, number, name, origin, onCha
   // A lista chega do backend uma vez por alvo; enquanto nao chega, o campo
   // funciona e o auto-completar fica vazio.
   useEffect(() => {
-    if (editing) loadPrototypes(os, arch);
-  }, [editing, os, arch]);
+    if (editing) loadPrototypes(os, arch, kind);
+  }, [editing, os, arch, kind]);
 
   const suggestions = useMemo(() => {
     if (!editing) return [];
     const term = draft.trim().toLowerCase();
-    const all = prototypesFor(os, arch);
+    const all = prototypesFor(os, arch, kind);
     const matches = term
       ? all.filter((item) => item.function_name.toLowerCase().includes(term))
       : all;
     return matches.slice(0, MAX_SUGGESTIONS);
-  }, [draft, editing, os, arch]);
+  }, [draft, editing, os, arch, kind]);
 
   const open = () => {
     setDraft(name || "");
@@ -64,13 +72,13 @@ export default function SyscallNameField({ os, arch, number, name, origin, onCha
       <button
         type="button"
         onClick={open}
-        title={t("sim.syscallNameEdit", "Click to name this syscall")}
+        title={editTitle || t("sim.callNameEdit", "Click to name this function")}
         className={cn(
           "group flex shrink-0 items-center gap-1 rounded px-1 hover:bg-[#3c3c3c]",
           name ? "font-bold text-[#dcdcaa]" : "text-[#f14c4c]"
         )}
       >
-        {name || t("sim.syscallUnknown", "unknown number")}
+        {name || emptyLabel || t("sim.callNameUnknown", "unnamed")}
         {/* O lapis so no hover: a linha fica limpa enquanto se le. */}
         <Pencil size={9} className="shrink-0 opacity-0 transition-opacity group-hover:opacity-60" />
       </button>
@@ -134,6 +142,13 @@ export default function SyscallNameField({ os, arch, number, name, origin, onCha
                   {item.function_name}
                   {item.ssn !== null && item.ssn !== undefined && (
                     <span className="ml-2 text-[10px] text-[#6b6b6b]">#{item.ssn}</span>
+                  )}
+                  {/* Sem numero, o que distingue as duas listas e a natureza da
+                      funcao: `RtlInitUnicodeString` nao entra no kernel. */}
+                  {item.kind === "function" && (
+                    <span className="ml-2 text-[10px] text-[#6a9955]">
+                      {t("sim.protoUserMode", "user mode")}
+                    </span>
                   )}
                 </span>
                 {item.summary && (

@@ -1,16 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntioapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryDirectoryFile
 ssn: null
-summary: ""
+summary: "Lista o conteudo de um diretorio ja aberto. E o motor de FindFirstFile/FindNextFile."
 input_args:
   arg0:
     type: "HANDLE"
     name: "FileHandle"
     direction: "in"
-    description: "Handle do arquivo."
+    description: "Handle de um DIRETORIO, aberto com FILE_DIRECTORY_FILE em NtOpenFile/NtCreateFile. Um handle de arquivo comum falha."
   arg1:
     type: "HANDLE"
     name: "Event"
@@ -45,22 +44,22 @@ input_args:
     type: "FILE_INFORMATION_CLASS"
     name: "FileInformationClass"
     direction: "in"
-    description: "Entrada: FILE_INFORMATION_CLASS."
+    description: "Formato das entradas (FileDirectoryInformation 1, FileBothDirectoryInformation 3, FileIdBothDirectoryInformation 37)."
   arg8:
     type: "BOOLEAN"
     name: "ReturnSingleEntry"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE devolve uma entrada por chamada; FALSE enche o buffer."
   arg9:
     type: "PCUNICODE_STRING"
     name: "FileName"
     direction: "in/opt"
-    description: "Nome, em UNICODE_STRING. Opcional."
+    description: "Filtro dos nomes, com curingas (\"Hello.*\"). NULL nao filtra nada."
   arg10:
     type: "BOOLEAN"
     name: "RestartScan"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE recomeca do inicio do diretorio; FALSE continua de onde parou. IGNORADO na primeira chamada com aquele handle."
 output_data:
   type: "NTSTATUS"
   name: "status"

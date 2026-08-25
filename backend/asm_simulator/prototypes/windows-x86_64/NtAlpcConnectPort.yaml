@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntlpcapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtAlpcConnectPort
 ssn: null
-summary: ""
+summary: "Conecta-se a uma porta ALPC pelo nome. E o lado cliente da IPC nativa do Windows."
 input_args:
   arg0:
     type: "PHANDLE"
@@ -35,12 +34,12 @@ input_args:
     type: "PSID"
     name: "RequiredServerSid"
     direction: "in/opt"
-    description: "Entrada: PSID. Opcional."
+    description: "SID que o servidor precisa ter para a conexao valer. E como o cliente evita falar com um impostor."
   arg6:
     type: "PPORT_MESSAGE"
     name: "ConnectionMessage"
     direction: "inout/opt"
-    description: "Entra e sai: PPORT_MESSAGE. Opcional."
+    description: "Vai com a mensagem de conexao e volta com a resposta do servidor."
   arg7:
     type: "PSIZE_T"
     name: "BufferLength"

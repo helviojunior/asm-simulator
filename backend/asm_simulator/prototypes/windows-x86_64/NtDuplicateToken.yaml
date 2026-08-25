@@ -1,16 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntseapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtDuplicateToken
 ssn: null
-summary: ""
+summary: "Duplica um token, trocando o tipo (primario ou de impersonation) e o nivel de impersonation."
 input_args:
   arg0:
     type: "HANDLE"
     name: "ExistingTokenHandle"
     direction: "in"
-    description: "Handle do objeto."
+    description: "Token a duplicar. O handle precisa de TOKEN_DUPLICATE."
   arg1:
     type: "ACCESS_MASK"
     name: "DesiredAccess"
@@ -20,17 +19,17 @@ input_args:
     type: "POBJECT_ATTRIBUTES"
     name: "ObjectAttributes"
     direction: "in/opt"
-    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags. Opcional."
+    description: "Atributos do handle, descritor de seguranca e — no SecurityQualityOfService — o nivel de impersonation do novo token."
   arg3:
     type: "BOOLEAN"
     name: "EffectiveOnly"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE descarta do novo token os grupos e privilegios desabilitados — e uma perda irreversivel."
   arg4:
     type: "TOKEN_TYPE"
     name: "Type"
     direction: "in"
-    description: "Entrada: TOKEN_TYPE."
+    description: "TokenPrimary 1 ou TokenImpersonation 2. E aqui que um token de impersonation vira primario, para criar processo."
   arg5:
     type: "PHANDLE"
     name: "NewTokenHandle"

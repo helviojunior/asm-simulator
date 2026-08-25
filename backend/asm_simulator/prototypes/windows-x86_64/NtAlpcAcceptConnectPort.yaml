@@ -1,16 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntlpcapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtAlpcAcceptConnectPort
 ssn: null
-summary: ""
+summary: "Aceita (ou recusa) um pedido de conexao numa porta ALPC, devolvendo a porta de comunicacao com aquele cliente."
 input_args:
   arg0:
     type: "PHANDLE"
     name: "PortHandle"
     direction: "out"
-    description: "Handle da porta de comunicacao (LPC/ALPC)."
+    description: "Recebe a porta SEM NOME que o servidor usa para falar com aquele cliente. So e criada se a conexao for aceita."
   arg1:
     type: "HANDLE"
     name: "ConnectionPortHandle"
@@ -20,7 +19,7 @@ input_args:
     type: "ULONG"
     name: "Flags"
     direction: "in"
-    description: "Combinacao de flags."
+    description: "Normalmente 0. ALPC_PORFLG_WOW64_CALL (0x80000000) trata os handles como de 32 bits."
   arg3:
     type: "POBJECT_ATTRIBUTES"
     name: "ObjectAttributes"
@@ -35,12 +34,12 @@ input_args:
     type: "PVOID"
     name: "PortContext"
     direction: "in/opt"
-    description: "Contexto opaco repassado sem interpretacao. Opcional."
+    description: "Valor livre do servidor, guardado no objeto porta. Volta em ALPC_CONTEXT_ATTR nas mensagens recebidas daquele cliente."
   arg6:
     type: "PPORT_MESSAGE"
     name: "ConnectionRequest"
     direction: "in"
-    description: "Entrada: PPORT_MESSAGE."
+    description: "A mensagem de pedido de conexao recebida. Volta ao cliente na resposta — mesmo recusando, da para dizer por que."
   arg7:
     type: "PALPC_MESSAGE_ATTRIBUTES"
     name: "ConnectionMessageAttributes"
@@ -50,7 +49,7 @@ input_args:
     type: "BOOLEAN"
     name: "AcceptConnection"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE aceita a conexao; FALSE recusa e a porta de comunicacao nao e criada."
 output_data:
   type: "NTSTATUS"
   name: "status"

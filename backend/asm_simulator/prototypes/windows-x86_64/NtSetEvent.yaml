@@ -1,21 +1,20 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntexapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtSetEvent
 ssn: null
-summary: ""
+summary: "Sinaliza um evento, liberando quem espera por ele."
 input_args:
   arg0:
     type: "HANDLE"
     name: "EventHandle"
     direction: "in"
-    description: "Handle do evento."
+    description: "Evento a sinalizar. Exige EVENT_MODIFY_STATE."
   arg1:
     type: "PLONG"
     name: "PreviousState"
     direction: "out/opt"
-    description: "Saida: PLONG. Opcional."
+    description: "Recebe o estado anterior: 1 ja estava sinalizado, 0 nao estava. Opcional."
 output_data:
   type: "NTSTATUS"
   name: "status"

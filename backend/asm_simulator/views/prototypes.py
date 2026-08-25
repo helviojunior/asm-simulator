@@ -24,15 +24,24 @@ class PrototypeListView(APIView):
     `name=NtCreateFile` traz um protótipo só, com os argumentos.
 
     `fields=names` traz só nome, número e resumo. É o que o auto-completar usa:
-    o Windows tem 773 funções e a lista completa passa de 3 MB — peso sem uso
-    para completar um nome enquanto se digita. A lista completa continua
-    disponível para quando se quiser mostrar os argumentos.
+    o Windows tem centenas de funções e a lista completa passa de 3 MB — peso
+    sem uso para completar um nome enquanto se digita. A lista completa
+    continua disponível para quando se quiser mostrar os argumentos.
+
+    `kind=syscall` (ou `function`) filtra por natureza da função. O painel de
+    `syscall` pede só as syscalls: oferecer `RtlInitUnicodeString` para um
+    número em RAX sugeriria que aquilo se chama por `syscall`, e não se chama.
     """
 
     def get(self, request):
         os_id = request.query_params.get('os')
         arch_id = request.query_params.get('arch')
         name = request.query_params.get('name')
+        # Valor desconhecido e ignorado em vez de recusado: o filtro so
+        # ESTREITA a lista, e um erro de digitacao devolvendo 400 tiraria o
+        # auto-completar do ar por causa de um parametro opcional.
+        kind = request.query_params.get('kind')
+        kind = kind if kind in prototypes.KINDS else None
 
         if os_id and arch_id and name:
             # Um prototipo so. E o que a interface pede ao resolver uma chamada:
@@ -52,12 +61,13 @@ class PrototypeListView(APIView):
             return Response({
                 'os': os_id,
                 'arch': arch_id,
-                'prototypes': prototypes.summaries(os_id, arch_id),
+                'prototypes': prototypes.summaries(os_id, arch_id, kind),
             })
 
         loaded = prototypes.load_target(os_id, arch_id)
         return Response({
             'os': os_id,
             'arch': arch_id,
-            'prototypes': [loaded[name] for name in sorted(loaded)],
+            'prototypes': [loaded[key] for key in sorted(loaded)
+                           if kind is None or loaded[key]['kind'] == kind],
         })

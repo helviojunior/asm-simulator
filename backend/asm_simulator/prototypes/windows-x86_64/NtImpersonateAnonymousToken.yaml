@@ -1,16 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntseapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtImpersonateAnonymousToken
 ssn: null
-summary: ""
+summary: "Faz a thread passar a usar o token anonimo — descarta a identidade atual sem precisar de privilegio."
 input_args:
   arg0:
     type: "HANDLE"
     name: "ThreadHandle"
     direction: "in"
-    description: "Handle da thread alvo. NtCurrentThread (-2) e a propria."
+    description: "Thread que passa a impersonar. Exige THREAD_IMPERSONATE, que NtCurrentThread (-2) sempre tem."
 output_data:
   type: "NTSTATUS"
   name: "status"

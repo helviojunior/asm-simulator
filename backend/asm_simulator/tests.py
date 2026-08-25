@@ -737,6 +737,49 @@ class PrototypeTests(TransactionTestCase):
                 # aqui ensinaria errado.
                 self.assertIsNone(prototype['ssn'])
 
+    def test_user_mode_functions_are_marked_apart_from_syscalls(self):
+        # Nem tudo que se chama na ntdll entra no kernel: `NtClose` e um stub
+        # com `syscall` dentro, mas `RtlInitUnicodeString` roda inteiro em modo
+        # usuario. Sem a marca, o auto-completar do painel de `syscall`
+        # ofereceria uma pela outra.
+        rtl = self.prototypes.load('windows', 'x86_64', 'RtlInitUnicodeString')
+        self.assertEqual(rtl['kind'], 'function')
+        self.assertIsNone(rtl['ssn'])
+
+        self.assertEqual(
+            self.prototypes.load('windows', 'x86_64', 'NtClose')['kind'], 'syscall')
+
+    def test_summaries_can_be_filtered_by_kind(self):
+        syscalls = self.prototypes.summaries('windows', 'x86_64', 'syscall')
+        functions = self.prototypes.summaries('windows', 'x86_64', 'function')
+
+        self.assertTrue(all(item['function_name'].startswith('Nt') for item in syscalls))
+        self.assertTrue(all(item['function_name'].startswith(('Rtl', 'Ldr'))
+                            for item in functions))
+        # Sem filtro vem tudo: e o que o painel de `call` usa, onde os dois
+        # sao alvos legitimos.
+        self.assertEqual(len(self.prototypes.summaries('windows', 'x86_64')),
+                         len(syscalls) + len(functions))
+
+    def test_a_user_mode_function_with_a_syscall_number_is_refused(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'RtlSomething.yaml'
+            path.write_text(
+                'function_name: RtlSomething\n'
+                'kind: function\n'
+                'ssn: 42\n'
+                'input_args: {}\n'
+                'output_data: {type: "VOID", name: "none", description: "y"}\n',
+                encoding='utf-8')
+
+            # O numero so existe para quem cruza a fronteira do kernel; exibi-lo
+            # convidaria a chamar um Rtl* por `syscall`.
+            with self.assertRaises(self.prototypes.PrototypeError):
+                self.prototypes.parse(path)
+
     def test_a_function_without_arguments_is_valid(self):
         getpid = self.prototypes.load('linux', 'x86_64', 'getpid')
         self.assertEqual(getpid['input_args'], [])

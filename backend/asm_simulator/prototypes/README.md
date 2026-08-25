@@ -19,6 +19,7 @@ sem precisar de um índice à parte que possa sair de sincronia.
 
 ```yaml
 function_name: write        # igual ao nome do arquivo
+kind: syscall               # syscall (padrão) | function — ver abaixo
 ssn: 4                      # null no Windows: o número muda entre builds
 summary: "..."              # uma linha sobre o que a função faz
 input_args:
@@ -60,6 +61,35 @@ O header dá o **fato**; a descrição de cada argumento é escrita aqui, porque
 justamente o que ele não tem e o que serve numa aula.
 
 As 773 syscalls `NTSYSCALLAPI` do phnt estão aqui.
+
+## `kind`: nem tudo na ntdll entra no kernel
+
+`NtCreateFile` é um stub com `syscall` dentro; `RtlInitUnicodeString` roda
+inteiro em modo usuário e **nunca** tem SSN. São duas coisas diferentes e o
+campo `kind` as separa:
+
+| `kind` | o que é | onde aparece na interface |
+|---|---|---|
+| `syscall` (padrão) | entra no kernel | painel de `syscall`, resolvido pelo número em RAX |
+| `function` | modo usuário (`Rtl*`, `Ldr*`) | painel de `call`, nomeado pelo aluno |
+
+O carregador **recusa** um `kind: function` com `ssn` preenchido: o número só
+existe para quem cruza a fronteira do kernel, e exibi-lo convidaria a chamar um
+`Rtl*` por `syscall`.
+
+A API filtra com `?kind=syscall` (ou `function`); sem o parâmetro vêm os dois —
+é o que o painel de `call` usa, onde tanto o stub `Nt*` quanto a função de modo
+usuário são alvos legítimos.
+
+As `Rtl*`/`Ldr*` presentes são as usadas pelos samples do livro *Windows Native
+API* (zodiacon/winnativeapibooksamples): heap, zona de memória, UNICODE_STRING,
+criação de processo e thread, privilégio, SID, security descriptor, tempo e
+resolução de export. Assinaturas do `ntrtl.h` e do `ntldr.h` do phnt.
+
+Ficam **fora** o que não é função exportada: `RtlProcessHeap` é macro para
+`NtCurrentPeb()->ProcessHeap`, `RtlConvertUlongToLuid` é `FORCEINLINE` no
+header, e `NtCurrentProcess`/`NtCurrentThread` e companhia são pseudo-handles.
+Um protótipo para eles anunciaria uma chamada que não acontece.
 
 ## De onde vêm as assinaturas do Linux
 

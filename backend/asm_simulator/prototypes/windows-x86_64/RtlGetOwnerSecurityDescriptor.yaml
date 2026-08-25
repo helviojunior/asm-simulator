@@ -1,0 +1,27 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlGetOwnerSecurityDescriptor
+kind: function
+ssn: null
+summary: "Le o SID do dono de um security descriptor."
+input_args:
+  arg0:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    direction: "in"
+    description: "Descritor a consultar."
+  arg1:
+    type: "PSID*"
+    name: "Owner"
+    direction: "out"
+    description: "Recebe o SID do dono. Aponta PARA DENTRO do descritor: nao liberar."
+  arg2:
+    type: "PBOOLEAN"
+    name: "OwnerDefaulted"
+    direction: "out"
+    description: "TRUE quando o dono veio do padrao, e nao de uma escolha explicita."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

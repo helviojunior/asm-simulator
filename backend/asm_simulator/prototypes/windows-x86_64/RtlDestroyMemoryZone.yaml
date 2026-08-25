@@ -1,0 +1,17 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlDestroyMemoryZone
+kind: function
+ssn: null
+summary: "Destroi a zona e libera a memoria dela."
+input_args:
+  arg0:
+    type: "PVOID"
+    name: "MemoryZone"
+    direction: "in"
+    description: "Zona a destruir. O ponteiro e todos os blocos ficam invalidos."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

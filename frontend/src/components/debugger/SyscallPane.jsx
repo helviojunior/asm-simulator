@@ -5,7 +5,7 @@ import { cn } from "lib/utils";
 import { hex } from "lib/cpu/format";
 import { syscallInvocation } from "lib/cpu/inspect";
 import ArgumentRow from "components/debugger/ArgumentRow";
-import SyscallNameField from "components/debugger/SyscallNameField";
+import PrototypeNameField from "components/debugger/PrototypeNameField";
 import { setSyscallName } from "lib/cpu/syscallNames";
 import { loadPrototype } from "lib/prototypes";
 
@@ -83,12 +83,16 @@ export default function SyscallPane({ machine, count, tick, onImportNtdll, onNam
           {/* O nome e editavel SEMPRE, resolvido ou nao: a tabela pode estar
               certa e o aluno querer anotar outra coisa, ou a ntdll ser de outra
               build. Clicar abre um campo com auto-completar. */}
-          <SyscallNameField
+          <PrototypeNameField
             os={call.os}
             arch={machine.archId}
-            number={call.number}
+            // So syscalls: oferecer uma Rtl* para um numero em RAX sugeriria
+            // que aquilo se chama por `syscall`, e nao se chama.
+            kind="syscall"
             name={call.name}
             origin={call.origin}
+            emptyLabel={t("sim.syscallUnknown", "unknown number")}
+            editTitle={t("sim.syscallNameEdit", "Click to name this syscall")}
             onChange={(chosen) => {
               setSyscallName(call.os, machine.archId, call.number, chosen);
               onNameChange?.();

@@ -1,21 +1,20 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntpsapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryInformationThread
 ssn: null
-summary: ""
+summary: "Le uma propriedade de uma thread: TEB, endereco inicial, tempos, prioridade."
 input_args:
   arg0:
     type: "HANDLE"
     name: "ThreadHandle"
     direction: "in"
-    description: "Handle da thread alvo. NtCurrentThread (-2) e a propria."
+    description: "Handle da thread. Exige THREAD_QUERY_LIMITED_INFORMATION ou THREAD_QUERY_INFORMATION. NtCurrentThread (-2) e a propria."
   arg1:
     type: "THREADINFOCLASS"
     name: "ThreadInformationClass"
     direction: "in"
-    description: "Entrada: THREADINFOCLASS."
+    description: "O que ler (ThreadBasicInformation 0, ThreadTimes 1, ThreadQuerySetWin32StartAddress 9)."
   arg2:
     type: "PVOID"
     name: "ThreadInformation"

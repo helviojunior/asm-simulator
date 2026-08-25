@@ -1,16 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntexapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtDrawText
 ssn: null
-summary: ""
+summary: "Desenha texto na tela de boot. E a unica saida visual de uma aplicacao nativa, que roda antes de a Win32 existir."
 input_args:
   arg0:
     type: "PCUNICODE_STRING"
     name: "Text"
     direction: "in"
-    description: "Entrada: PCUNICODE_STRING."
+    description: "Texto a escrever, em UNICODE_STRING."
 output_data:
   type: "NTSTATUS"
   name: "status"

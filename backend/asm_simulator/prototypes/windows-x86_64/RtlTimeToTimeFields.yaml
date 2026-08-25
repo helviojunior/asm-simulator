@@ -1,0 +1,22 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlTimeToTimeFields
+kind: function
+ssn: null
+summary: "Quebra um tempo de 64 bits em ano, mes, dia, hora, minuto, segundo e milissegundo."
+input_args:
+  arg0:
+    type: "PLARGE_INTEGER"
+    name: "Time"
+    direction: "in"
+    description: "Tempo em unidades de 100 ns desde 1601."
+  arg1:
+    type: "PTIME_FIELDS"
+    name: "TimeFields"
+    direction: "out"
+    description: "Recebe os campos separados, cada um um SHORT."
+output_data:
+  type: "VOID"
+  name: "none"
+  description: "Nao devolve valor: RAX nao carrega resultado depois da chamada. O que a funcao produz sai pelos argumentos de saida."

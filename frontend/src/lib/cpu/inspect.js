@@ -13,6 +13,7 @@ import {
 } from "./syscalls";
 import { ntdllSummary, resolveSyscall } from "lib/ntdll";
 import { syscallNameOverride } from "./syscallNames";
+import { callKey, callNameOverride } from "./callNames";
 import { prototypeByName } from "lib/prototypes";
 
 // Quantos bytes olhar a frente ao tentar reconhecer uma string.
@@ -300,6 +301,56 @@ export function callArguments(machine, { count = 4, convention } = {}) {
   }
 
   return { convention: spec, args };
+}
+
+/**
+ * A chamada prestes a acontecer, com o prototipo quando ele e conhecido.
+ *
+ * Espelho do painel de syscall, para a outra forma de chamar codigo alheio. A
+ * diferenca esta em como o nome aparece: num `syscall` o numero em RAX
+ * identifica a funcao, e aqui nao ha o que deduzir de um endereco — o nome e
+ * dito pelo aluno (`lib/cpu/callNames`). Dito uma vez, o prototipo do catalogo
+ * entra e a aridade deixa de ser um chute da barra superior.
+ *
+ * E o que traz as Rtl* e Ldr* da ntdll para o painel: elas nunca passam por
+ * `syscall`, entao so por aqui um `call` para `RtlInitUnicodeString` mostra
+ * que RCX e a UNICODE_STRING de saida e RDX o texto de origem.
+ */
+export function callInvocation(machine, { count = 4, convention } = {}) {
+  const insn = machine?.currentInstruction;
+  if (!insn || insn.data || !insn.groups?.includes("call")) return null;
+
+  // Destino, quando e um imediato. Chamada indireta (`call rbx`, `call [rax]`)
+  // so se resolve na hora de executar, entao nao ha o que antecipar — e a
+  // chave do nome passa a ser o ponto do programa, nao a funcao.
+  const immediate = (insn.operands || []).find((operand) => operand.type === "imm");
+  const target = immediate ? BigInt(immediate.value) : null;
+
+  const key = callKey(target, insn.address);
+  const name = callNameOverride(machine.osId, machine.archId, key);
+  const prototype = name ? prototypeByName(machine.osId, machine.archId, name) : null;
+
+  const { convention: spec, args } = callArguments(machine, {
+    // Com prototipo, a aridade e a DELE: mostrar quatro posicoes para uma
+    // funcao de dois argumentos inventaria dois argumentos.
+    count: prototype ? prototype.input_args.length : count,
+    convention,
+  });
+
+  return {
+    convention: spec,
+    target,
+    key,
+    name,
+    prototype,
+    known: Boolean(prototype),
+    args: args.map((arg, index) => {
+      const param = prototype?.input_args?.[index];
+      return param
+        ? { ...arg, name: param.name, type: param.type, description: param.description }
+        : arg;
+    }),
+  };
 }
 
 /**

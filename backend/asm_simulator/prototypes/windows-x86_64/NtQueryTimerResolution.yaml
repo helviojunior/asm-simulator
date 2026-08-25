@@ -1,26 +1,25 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntexapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryTimerResolution
 ssn: null
-summary: ""
+summary: "Resolucao do timer do sistema: a melhor possivel, a pior e a que esta em vigor."
 input_args:
   arg0:
     type: "PULONG"
     name: "MaximumTime"
     direction: "out"
-    description: "Saida: PULONG."
+    description: "Recebe o MAIOR intervalo, em unidades de 100 ns — a resolucao mais grosseira."
   arg1:
     type: "PULONG"
     name: "MinimumTime"
     direction: "out"
-    description: "Saida: PULONG."
+    description: "Recebe o MENOR intervalo possivel — a resolucao mais fina que o sistema aceita."
   arg2:
     type: "PULONG"
     name: "CurrentTime"
     direction: "out"
-    description: "Saida: PULONG."
+    description: "Recebe a resolucao em vigor agora."
 output_data:
   type: "NTSTATUS"
   name: "status"

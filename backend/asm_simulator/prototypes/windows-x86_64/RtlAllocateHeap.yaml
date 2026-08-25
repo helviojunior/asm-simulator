@@ -1,0 +1,27 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlAllocateHeap
+kind: function
+ssn: null
+summary: "Aloca um bloco num heap do processo. E o motor por tras de HeapAlloc e, mais abaixo, de malloc."
+input_args:
+  arg0:
+    type: "PVOID"
+    name: "HeapHandle"
+    direction: "in"
+    description: "Heap de destino. O do processo esta em NtCurrentPeb()->ProcessHeap."
+  arg1:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in/opt"
+    description: "HEAP_ZERO_MEMORY 8 zera o bloco; HEAP_GENERATE_EXCEPTIONS 4 lanca em vez de devolver NULL."
+  arg2:
+    type: "SIZE_T"
+    name: "Size"
+    direction: "in"
+    description: "Tamanho pedido, em bytes."
+output_data:
+  type: "PVOID"
+  name: "block"
+  description: "Endereco do bloco, ou NULL quando nao ha memoria. Diferente das demais, NAO devolve NTSTATUS."

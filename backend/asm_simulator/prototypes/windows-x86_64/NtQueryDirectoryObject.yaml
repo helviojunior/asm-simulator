@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntobapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryDirectoryObject
 ssn: null
-summary: ""
+summary: "Lista as entradas de um diretorio do namespace de objetos — nome e tipo de cada uma."
 input_args:
   arg0:
     type: "HANDLE"
@@ -15,7 +14,7 @@ input_args:
     type: "PVOID"
     name: "Buffer"
     direction: "out/opt"
-    description: "Bloco de memoria da operacao. Opcional."
+    description: "Recebe um vetor de OBJECT_DIRECTORY_INFORMATION: nome e tipo de cada objeto. Opcional."
   arg2:
     type: "ULONG"
     name: "Length"
@@ -25,23 +24,23 @@ input_args:
     type: "BOOLEAN"
     name: "ReturnSingleEntry"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE devolve uma entrada por chamada; FALSE enche o buffer."
   arg4:
     type: "BOOLEAN"
     name: "RestartScan"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE recomeca do inicio (use na primeira chamada); FALSE continua do ponto guardado em Context."
   arg5:
     type: "PULONG"
     name: "Context"
     direction: "inout"
-    description: "Contexto opaco repassado sem interpretacao."
+    description: "Indice da entrada pedida; volta com o indice da ultima efetivamente lida. 0 na primeira chamada, e o mesmo valor nas seguintes."
   arg6:
     type: "PULONG"
     name: "ReturnLength"
     direction: "out/opt"
-    description: "Recebe o tamanho necessario. Permite chamar duas vezes: uma para medir, outra para ler. Opcional."
+    description: "Recebe os bytes usados — ou os necessarios, se nem uma entrada coube. Opcional."
 output_data:
   type: "NTSTATUS"
   name: "status"
-  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."
+  description: "STATUS_SUCCESS quando terminou a listagem; STATUS_MORE_ENTRIES quando o buffer encheu e ha mais a ler."

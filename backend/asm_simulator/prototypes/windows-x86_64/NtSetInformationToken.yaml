@@ -1,21 +1,20 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntseapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtSetInformationToken
 ssn: null
-summary: ""
+summary: "Altera uma propriedade de um token: dono, DACL padrao, nivel de integridade."
 input_args:
   arg0:
     type: "HANDLE"
     name: "TokenHandle"
     direction: "in"
-    description: "Handle do token de acesso."
+    description: "Handle do token. Exige TOKEN_ADJUST_DEFAULT (ou o direito especifico da classe)."
   arg1:
     type: "TOKEN_INFORMATION_CLASS"
     name: "TokenInformationClass"
     direction: "in"
-    description: "Entrada: TOKEN_INFORMATION_CLASS."
+    description: "O que alterar (TokenOwner 4, TokenDefaultDacl 6, TokenIntegrityLevel 25)."
   arg2:
     type: "PVOID"
     name: "TokenInformation"

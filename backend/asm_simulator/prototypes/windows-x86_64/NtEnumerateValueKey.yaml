@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntregapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtEnumerateValueKey
 ssn: null
-summary: ""
+summary: "Le o valor de indice N de uma chave de registro. E assim que se percorrem os valores: um por chamada."
 input_args:
   arg0:
     type: "HANDLE"
@@ -15,12 +14,12 @@ input_args:
     type: "ULONG"
     name: "Index"
     direction: "in"
-    description: "Entrada: ULONG."
+    description: "Indice do valor, de 0 em diante. STATUS_NO_MORE_ENTRIES marca o fim."
   arg2:
     type: "KEY_VALUE_INFORMATION_CLASS"
     name: "KeyValueInformationClass"
     direction: "in"
-    description: "Entrada: KEY_VALUE_INFORMATION_CLASS."
+    description: "Formato do resultado (KeyValueBasicInformation 0, KeyValueFullInformation 1, KeyValuePartialInformation 2)."
   arg3:
     type: "PVOID"
     name: "KeyValueInformation"
@@ -35,8 +34,8 @@ input_args:
     type: "PULONG"
     name: "ResultLength"
     direction: "out"
-    description: "Tamanho em bytes."
+    description: "Recebe o tamanho necessario. Com KeyValueInformation NULL e Length 0, mede antes de alocar."
 output_data:
   type: "NTSTATUS"
   name: "status"
-  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."
+  description: "STATUS_NO_MORE_ENTRIES marca o fim da enumeracao. STATUS_BUFFER_TOO_SMALL pede um buffer do tamanho de ResultLength."

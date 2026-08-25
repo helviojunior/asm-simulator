@@ -1,21 +1,20 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntregapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryOpenSubKeys
 ssn: null
-summary: ""
+summary: "Conta os handles abertos para chaves do HIVE a que a chave pertence. E a checagem antes de descarregar um hive."
 input_args:
   arg0:
     type: "POBJECT_ATTRIBUTES"
     name: "TargetKey"
     direction: "in"
-    description: "Entrada: POBJECT_ATTRIBUTES."
+    description: "Qualquer chave do hive, em OBJECT_ATTRIBUTES — nao precisa ser a raiz dele. Exige poder abrir a chave com KEY_READ."
   arg1:
     type: "PULONG"
     name: "HandleCount"
     direction: "out"
-    description: "Quantidade de itens."
+    description: "Recebe quantos handles estao abertos para chaves daquele hive."
 output_data:
   type: "NTSTATUS"
   name: "status"

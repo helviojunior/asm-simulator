@@ -1,16 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntseapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtOpenThreadToken
 ssn: null
-summary: ""
+summary: "Abre o token de impersonation de uma thread. Sem impersonation ativa o status e STATUS_NO_TOKEN."
 input_args:
   arg0:
     type: "HANDLE"
     name: "ThreadHandle"
     direction: "in"
-    description: "Handle da thread alvo. NtCurrentThread (-2) e a propria."
+    description: "Thread cujo token de impersonation se quer. Exige THREAD_QUERY_LIMITED_INFORMATION ou THREAD_QUERY_INFORMATION."
   arg1:
     type: "ACCESS_MASK"
     name: "DesiredAccess"
@@ -20,7 +19,7 @@ input_args:
     type: "BOOLEAN"
     name: "OpenAsSelf"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE abre com a identidade do PROCESSO, e nao com a que a thread esta impersonando — e o que evita o servico perder acesso ao proprio token."
   arg3:
     type: "PHANDLE"
     name: "TokenHandle"

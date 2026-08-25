@@ -1,0 +1,32 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlGetDaclSecurityDescriptor
+kind: function
+ssn: null
+summary: "Le a DACL de um security descriptor — a lista que decide quem tem acesso."
+input_args:
+  arg0:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    direction: "in"
+    description: "Descritor a consultar."
+  arg1:
+    type: "PBOOLEAN"
+    name: "DaclPresent"
+    direction: "out"
+    description: "FALSE significa objeto SEM DACL: acesso liberado a todos. Diferente de DACL vazia, que nega tudo."
+  arg2:
+    type: "PACL*"
+    name: "Dacl"
+    direction: "out"
+    description: "Recebe a ACL. Aponta para dentro do descritor: nao liberar."
+  arg3:
+    type: "PBOOLEAN"
+    name: "DaclDefaulted"
+    direction: "out"
+    description: "TRUE quando a DACL veio do padrao."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

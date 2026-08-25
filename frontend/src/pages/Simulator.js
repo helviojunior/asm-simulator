@@ -30,6 +30,7 @@ import ImportBinaryWizard from "components/ImportBinaryWizard";
 import NtdllModal from "components/NtdllModal";
 import { ntdllSummary, refreshNtdll } from "lib/ntdll";
 import { clearSyscallNames } from "lib/cpu/syscallNames";
+import { clearCallNames } from "lib/cpu/callNames";
 import { usePaneSizes } from "lib/usePaneSizes";
 
 // O editor abre VAZIO: quem chega escreve o proprio programa (ou abre um da
@@ -228,6 +229,9 @@ export default function Simulator() {
     machineRef.current = null;
     // Os nomes que o aluno deu valem para o programa que estava carregado.
     clearSyscallNames();
+    // Os do `call` mais ainda: sao presos a um endereco, e no proximo programa
+    // aquele mesmo endereco e outra coisa.
+    clearCallNames();
     setParsed(null);
     setInstructions([]);
     setLineMap({});
@@ -1121,6 +1125,7 @@ export default function Simulator() {
                   convention={convention}
                   onConventionChange={setConvention}
                   tick={tick}
+                  onNameChange={refresh}
                   onParse={setParsed}
                 />
               </div>

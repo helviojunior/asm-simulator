@@ -1,0 +1,17 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlGetVersion
+kind: function
+ssn: null
+summary: "Versao real do Windows, lida do PEB. Nao mente com shim de compatibilidade, ao contrario de GetVersionEx."
+input_args:
+  arg0:
+    type: "PRTL_OSVERSIONINFOEXW"
+    name: "VersionInformation"
+    direction: "out"
+    description: "Estrutura a preencher. dwOSVersionInfoSize precisa estar definido ANTES da chamada."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

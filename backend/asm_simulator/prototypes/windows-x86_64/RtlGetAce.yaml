@@ -1,0 +1,27 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlGetAce
+kind: function
+ssn: null
+summary: "Devolve a ACE de indice N de uma ACL, sem percorrer a lista na mao."
+input_args:
+  arg0:
+    type: "PACL"
+    name: "Acl"
+    direction: "in"
+    description: "ACL a percorrer. AceCount diz quantas entradas ha."
+  arg1:
+    type: "ULONG"
+    name: "AceIndex"
+    direction: "in"
+    description: "Indice da entrada, de 0 a AceCount-1."
+  arg2:
+    type: "PVOID*"
+    name: "Ace"
+    direction: "out"
+    description: "Recebe o ponteiro da ACE (comeca por ACE_HEADER). Aponta para dentro da ACL."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

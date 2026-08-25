@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntioapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtSetEaFile
 ssn: null
-summary: ""
+summary: "Grava atributos estendidos (EA) num arquivo."
 input_args:
   arg0:
     type: "HANDLE"
@@ -20,7 +19,7 @@ input_args:
     type: "PVOID"
     name: "Buffer"
     direction: "in"
-    description: "Bloco de memoria da operacao."
+    description: "Cadeia de FILE_FULL_EA_INFORMATION a gravar, cada uma com nome e valor do atributo."
   arg3:
     type: "ULONG"
     name: "Length"

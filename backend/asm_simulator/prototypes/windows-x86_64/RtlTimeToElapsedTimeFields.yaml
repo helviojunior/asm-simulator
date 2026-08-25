@@ -1,0 +1,22 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlTimeToElapsedTimeFields
+kind: function
+ssn: null
+summary: "Quebra um INTERVALO em dias, horas, minutos e segundos. E a funcao para duracao (tempo de CPU, uptime) — nao para data."
+input_args:
+  arg0:
+    type: "PLARGE_INTEGER"
+    name: "Time"
+    direction: "in"
+    description: "Intervalo em unidades de 100 ns. E uma diferenca, nao um instante."
+  arg1:
+    type: "PTIME_FIELDS"
+    name: "TimeFields"
+    direction: "out"
+    description: "Recebe a duracao. Aqui o campo Day conta dias decorridos, e nao dia do mes."
+output_data:
+  type: "VOID"
+  name: "none"
+  description: "Nao devolve valor: RAX nao carrega resultado depois da chamada. O que a funcao produz sai pelos argumentos de saida."

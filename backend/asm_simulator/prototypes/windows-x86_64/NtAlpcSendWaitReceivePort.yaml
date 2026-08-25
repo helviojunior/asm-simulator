@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntlpcapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtAlpcSendWaitReceivePort
 ssn: null
-summary: ""
+summary: "Envia e/ou recebe mensagem numa porta ALPC. Junta as duas operacoes (e a espera entre elas) numa transicao so para o kernel."
 input_args:
   arg0:
     type: "HANDLE"
@@ -15,12 +14,12 @@ input_args:
     type: "ULONG"
     name: "Flags"
     direction: "in"
-    description: "Combinacao de flags."
+    description: "ALPC_MSGFLG_SYNC_REQUEST 0x20000 (sincrono, volta quando a mensagem foi tratada); ALPC_MSGFLG_RELEASE_MESSAGE 0x10000 (nao espera resposta)."
   arg2:
     type: "PPORT_MESSAGE"
     name: "SendMessage"
     direction: "in/opt"
-    description: "Entrada: PPORT_MESSAGE. Opcional."
+    description: "Mensagem a enviar. NULL so recebe."
   arg3:
     type: "PALPC_MESSAGE_ATTRIBUTES"
     name: "SendMessageAttributes"
@@ -30,12 +29,12 @@ input_args:
     type: "PPORT_MESSAGE"
     name: "ReceiveMessage"
     direction: "out/opt"
-    description: "Saida: PPORT_MESSAGE. Opcional."
+    description: "Recebe a mensagem que chegar. NULL so envia."
   arg5:
     type: "PSIZE_T"
     name: "BufferLength"
     direction: "inout/opt"
-    description: "Tamanho do buffer, em bytes. Opcional."
+    description: "Entra com o tamanho do buffer de recepcao e volta com o tamanho da mensagem recebida."
   arg6:
     type: "PALPC_MESSAGE_ATTRIBUTES"
     name: "ReceiveMessageAttributes"

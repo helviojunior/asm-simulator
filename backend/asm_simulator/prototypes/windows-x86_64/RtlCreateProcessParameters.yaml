@@ -1,0 +1,62 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlCreateProcessParameters
+kind: function
+ssn: null
+summary: "Monta o bloco RTL_USER_PROCESS_PARAMETERS — linha de comando, diretorio e ambiente — que o novo processo vera no PEB."
+input_args:
+  arg0:
+    type: "PRTL_USER_PROCESS_PARAMETERS*"
+    name: "pProcessParameters"
+    direction: "out"
+    description: "Recebe o bloco alocado. Liberado por RtlDestroyProcessParameters."
+  arg1:
+    type: "PUNICODE_STRING"
+    name: "ImagePathName"
+    direction: "in"
+    description: "Caminho da imagem, no formato NT: \\??\\C:\\..."
+  arg2:
+    type: "PUNICODE_STRING"
+    name: "DllPath"
+    direction: "in/opt"
+    description: "Caminho de busca de DLLs. NULL usa o padrao."
+  arg3:
+    type: "PUNICODE_STRING"
+    name: "CurrentDirectory"
+    direction: "in/opt"
+    description: "Diretorio atual do novo processo. NULL herda o seu."
+  arg4:
+    type: "PUNICODE_STRING"
+    name: "CommandLine"
+    direction: "in/opt"
+    description: "Linha de comando completa, como o processo a vera."
+  arg5:
+    type: "PVOID"
+    name: "Environment"
+    direction: "in/opt"
+    description: "Bloco de ambiente. NULL herda o do processo atual."
+  arg6:
+    type: "PUNICODE_STRING"
+    name: "WindowTitle"
+    direction: "in/opt"
+    description: "Titulo da janela do console. Opcional."
+  arg7:
+    type: "PUNICODE_STRING"
+    name: "DesktopInfo"
+    direction: "in/opt"
+    description: "Desktop onde o processo roda (ex.: WinSta0\\Default). Opcional."
+  arg8:
+    type: "PUNICODE_STRING"
+    name: "ShellInfo"
+    direction: "in/opt"
+    description: "Informacao do shell. Opcional."
+  arg9:
+    type: "PUNICODE_STRING"
+    name: "RuntimeData"
+    direction: "in/opt"
+    description: "Dado livre repassado ao processo. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

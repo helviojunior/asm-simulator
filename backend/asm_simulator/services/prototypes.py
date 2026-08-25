@@ -29,6 +29,14 @@ TARGETS = {
 REQUIRED_FIELDS = ('function_name', 'input_args', 'output_data')
 FIELD_FIELDS = ('type', 'name', 'description')
 
+# O que a funcao E. Nem tudo que se chama numa DLL do sistema entra pelo
+# kernel: `NtCreateFile` e um stub com `syscall` dentro, mas `RtlInitUnicodeString`
+# roda inteiro em modo usuario e nunca tem SSN. Sao dois catalogos diferentes
+# para dois paineis diferentes — o de `syscall` completa numeros, o de `call`
+# completa nomes de export — e sem esta marca os dois se misturariam.
+KINDS = ('syscall', 'function')
+DEFAULT_KIND = 'syscall'
+
 # Direcao do argumento, quando declarada. Vem das anotacoes SAL dos headers
 # (`_In_`, `_Out_`, `_Inout_`, com `_opt_` para opcional) e diz o que o nome
 # sozinho nao diz: `BaseAddress` no NtAllocateVirtualMemory entra E sai.
@@ -82,6 +90,15 @@ def parse(path):
         raise PrototypeError(
             f'{path.name}: function_name is {name!r}; it must match the file name.')
 
+    kind = data.get('kind', DEFAULT_KIND)
+    if kind not in KINDS:
+        raise PrototypeError(f'{path.name}: kind is {kind!r}; use one of {KINDS}.')
+    # Funcao de modo usuario com SSN seria uma contradicao: o numero so existe
+    # para quem cruza a fronteira do kernel, e exibi-lo convidaria o aluno a
+    # chamar um `RtlInitUnicodeString` por `syscall`.
+    if kind == 'function' and data.get('ssn') is not None:
+        raise PrototypeError(f'{path.name}: a user-mode function has no syscall number.')
+
     args = data['input_args'] or {}
     if not isinstance(args, dict):
         raise PrototypeError(f'{path.name}: input_args must be a mapping (arg0, arg1, ...).')
@@ -100,6 +117,7 @@ def parse(path):
 
     return {
         'function_name': name,
+        'kind': kind,
         'ssn': data.get('ssn'),
         'summary': data.get('summary', ''),
         'input_args': ordered,
@@ -137,20 +155,26 @@ def load_target(os_id, arch_id):
     return found
 
 
-def summaries(os_id, arch_id):
+def summaries(os_id, arch_id, kind=None):
     """Só o que o auto-completar precisa: nome, número e resumo.
 
     A lista inteira de um alvo passa de 3 MB com os argumentos; para completar
     um nome enquanto se digita, isso e peso sem uso.
+
+    `kind` filtra por natureza da funcao. O painel de `syscall` pede
+    `kind='syscall'`: oferecer `RtlInitUnicodeString` para um numero em RAX
+    sugeriria que aquilo se chama por `syscall`, e nao se chama.
     """
     return [
         {
             'function_name': item['function_name'],
+            'kind': item['kind'],
             'ssn': item['ssn'],
             'summary': item['summary'],
             'args': len(item['input_args']),
         }
         for name, item in sorted(load_target(os_id, arch_id).items())
+        if kind is None or item['kind'] == kind
     ]
 
 

@@ -1,0 +1,22 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlInitAnsiString
+kind: function
+ssn: null
+summary: "Mesma coisa da versao Unicode, para texto de 8 bits. E o formato que LdrGetProcedureAddress espera para o nome do export."
+input_args:
+  arg0:
+    type: "PANSI_STRING"
+    name: "DestinationString"
+    direction: "out"
+    description: "Estrutura a preencher, em bytes."
+  arg1:
+    type: "PCSTR"
+    name: "SourceString"
+    direction: "in/opt"
+    description: "Texto ANSI terminado em nulo. NULL zera a estrutura."
+output_data:
+  type: "VOID"
+  name: "none"
+  description: "Nao devolve valor: RAX nao carrega resultado depois da chamada. O que a funcao produz sai pelos argumentos de saida."

@@ -1,0 +1,22 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlCopyUnicodeString
+kind: function
+ssn: null
+summary: "Copia o conteudo de uma UNICODE_STRING para outra, truncando no MaximumLength do destino — o destino precisa ter buffer proprio."
+input_args:
+  arg0:
+    type: "PUNICODE_STRING"
+    name: "DestinationString"
+    direction: "inout"
+    description: "Destino. Buffer e MaximumLength ja devem apontar para espaco seu; Length e atualizado."
+  arg1:
+    type: "PCUNICODE_STRING"
+    name: "SourceString"
+    direction: "in/opt"
+    description: "Origem. NULL zera o Length do destino."
+output_data:
+  type: "VOID"
+  name: "none"
+  description: "Nao devolve valor: RAX nao carrega resultado depois da chamada. O que a funcao produz sai pelos argumentos de saida."

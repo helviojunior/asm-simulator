@@ -1,0 +1,37 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlQueryHeapInformation
+kind: function
+ssn: null
+summary: "Le uma propriedade de um heap — ou, com HeapHandle NULL, o resumo de todos os heaps do processo."
+input_args:
+  arg0:
+    type: "PVOID"
+    name: "HeapHandle"
+    direction: "in/opt"
+    description: "Heap a consultar. NULL pede a informacao do processo inteiro."
+  arg1:
+    type: "HEAP_INFORMATION_CLASS"
+    name: "HeapInformationClass"
+    direction: "in"
+    description: "O que ler (HeapCompatibilityInformation 0, HeapExtendedInformation 4)."
+  arg2:
+    type: "PVOID"
+    name: "HeapInformation"
+    direction: "out/opt"
+    description: "Buffer de saida. O formato depende da classe pedida."
+  arg3:
+    type: "SIZE_T"
+    name: "HeapInformationLength"
+    direction: "in/opt"
+    description: "Tamanho do buffer, em bytes."
+  arg4:
+    type: "PSIZE_T"
+    name: "ReturnLength"
+    direction: "out/opt"
+    description: "Recebe o tamanho necessario. Com STATUS_BUFFER_TOO_SMALL, e o tamanho a alocar."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

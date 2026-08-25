@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntexapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtCreateEvent
 ssn: null
-summary: ""
+summary: "Cria um evento: objeto de sincronizacao com dois estados, sinalizado e nao sinalizado."
 input_args:
   arg0:
     type: "PHANDLE"
@@ -25,12 +24,12 @@ input_args:
     type: "EVENT_TYPE"
     name: "EventType"
     direction: "in"
-    description: "Entrada: EVENT_TYPE."
+    description: "NotificationEvent 0 fica sinalizado ate ser limpo (libera todos); SynchronizationEvent 1 volta sozinho a nao sinalizado e libera um."
   arg4:
     type: "BOOLEAN"
     name: "InitialState"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE nasce sinalizado; FALSE nasce nao sinalizado."
 output_data:
   type: "NTSTATUS"
   name: "status"

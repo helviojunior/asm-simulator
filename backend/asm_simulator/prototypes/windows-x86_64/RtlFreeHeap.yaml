@@ -1,0 +1,27 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlFreeHeap
+kind: function
+ssn: null
+summary: "Libera um bloco alocado por RtlAllocateHeap. O heap tem de ser o MESMO da alocacao."
+input_args:
+  arg0:
+    type: "PVOID"
+    name: "HeapHandle"
+    direction: "in"
+    description: "O mesmo heap usado na alocacao."
+  arg1:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in/opt"
+    description: "Normalmente 0. Precisa repetir HEAP_NO_SERIALIZE se ele foi usado na alocacao."
+  arg2:
+    type: "PVOID"
+    name: "BaseAddress"
+    direction: "in/opt"
+    description: "Bloco a liberar. NULL nao faz nada."
+output_data:
+  type: "LOGICAL"
+  name: "freed"
+  description: "TRUE (1) quando liberou. FALSE indica bloco invalido ou heap errado."

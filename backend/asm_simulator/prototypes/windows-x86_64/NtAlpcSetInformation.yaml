@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntlpcapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtAlpcSetInformation
 ssn: null
-summary: ""
+summary: "Altera uma propriedade de uma porta ALPC."
 input_args:
   arg0:
     type: "HANDLE"
@@ -15,7 +14,7 @@ input_args:
     type: "ALPC_PORT_INFORMATION_CLASS"
     name: "PortInformationClass"
     direction: "in"
-    description: "Entrada: ALPC_PORT_INFORMATION_CLASS."
+    description: "O que alterar (AlpcAssociateCompletionPortInformation 2)."
   arg2:
     type: "PVOID"
     name: "PortInformation"

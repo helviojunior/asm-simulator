@@ -1,10 +1,15 @@
 /**
- * Prototipos das syscalls, servidos pelo backend a partir de
+ * Prototipos das funcoes do alvo, servidos pelo backend a partir de
  * `asm_simulator/prototypes/`.
  *
  * Carregados uma vez por alvo e mantidos aqui: sao algumas dezenas de itens, e
  * o auto-completar consulta a cada tecla — ida e volta ao servidor por tecla
  * seria desperdicio.
+ *
+ * `kind` separa o que entra no kernel (`syscall`) do que roda inteiro em modo
+ * usuario (`function`, as Rtl* e Ldr* da ntdll). O painel de `syscall` pede so
+ * as syscalls: oferecer `RtlInitUnicodeString` para um numero em RAX
+ * sugeriria que aquilo se chama por `syscall`, e nao se chama.
  */
 
 import api from "lib/api";
@@ -12,11 +17,11 @@ import api from "lib/api";
 const CACHE = new Map();
 const PENDING = new Map();
 
-const keyOf = (os, arch) => `${os}:${arch}`;
+const keyOf = (os, arch, kind) => `${os}:${arch}:${kind || "all"}`;
 
 /** Prototipos ja carregados para o alvo, ou lista vazia. */
-export function prototypesFor(os, arch) {
-  return CACHE.get(keyOf(os, arch)) || [];
+export function prototypesFor(os, arch, kind) {
+  return CACHE.get(keyOf(os, arch, kind)) || [];
 }
 
 /**
@@ -26,18 +31,18 @@ export function prototypesFor(os, arch) {
  * enquanto o menu tambem pede, e duas idas ao servidor para a mesma lista nao
  * ajudariam ninguem.
  */
-export async function loadPrototypes(os, arch) {
+export async function loadPrototypes(os, arch, kind) {
   if (!os || !arch) return [];
 
-  const key = keyOf(os, arch);
+  const key = keyOf(os, arch, kind);
   if (CACHE.has(key)) return CACHE.get(key);
   if (PENDING.has(key)) return PENDING.get(key);
 
   const request = api
     // `fields=names` traz so nome, numero e resumo: a lista completa do
-    // Windows sao 773 funcoes com argumentos e passa de 3 MB — peso sem uso
-    // para completar um nome enquanto se digita.
-    .get("/api/prototypes/", { params: { os, arch, fields: "names" } })
+    // Windows sao centenas de funcoes com argumentos e passa de 3 MB — peso
+    // sem uso para completar um nome enquanto se digita.
+    .get("/api/prototypes/", { params: { os, arch, fields: "names", ...(kind ? { kind } : {}) } })
     .then(({ data }) => {
       const list = data.prototypes || [];
       CACHE.set(key, list);

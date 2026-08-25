@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntobapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtOpenSymbolicLinkObject
 ssn: null
-summary: ""
+summary: "Abre um link simbolico do namespace de objetos (o \\??\\C: que aponta para \\Device\\HarddiskVolume3)."
 input_args:
   arg0:
     type: "PHANDLE"
@@ -20,7 +19,7 @@ input_args:
     type: "POBJECT_ATTRIBUTES"
     name: "ObjectAttributes"
     direction: "in"
-    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags."
+    description: "Nome do link simbolico. Obrigatorio: sem nome a chamada falha."
 output_data:
   type: "NTSTATUS"
   name: "status"

@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntlpcapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtAlpcCreatePortSection
 ssn: null
-summary: ""
+summary: "Cria uma secao de memoria compartilhada ligada a porta, para as mensagens que nao cabem no buffer."
 input_args:
   arg0:
     type: "HANDLE"
@@ -15,27 +14,27 @@ input_args:
     type: "ULONG"
     name: "Flags"
     direction: "in"
-    description: "Combinacao de flags."
+    description: "0 ou ALPC_VIEWFLG_SECURED_ACCESS, que restringe o acesso a secao aos processos envolvidos."
   arg2:
     type: "HANDLE"
     name: "SectionHandle"
     direction: "in/opt"
-    description: "Handle da secao (objeto de memoria compartilhavel). Opcional."
+    description: "Secao ja existente a usar. NULL faz a funcao criar uma, do tamanho SectionSize."
   arg3:
     type: "SIZE_T"
     name: "SectionSize"
     direction: "in"
-    description: "Tamanho em bytes."
+    description: "Tamanho da secao a criar, em bytes. So vale quando SectionHandle e NULL."
   arg4:
     type: "PALPC_HANDLE"
     name: "AlpcSectionHandle"
     direction: "out"
-    description: "Handle do objeto."
+    description: "Recebe o handle INTERNO da secao ALPC — o que se guarda no campo SectionHandle do ALPC_DATA_VIEW_ATTR."
   arg5:
     type: "PSIZE_T"
     name: "ActualSectionSize"
     direction: "out"
-    description: "Tamanho em bytes."
+    description: "Recebe o tamanho real, que pode ser maior que o pedido (arredondado para cima)."
 output_data:
   type: "NTSTATUS"
   name: "status"

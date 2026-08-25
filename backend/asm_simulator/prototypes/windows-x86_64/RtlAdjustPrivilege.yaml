@@ -1,0 +1,32 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlAdjustPrivilege
+kind: function
+ssn: null
+summary: "Liga ou desliga um privilegio no token, pelo NUMERO do privilegio. Uma chamada no lugar do trio Open/Lookup/AdjustTokenPrivileges."
+input_args:
+  arg0:
+    type: "ULONG"
+    name: "Privilege"
+    direction: "in"
+    description: "Numero do privilegio (SE_DEBUG_PRIVILEGE 20, SE_TCB_PRIVILEGE 7). Nao e o nome em texto."
+  arg1:
+    type: "BOOLEAN"
+    name: "Enable"
+    direction: "in"
+    description: "TRUE liga o privilegio; FALSE desliga."
+  arg2:
+    type: "BOOLEAN"
+    name: "Client"
+    direction: "in"
+    description: "TRUE age no token de IMPERSONATION da thread; FALSE no token do processo."
+  arg3:
+    type: "PBOOLEAN"
+    name: "WasEnabled"
+    direction: "out"
+    description: "Recebe o estado anterior. E o que permite restaurar depois."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

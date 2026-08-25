@@ -1,0 +1,67 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlAllocateAndInitializeSid
+kind: function
+ssn: null
+summary: "Aloca e preenche um SID com a autoridade e as sub-autoridades dadas. O par e RtlFreeSid."
+input_args:
+  arg0:
+    type: "PSID_IDENTIFIER_AUTHORITY"
+    name: "IdentifierAuthority"
+    direction: "in"
+    description: "Autoridade emissora (SECURITY_NT_AUTHORITY = {0,0,0,0,0,5})."
+  arg1:
+    type: "UCHAR"
+    name: "SubAuthorityCount"
+    direction: "in"
+    description: "Quantas das oito sub-autoridades seguintes valem."
+  arg2:
+    type: "ULONG"
+    name: "SubAuthority0"
+    direction: "in"
+    description: "Primeira sub-autoridade (ex.: SECURITY_MANDATORY_MEDIUM_RID 0x2000)."
+  arg3:
+    type: "ULONG"
+    name: "SubAuthority1"
+    direction: "in"
+    description: "Segunda sub-autoridade. Ignorada se SubAuthorityCount for menor que 2."
+  arg4:
+    type: "ULONG"
+    name: "SubAuthority2"
+    direction: "in"
+    description: "Terceira sub-autoridade. Ignorada se SubAuthorityCount for menor que 3."
+  arg5:
+    type: "ULONG"
+    name: "SubAuthority3"
+    direction: "in"
+    description: "Quarta sub-autoridade. Ignorada se SubAuthorityCount for menor que 4."
+  arg6:
+    type: "ULONG"
+    name: "SubAuthority4"
+    direction: "in"
+    description: "Quinta sub-autoridade. Ignorada se SubAuthorityCount for menor que 5."
+  arg7:
+    type: "ULONG"
+    name: "SubAuthority5"
+    direction: "in"
+    description: "Sexta sub-autoridade. Ignorada se SubAuthorityCount for menor que 6."
+  arg8:
+    type: "ULONG"
+    name: "SubAuthority6"
+    direction: "in"
+    description: "Setima sub-autoridade. Ignorada se SubAuthorityCount for menor que 7."
+  arg9:
+    type: "ULONG"
+    name: "SubAuthority7"
+    direction: "in"
+    description: "Oitava sub-autoridade. Ignorada se SubAuthorityCount for menor que 8."
+  arg10:
+    type: "PSID*"
+    name: "Sid"
+    direction: "out"
+    description: "Recebe o SID alocado. Liberado por RtlFreeSid, nao por RtlFreeHeap."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

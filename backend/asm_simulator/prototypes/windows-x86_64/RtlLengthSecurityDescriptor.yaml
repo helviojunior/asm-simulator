@@ -1,0 +1,17 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlLengthSecurityDescriptor
+kind: function
+ssn: null
+summary: "Tamanho em bytes de um security descriptor — o quanto copiar ou gravar."
+input_args:
+  arg0:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    direction: "in"
+    description: "Descritor a medir."
+output_data:
+  type: "ULONG"
+  name: "length"
+  description: "Tamanho total em bytes, ja incluindo SIDs e ACLs quando o descritor e absoluto."

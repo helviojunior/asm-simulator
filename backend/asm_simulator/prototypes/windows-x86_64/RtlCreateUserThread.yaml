@@ -1,0 +1,62 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlCreateUserThread
+kind: function
+ssn: null
+summary: "Cria uma thread em qualquer processo, inclusive em outro. E o CreateRemoteThread do lado nativo — a via classica da injecao de DLL."
+input_args:
+  arg0:
+    type: "HANDLE"
+    name: "Process"
+    direction: "in"
+    description: "Processo alvo. NtCurrentProcess() (-1) e o proprio."
+  arg1:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "ThreadSecurityDescriptor"
+    direction: "in/opt"
+    description: "Seguranca da thread. NULL usa o padrao."
+  arg2:
+    type: "BOOLEAN"
+    name: "CreateSuspended"
+    direction: "in"
+    description: "TRUE nasce suspensa, esperando NtResumeThread."
+  arg3:
+    type: "ULONG"
+    name: "ZeroBits"
+    direction: "in/opt"
+    description: "Bits zerados no alto do endereco da pilha. 0 deixa o sistema escolher."
+  arg4:
+    type: "SIZE_T"
+    name: "MaximumStackSize"
+    direction: "in/opt"
+    description: "Reserva da pilha, em bytes. 0 usa o valor do cabecalho da imagem."
+  arg5:
+    type: "SIZE_T"
+    name: "CommittedStackSize"
+    direction: "in/opt"
+    description: "Parte da pilha efetivada de saida. 0 usa o padrao."
+  arg6:
+    type: "PUSER_THREAD_START_ROUTINE"
+    name: "StartAddress"
+    direction: "in"
+    description: "Endereco onde a thread comeca — NO ESPACO DO PROCESSO ALVO, nao no seu."
+  arg7:
+    type: "PVOID"
+    name: "Parameter"
+    direction: "in/opt"
+    description: "Valor entregue a rotina inicial (chega em RCX). Tambem no espaco do alvo."
+  arg8:
+    type: "PHANDLE"
+    name: "Thread"
+    direction: "out/opt"
+    description: "Recebe o handle da thread nova. Opcional."
+  arg9:
+    type: "PCLIENT_ID"
+    name: "ClientId"
+    direction: "out/opt"
+    description: "Recebe o par (PID, TID) da thread. Opcional."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

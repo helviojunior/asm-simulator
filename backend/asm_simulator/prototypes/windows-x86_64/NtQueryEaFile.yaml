@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntioapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryEaFile
 ssn: null
-summary: ""
+summary: "Le os atributos estendidos (EA) de um arquivo."
 input_args:
   arg0:
     type: "HANDLE"
@@ -20,7 +19,7 @@ input_args:
     type: "PVOID"
     name: "Buffer"
     direction: "out"
-    description: "Bloco de memoria da operacao."
+    description: "Recebe uma cadeia de FILE_FULL_EA_INFORMATION, ligada por NextEntryOffset."
   arg3:
     type: "ULONG"
     name: "Length"
@@ -30,12 +29,12 @@ input_args:
     type: "BOOLEAN"
     name: "ReturnSingleEntry"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE devolve um EA por chamada; FALSE enche o buffer."
   arg5:
     type: "PVOID"
     name: "EaList"
     direction: "in/opt"
-    description: "Entrada: PVOID. Opcional."
+    description: "Lista de nomes de EA a devolver. NULL devolve todos."
   arg6:
     type: "ULONG"
     name: "EaListLength"
@@ -45,12 +44,12 @@ input_args:
     type: "PULONG"
     name: "EaIndex"
     direction: "in/opt"
-    description: "Entrada: PULONG. Opcional."
+    description: "Indice do EA a devolver. NULL comeca do primeiro."
   arg8:
     type: "BOOLEAN"
     name: "RestartScan"
     direction: "in"
-    description: "Entrada: BOOLEAN."
+    description: "TRUE recomeca do primeiro EA; FALSE continua de onde parou. IGNORADO na primeira chamada com aquele handle."
 output_data:
   type: "NTSTATUS"
   name: "status"

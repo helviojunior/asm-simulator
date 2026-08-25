@@ -1,0 +1,27 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlGetControlSecurityDescriptor
+kind: function
+ssn: null
+summary: "Le os bits de controle e a revisao de um security descriptor."
+input_args:
+  arg0:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    direction: "in"
+    description: "Descritor a consultar."
+  arg1:
+    type: "PSECURITY_DESCRIPTOR_CONTROL"
+    name: "Control"
+    direction: "out"
+    description: "Recebe as flags (SE_DACL_PRESENT 0x0004, SE_SELF_RELATIVE 0x8000)."
+  arg2:
+    type: "PULONG"
+    name: "Revision"
+    direction: "out"
+    description: "Recebe a revisao. Hoje sempre 1."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

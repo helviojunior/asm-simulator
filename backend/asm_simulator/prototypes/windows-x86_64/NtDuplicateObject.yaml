@@ -1,46 +1,45 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntobapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtDuplicateObject
 ssn: null
-summary: ""
+summary: "Copia um handle, possivelmente PARA OUTRO processo, com direitos iguais ou menores. O nome engana: o objeto nao e duplicado, o handle e."
 input_args:
   arg0:
     type: "HANDLE"
     name: "SourceProcessHandle"
     direction: "in"
-    description: "Handle do objeto."
+    description: "Processo dono do handle de origem. Precisa de PROCESS_DUP_HANDLE — NtCurrentProcess (-1) sempre tem."
   arg1:
     type: "HANDLE"
     name: "SourceHandle"
     direction: "in"
-    description: "Handle do objeto."
+    description: "Handle a duplicar, valido no processo de origem."
   arg2:
     type: "HANDLE"
     name: "TargetProcessHandle"
     direction: "in/opt"
-    description: "Handle do objeto. Opcional."
+    description: "Processo que recebe a copia. Pode ser o mesmo da origem (util so para trocar a mascara de acesso). NULL so com DUPLICATE_CLOSE_SOURCE."
   arg3:
     type: "PHANDLE"
     name: "TargetHandle"
     direction: "out/opt"
-    description: "Handle do objeto. Opcional."
+    description: "Recebe o novo handle, ja no espaco do processo alvo. Pode ser NULL com DUPLICATE_CLOSE_SOURCE."
   arg4:
     type: "ACCESS_MASK"
     name: "DesiredAccess"
     direction: "in"
-    description: "Direitos pedidos sobre o objeto."
+    description: "Direitos do novo handle. Pode ser 0 quando Options tem DUPLICATE_SAME_ACCESS."
   arg5:
     type: "ULONG"
     name: "HandleAttributes"
     direction: "in"
-    description: "Atributos do objeto."
+    description: "OBJ_INHERIT 2 marca o novo handle como herdavel; OBJ_PROTECT_CLOSE 1 impede fecha-lo."
   arg6:
     type: "ULONG"
     name: "Options"
     direction: "in"
-    description: "Entrada: ULONG."
+    description: "DUPLICATE_CLOSE_SOURCE 1 fecha o handle de origem; DUPLICATE_SAME_ACCESS 2 ignora DesiredAccess e copia os direitos."
 output_data:
   type: "NTSTATUS"
   name: "status"

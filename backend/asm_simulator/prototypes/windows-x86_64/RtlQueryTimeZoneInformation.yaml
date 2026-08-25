@@ -1,0 +1,17 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlQueryTimeZoneInformation
+kind: function
+ssn: null
+summary: "Fuso horario em vigor: nome, deslocamento e as regras de troca do horario de verao."
+input_args:
+  arg0:
+    type: "PRTL_TIME_ZONE_INFORMATION"
+    name: "TimeZoneInformation"
+    direction: "out"
+    description: "Estrutura a preencher. Bias e o deslocamento em MINUTOS para UTC."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,27 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlCreateMemoryZone
+kind: function
+ssn: null
+summary: "Cria uma \"zona\": alocador de arena, onde os blocos saem em sequencia e sao descartados todos de uma vez."
+input_args:
+  arg0:
+    type: "PVOID*"
+    name: "MemoryZone"
+    direction: "out"
+    description: "Recebe o ponteiro da zona."
+  arg1:
+    type: "SIZE_T"
+    name: "InitialSize"
+    direction: "in"
+    description: "Tamanho do primeiro segmento, em bytes."
+  arg2:
+    type: "ULONG"
+    name: "Flags"
+    direction: "in"
+    description: "Reservado. Passe 0."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

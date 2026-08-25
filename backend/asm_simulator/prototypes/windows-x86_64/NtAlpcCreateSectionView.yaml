@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntlpcapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtAlpcCreateSectionView
 ssn: null
-summary: ""
+summary: "Mapeia no processo uma view da secao da porta. E por ela que os dados grandes trafegam."
 input_args:
   arg0:
     type: "HANDLE"
@@ -15,12 +14,12 @@ input_args:
     type: "ULONG"
     name: "Flags"
     direction: "in"
-    description: "Combinacao de flags."
+    description: "Reservado. Passe 0."
   arg2:
     type: "PALPC_DATA_VIEW_ATTR"
     name: "ViewAttributes"
     direction: "inout"
-    description: "Atributos do objeto."
+    description: "ALPC_DATA_VIEW_ATTR preenchido com a secao e o tamanho; ViewBase precisa entrar NULL e volta com o endereco mapeado."
 output_data:
   type: "NTSTATUS"
   name: "status"

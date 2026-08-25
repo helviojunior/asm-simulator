@@ -1,0 +1,27 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlConvertSidToUnicodeString
+kind: function
+ssn: null
+summary: "Escreve um SID na forma textual S-1-5-..."
+input_args:
+  arg0:
+    type: "PUNICODE_STRING"
+    name: "UnicodeString"
+    direction: "inout"
+    description: "Recebe o texto. Com AllocateDestinationString FALSE, Buffer e MaximumLength precisam ja apontar para espaco seu."
+  arg1:
+    type: "PSID"
+    name: "Sid"
+    direction: "in"
+    description: "SID a converter."
+  arg2:
+    type: "BOOLEAN"
+    name: "AllocateDestinationString"
+    direction: "in"
+    description: "TRUE aloca o buffer no heap (libere com RtlFreeUnicodeString); FALSE escreve no que voce forneceu."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

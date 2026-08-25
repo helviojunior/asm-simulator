@@ -1,37 +1,36 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntpsapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtGetNextProcess
 ssn: null
-summary: ""
+summary: "Devolve o proximo processo do sistema. Enumera processos sem snapshot e sem saber os PIDs."
 input_args:
   arg0:
     type: "HANDLE"
     name: "ProcessHandle"
     direction: "in/opt"
-    description: "Handle do processo alvo. NtCurrentProcess (-1) e o proprio. Opcional."
+    description: "Processo de onde continuar. NULL comeca a enumeracao; nas voltas seguintes passa-se o handle devolvido na anterior."
   arg1:
     type: "ACCESS_MASK"
     name: "DesiredAccess"
     direction: "in"
-    description: "Direitos pedidos sobre o objeto."
+    description: "Acesso pedido para cada handle. Processo que nao puder ser aberto assim e PULADO, e nao devolvido."
   arg2:
     type: "ULONG"
     name: "HandleAttributes"
     direction: "in"
-    description: "Atributos do objeto."
+    description: "Flags de OBJECT_ATTRIBUTES para o novo handle (OBJ_INHERIT...). Normalmente 0."
   arg3:
     type: "ULONG"
     name: "Flags"
     direction: "in"
-    description: "Combinacao de flags."
+    description: "0 percorre na ordem normal; 1 percorre em ordem inversa."
   arg4:
     type: "PHANDLE"
     name: "NewProcessHandle"
     direction: "out"
-    description: "Handle do objeto."
+    description: "Recebe o handle do proximo processo. E do chamador o dever de fecha-lo com NtClose."
 output_data:
   type: "NTSTATUS"
   name: "status"
-  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."
+  description: "Erro (nao ha mais processo acessivel com aquele acesso) e como o laco de enumeracao termina."

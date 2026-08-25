@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntioapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtCreateIoCompletion
 ssn: null
-summary: ""
+summary: "Cria uma porta de conclusao de E/S, onde as operacoes assincronas depositam o resultado."
 input_args:
   arg0:
     type: "PHANDLE"
@@ -15,7 +14,7 @@ input_args:
     type: "ACCESS_MASK"
     name: "DesiredAccess"
     direction: "in"
-    description: "Direitos pedidos sobre o objeto."
+    description: "Direitos pedidos sobre o objeto. IO_COMPLETION_ALL_ACCESS e o tipico."
   arg2:
     type: "PCOBJECT_ATTRIBUTES"
     name: "ObjectAttributes"
@@ -25,7 +24,7 @@ input_args:
     type: "ULONG"
     name: "NumberOfConcurrentThreads"
     direction: "in/opt"
-    description: "Entrada: ULONG. Opcional."
+    description: "Quantas threads no maximo tratam conclusoes ao mesmo tempo. 0 usa o numero de processadores LOGICOS."
 output_data:
   type: "NTSTATUS"
   name: "status"

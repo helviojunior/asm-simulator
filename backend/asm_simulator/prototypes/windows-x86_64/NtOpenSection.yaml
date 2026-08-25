@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntmmapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtOpenSection
 ssn: null
-summary: ""
+summary: "Abre uma secao existente pelo nome — o objeto por tras de todo mapeamento de arquivo em memoria."
 input_args:
   arg0:
     type: "PHANDLE"
@@ -20,7 +19,7 @@ input_args:
     type: "PCOBJECT_ATTRIBUTES"
     name: "ObjectAttributes"
     direction: "in"
-    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags."
+    description: "Nome da secao. Obrigatorio: sem nome a chamada falha."
 output_data:
   type: "NTSTATUS"
   name: "status"

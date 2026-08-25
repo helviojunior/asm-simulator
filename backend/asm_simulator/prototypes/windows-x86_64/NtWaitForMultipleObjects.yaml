@@ -1,26 +1,25 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntobapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtWaitForMultipleObjects
 ssn: null
-summary: ""
+summary: "Espera por varios objetos de uma vez: por todos (WaitAll) ou pelo primeiro que sinalizar (WaitAny)."
 input_args:
   arg0:
     type: "ULONG"
     name: "Count"
     direction: "in"
-    description: "Quantidade de itens."
+    description: "Quantos handles ha no vetor. No maximo 64."
   arg1:
     type: "HANDLE"
     name: "Handles[]"
     direction: "in"
-    description: "Entrada: HANDLE."
+    description: "Vetor com Count handles. E um ponteiro para o inicio do vetor, nao um handle."
   arg2:
     type: "WAIT_TYPE"
     name: "WaitType"
     direction: "in"
-    description: "Entrada: WAIT_TYPE."
+    description: "WaitAll 0 espera por todos; WaitAny 1 volta no primeiro que sinalizar, e o status diz qual foi (0..Count-1)."
   arg3:
     type: "BOOLEAN"
     name: "Alertable"
@@ -30,8 +29,8 @@ input_args:
     type: "PLARGE_INTEGER"
     name: "Timeout"
     direction: "in/opt"
-    description: "Tempo limite em unidades de 100ns. Negativo e relativo ao agora; NULL espera para sempre."
+    description: "Negativo e relativo ao agora, em unidades de 100 ns; positivo e absoluto (desde 1601); NULL espera para sempre."
 output_data:
   type: "NTSTATUS"
   name: "status"
-  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."
+  description: "Com WaitAny, o valor de 0 a 63 (STATUS_WAIT_0..63) diz QUAL objeto sinalizou; 0x80 + n indica mutante abandonado. STATUS_TIMEOUT (0x102) quando o tempo acabou."

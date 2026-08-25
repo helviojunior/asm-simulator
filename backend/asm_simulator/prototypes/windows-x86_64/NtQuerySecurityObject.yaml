@@ -1,21 +1,20 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntobapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQuerySecurityObject
 ssn: null
-summary: ""
+summary: "Le o security descriptor de um objeto pelo handle."
 input_args:
   arg0:
     type: "HANDLE"
     name: "Handle"
     direction: "in"
-    description: "Handle do objeto."
+    description: "Handle do objeto. Ler o descritor exige READ_CONTROL (mais ACCESS_SYSTEM_SECURITY para a SACL)."
   arg1:
     type: "SECURITY_INFORMATION"
     name: "SecurityInformation"
     direction: "in"
-    description: "Bloco de informacao. O formato depende da classe pedida."
+    description: "Que partes do descritor ler: OWNER_SECURITY_INFORMATION 1, GROUP 2, DACL 4, SACL 8, LABEL 0x10."
   arg2:
     type: "PSECURITY_DESCRIPTOR"
     name: "SecurityDescriptor"
@@ -30,7 +29,7 @@ input_args:
     type: "PULONG"
     name: "LengthNeeded"
     direction: "out"
-    description: "Saida: PULONG."
+    description: "Recebe o tamanho necessario. Com STATUS_BUFFER_TOO_SMALL, e o tamanho a alocar."
 output_data:
   type: "NTSTATUS"
   name: "status"

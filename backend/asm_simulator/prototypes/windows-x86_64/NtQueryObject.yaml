@@ -1,21 +1,20 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntobapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryObject
 ssn: null
-summary: ""
+summary: "Le a informacao generica de um handle: nome, tipo e contagem de referencias."
 input_args:
   arg0:
     type: "HANDLE"
     name: "Handle"
     direction: "in/opt"
-    description: "Handle do objeto. Opcional."
+    description: "Handle do objeto. So pode ser NULL com ObjectTypesInformation, que fala dos TIPOS e nao de um objeto."
   arg1:
     type: "OBJECT_INFORMATION_CLASS"
     name: "ObjectInformationClass"
     direction: "in"
-    description: "Entrada: OBJECT_INFORMATION_CLASS."
+    description: "O que ler (ObjectBasicInformation 0, ObjectNameInformation 1, ObjectTypesInformation 3)."
   arg2:
     type: "PVOID"
     name: "ObjectInformation"
@@ -25,7 +24,7 @@ input_args:
     type: "ULONG"
     name: "ObjectInformationLength"
     direction: "in"
-    description: "Tamanho do bloco de informacao, em bytes."
+    description: "Tamanho do bloco, em bytes. Com ObjectTypesInformation nao ha como medir antes: e preciso chutar um buffer grande."
   arg4:
     type: "PULONG"
     name: "ReturnLength"

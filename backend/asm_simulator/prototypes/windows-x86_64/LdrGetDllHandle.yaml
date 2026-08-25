@@ -1,0 +1,32 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntldr.h
+function_name: LdrGetDllHandle
+kind: function
+ssn: null
+summary: "Handle de um modulo JA carregado no processo, pelo nome. Nao carrega nada: e o LoadLibrary que ja aconteceu."
+input_args:
+  arg0:
+    type: "PCWSTR"
+    name: "DllPath"
+    direction: "in/opt"
+    description: "Caminho de busca. NULL usa a ordem de busca padrao do carregador."
+  arg1:
+    type: "PULONG"
+    name: "DllCharacteristics"
+    direction: "in/opt"
+    description: "Caracteristicas exigidas do modulo. NULL nao exige nenhuma."
+  arg2:
+    type: "PUNICODE_STRING"
+    name: "DllName"
+    direction: "in"
+    description: "Nome do modulo, como aparece na lista do PEB (ex.: kernel32.dll)."
+  arg3:
+    type: "PVOID*"
+    name: "DllHandle"
+    direction: "out"
+    description: "Recebe a base do modulo. E o mesmo HMODULE do Win32: o endereco onde o PE esta mapeado."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

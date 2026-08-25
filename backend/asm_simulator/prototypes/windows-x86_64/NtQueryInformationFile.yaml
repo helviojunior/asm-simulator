@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntioapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryInformationFile
 ssn: null
-summary: ""
+summary: "Le uma propriedade de um arquivo aberto: tamanho, posicao, nome, disposicao."
 input_args:
   arg0:
     type: "HANDLE"
@@ -30,7 +29,7 @@ input_args:
     type: "FILE_INFORMATION_CLASS"
     name: "FileInformationClass"
     direction: "in"
-    description: "Entrada: FILE_INFORMATION_CLASS."
+    description: "O que ler (FileBasicInformation 4, FileStandardInformation 5, FilePositionInformation 14, FileNameInformation 9)."
 output_data:
   type: "NTSTATUS"
   name: "status"

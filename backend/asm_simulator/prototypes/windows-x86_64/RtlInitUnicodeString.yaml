@@ -1,0 +1,22 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlInitUnicodeString
+kind: function
+ssn: null
+summary: "Prepara uma UNICODE_STRING apontando para um literal wide. NAO copia nada: Buffer passa a apontar para o texto original."
+input_args:
+  arg0:
+    type: "PUNICODE_STRING"
+    name: "DestinationString"
+    direction: "out"
+    description: "Estrutura a preencher. Length recebe o tamanho em BYTES (sem o nulo), MaximumLength inclui o nulo."
+  arg1:
+    type: "PCWSTR"
+    name: "SourceString"
+    direction: "in/opt"
+    description: "Texto wide terminado em nulo. NULL zera a estrutura."
+output_data:
+  type: "VOID"
+  name: "none"
+  description: "Nao devolve valor: RAX nao carrega resultado depois da chamada. O que a funcao produz sai pelos argumentos de saida."

@@ -1,21 +1,20 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntregapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryKey
 ssn: null
-summary: ""
+summary: "Le a informacao de uma chave de registro: nome completo, quantidade de subchaves e de valores."
 input_args:
   arg0:
     type: "HANDLE"
     name: "KeyHandle"
     direction: "in"
-    description: "Handle da chave de registro."
+    description: "Handle da chave. Exige KEY_QUERY_VALUE, menos para KeyNameInformation, que aceita qualquer acesso nao nulo."
   arg1:
     type: "KEY_INFORMATION_CLASS"
     name: "KeyInformationClass"
     direction: "in"
-    description: "Entrada: KEY_INFORMATION_CLASS."
+    description: "O que ler (KeyBasicInformation 0, KeyFullInformation 2, KeyNameInformation 3)."
   arg2:
     type: "PVOID"
     name: "KeyInformation"
@@ -30,7 +29,7 @@ input_args:
     type: "PULONG"
     name: "ResultLength"
     direction: "out"
-    description: "Tamanho em bytes."
+    description: "Recebe o tamanho necessario. Com KeyInformation NULL e Length 0, e so isso que a chamada faz: medir."
 output_data:
   type: "NTSTATUS"
   name: "status"

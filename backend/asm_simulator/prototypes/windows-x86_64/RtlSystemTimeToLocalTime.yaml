@@ -1,0 +1,22 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlSystemTimeToLocalTime
+kind: function
+ssn: null
+summary: "Converte tempo UTC em tempo local, aplicando o fuso e o horario de verao vigentes."
+input_args:
+  arg0:
+    type: "PLARGE_INTEGER"
+    name: "SystemTime"
+    direction: "in"
+    description: "Tempo UTC em unidades de 100 ns desde 1601 — o formato de todo tempo do NT."
+  arg1:
+    type: "PLARGE_INTEGER"
+    name: "LocalTime"
+    direction: "out"
+    description: "Recebe o tempo local. Pode ser o MESMO ponteiro da entrada."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,17 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlFreeUnicodeString
+kind: function
+ssn: null
+summary: "Libera o buffer de uma UNICODE_STRING que a propria ntdll alocou (a de RtlConvertSidToUnicodeString, por exemplo)."
+input_args:
+  arg0:
+    type: "PUNICODE_STRING"
+    name: "UnicodeString"
+    direction: "inout"
+    description: "String a liberar. A estrutura fica zerada. Nao use em string criada por RtlInitUnicodeString: ali o buffer nao e do heap."
+output_data:
+  type: "VOID"
+  name: "none"
+  description: "Nao devolve valor: RAX nao carrega resultado depois da chamada. O que a funcao produz sai pelos argumentos de saida."

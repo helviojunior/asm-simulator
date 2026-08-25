@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntseapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtCreateToken
 ssn: null
-summary: ""
+summary: "Fabrica um token de acesso do zero, campo a campo. Exige o privilegio SeCreateTokenPrivilege, que normalmente so o Lsass.exe tem."
 input_args:
   arg0:
     type: "PHANDLE"
@@ -25,52 +24,52 @@ input_args:
     type: "TOKEN_TYPE"
     name: "Type"
     direction: "in"
-    description: "Entrada: TOKEN_TYPE."
+    description: "TokenPrimary 1 anexa a um processo; TokenImpersonation 2 anexa a uma thread. (No livro: TokenType.)"
   arg4:
     type: "PLUID"
     name: "AuthenticationId"
     direction: "in"
-    description: "Entrada: PLUID."
+    description: "LUID de uma sessao de logon que JA EXISTE: 999 (0x3E7) LocalSystem, 997 LocalService, 996 NetworkService."
   arg5:
     type: "PLARGE_INTEGER"
     name: "ExpirationTime"
     direction: "in"
-    description: "Entrada: PLARGE_INTEGER."
+    description: "Quando o token expira, em unidades de 100 ns. Um valor com todos os bits em 1 significa nunca."
   arg6:
     type: "PTOKEN_USER"
     name: "User"
     direction: "in"
-    description: "Entrada: PTOKEN_USER."
+    description: "SID do usuario dono do token."
   arg7:
     type: "PTOKEN_GROUPS"
     name: "Groups"
     direction: "in"
-    description: "Entrada: PTOKEN_GROUPS."
+    description: "Grupos do token, cada um com seus atributos. E onde entra o nivel de integridade."
   arg8:
     type: "PTOKEN_PRIVILEGES"
     name: "Privileges"
     direction: "in"
-    description: "Entrada: PTOKEN_PRIVILEGES."
+    description: "Privilegios do token e quais nascem habilitados."
   arg9:
     type: "PTOKEN_OWNER"
     name: "Owner"
     direction: "in/opt"
-    description: "Entrada: PTOKEN_OWNER. Opcional."
+    description: "SID que sera dono dos objetos criados. NULL usa o proprio usuario."
   arg10:
     type: "PTOKEN_PRIMARY_GROUP"
     name: "PrimaryGroup"
     direction: "in"
-    description: "Entrada: PTOKEN_PRIMARY_GROUP."
+    description: "SID do grupo primario, herdado pelos objetos criados."
   arg11:
     type: "PTOKEN_DEFAULT_DACL"
     name: "DefaultDacl"
     direction: "in/opt"
-    description: "Entrada: PTOKEN_DEFAULT_DACL. Opcional."
+    description: "DACL aplicada aos objetos criados sem descritor proprio. Opcional."
   arg12:
     type: "PTOKEN_SOURCE"
     name: "Source"
     direction: "in"
-    description: "Entrada: PTOKEN_SOURCE."
+    description: "Origem do token: oito caracteres de nome mais um LUID. Aparece nas auditorias. (No livro este parametro chama-se TokenSource.)"
 output_data:
   type: "NTSTATUS"
   name: "status"

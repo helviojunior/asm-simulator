@@ -1,0 +1,62 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlCreateUserProcess
+kind: function
+ssn: null
+summary: "Cria um processo sem passar pela kernel32: monta secao, processo, thread inicial e parametros. E o caminho nativo do CreateProcess."
+input_args:
+  arg0:
+    type: "PUNICODE_STRING"
+    name: "NtImagePathName"
+    direction: "in"
+    description: "Caminho da imagem no formato NT (\\??\\C:\\...)."
+  arg1:
+    type: "ULONG"
+    name: "AttributesDeprecated"
+    direction: "in"
+    description: "Obsoleto. Passe 0."
+  arg2:
+    type: "PRTL_USER_PROCESS_PARAMETERS"
+    name: "ProcessParameters"
+    direction: "in"
+    description: "Bloco vindo de RtlCreateProcessParameters."
+  arg3:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "ProcessSecurityDescriptor"
+    direction: "in/opt"
+    description: "Seguranca do processo. NULL usa o padrao."
+  arg4:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "ThreadSecurityDescriptor"
+    direction: "in/opt"
+    description: "Seguranca da thread inicial. NULL usa o padrao."
+  arg5:
+    type: "HANDLE"
+    name: "ParentProcess"
+    direction: "in/opt"
+    description: "Processo que sera o pai. NULL usa o atual — e o que permite falsificar a arvore de processos."
+  arg6:
+    type: "BOOLEAN"
+    name: "InheritHandles"
+    direction: "in"
+    description: "TRUE repassa os handles herdaveis ao filho."
+  arg7:
+    type: "HANDLE"
+    name: "DebugPort"
+    direction: "in/opt"
+    description: "Objeto de debug ligado ao novo processo. NULL nao depura."
+  arg8:
+    type: "HANDLE"
+    name: "TokenHandle"
+    direction: "in/opt"
+    description: "Token com que o processo roda. NULL usa o do chamador. (Era ExceptionPort nas versoes antigas.)"
+  arg9:
+    type: "PRTL_USER_PROCESS_INFORMATION"
+    name: "ProcessInformation"
+    direction: "out"
+    description: "Recebe handles de processo e thread, o CLIENT_ID e os dados da imagem. A thread nasce SUSPENSA: e preciso NtResumeThread."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

@@ -1,0 +1,32 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntldr.h
+function_name: LdrGetProcedureAddress
+kind: function
+ssn: null
+summary: "Endereco de um export, pelo nome ou pelo ordinal. E o GetProcAddress do carregador, sem passar pela kernel32."
+input_args:
+  arg0:
+    type: "PVOID"
+    name: "DllHandle"
+    direction: "in"
+    description: "Base do modulo, vinda de LdrGetDllHandle ou da lista do PEB."
+  arg1:
+    type: "PANSI_STRING"
+    name: "ProcedureName"
+    direction: "in/opt"
+    description: "Nome do export, em ANSI_STRING. NULL busca pelo ordinal."
+  arg2:
+    type: "ULONG"
+    name: "ProcedureNumber"
+    direction: "in/opt"
+    description: "Ordinal do export. So vale quando ProcedureName e NULL."
+  arg3:
+    type: "PVOID*"
+    name: "ProcedureAddress"
+    direction: "out"
+    description: "Recebe o endereco da funcao. E o alvo do `call` seguinte."
+output_data:
+  type: "NTSTATUS"
+  name: "status"
+  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."

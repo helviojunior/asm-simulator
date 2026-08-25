@@ -1,16 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntobapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtWaitForSingleObject
 ssn: null
-summary: ""
+summary: "Espera ate o objeto ser sinalizado, ou ate o tempo limite acabar."
 input_args:
   arg0:
     type: "HANDLE"
     name: "Handle"
     direction: "in"
-    description: "Handle do objeto."
+    description: "Objeto de dispatcher a esperar: processo, thread, mutante, evento, semaforo, job ou arquivo."
   arg1:
     type: "BOOLEAN"
     name: "Alertable"
@@ -20,8 +19,8 @@ input_args:
     type: "PLARGE_INTEGER"
     name: "Timeout"
     direction: "in/opt"
-    description: "Tempo limite em unidades de 100ns. Negativo e relativo ao agora; NULL espera para sempre."
+    description: "Negativo e relativo ao agora, em unidades de 100 ns; positivo e absoluto (desde 1601); NULL espera para sempre."
 output_data:
   type: "NTSTATUS"
   name: "status"
-  description: "0 (STATUS_SUCCESS) em sucesso. Valores altos (0x8..., 0xC...) indicam erro."
+  description: "STATUS_SUCCESS (0) quando o objeto sinalizou; STATUS_TIMEOUT (0x102) quando o tempo acabou; STATUS_USER_APC quando uma APC satisfez a espera; STATUS_ABANDONED quando o mutante foi abandonado pelo dono."

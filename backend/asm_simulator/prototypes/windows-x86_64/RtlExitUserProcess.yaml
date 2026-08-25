@@ -1,0 +1,17 @@
+# Prototipo de funcao de modo usuario da ntdll. Ver prototypes/README.md.
+# Assinatura extraida dos headers do projeto phnt (MIT):
+#   https://github.com/winsiderss/phnt — ntrtl.h
+function_name: RtlExitUserProcess
+kind: function
+ssn: null
+summary: "Encerra o processo passando pelo carregador: notifica as DLLs (DLL_PROCESS_DETACH) antes de chamar NtTerminateProcess. E o ExitProcess da ntdll."
+input_args:
+  arg0:
+    type: "NTSTATUS"
+    name: "ExitStatus"
+    direction: "in"
+    description: "Codigo de saida do processo."
+output_data:
+  type: "VOID"
+  name: "none"
+  description: "Nao retorna: a execucao termina aqui. A instrucao seguinte nunca roda."

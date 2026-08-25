@@ -19,7 +19,7 @@ input_args:
     type: "PCOBJECT_ATTRIBUTES"
     name: "ObjectAttributes"
     direction: "in"
-    description: "Nome em UNICODE_STRING, no formato NT: \\\\??\\\\C:\\\\caminho."
+    description: "Nome em UNICODE_STRING, no formato NT: \\??\\C:\\caminho."
   arg3:
     type: "PIO_STATUS_BLOCK"
     name: "IoStatusBlock"

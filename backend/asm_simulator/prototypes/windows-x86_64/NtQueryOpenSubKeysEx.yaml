@@ -1,16 +1,15 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntregapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQueryOpenSubKeysEx
 ssn: null
-summary: ""
+summary: "Como NtQueryOpenSubKeys, mas diz QUEM tem cada chave aberta (PID e nome), e nao so quantas sao. Exige SE_BACKUP_NAME."
 input_args:
   arg0:
     type: "POBJECT_ATTRIBUTES"
     name: "TargetKey"
     direction: "in"
-    description: "Entrada: POBJECT_ATTRIBUTES."
+    description: "Qualquer chave do hive, em OBJECT_ATTRIBUTES — nao precisa ser a raiz dele."
   arg1:
     type: "ULONG"
     name: "BufferLength"
@@ -20,12 +19,12 @@ input_args:
     type: "PVOID"
     name: "Buffer"
     direction: "out/opt"
-    description: "Bloco de memoria da operacao. Opcional."
+    description: "Recebe um KEY_OPEN_SUBKEYS_INFORMATION: contagem seguida de pares (PID, nome da chave). Opcional."
   arg3:
     type: "PULONG"
     name: "RequiredSize"
     direction: "out"
-    description: "Tamanho em bytes."
+    description: "Recebe o tamanho necessario para o buffer."
 output_data:
   type: "NTSTATUS"
   name: "status"

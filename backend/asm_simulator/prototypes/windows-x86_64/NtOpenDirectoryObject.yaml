@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntobapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtOpenDirectoryObject
 ssn: null
-summary: ""
+summary: "Abre um diretorio do namespace de objetos (\\BaseNamedObjects, \\Device)."
 input_args:
   arg0:
     type: "PHANDLE"
@@ -15,12 +14,12 @@ input_args:
     type: "ACCESS_MASK"
     name: "DesiredAccess"
     direction: "in"
-    description: "Direitos pedidos sobre o objeto."
+    description: "DIRECTORY_QUERY 1 para listar, DIRECTORY_TRAVERSE 2 para atravessar."
   arg2:
     type: "POBJECT_ATTRIBUTES"
     name: "ObjectAttributes"
     direction: "in"
-    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags."
+    description: "Nome do diretorio (ex.: \"\\\", \"\\BaseNamedObjects\"). Obrigatorio: sem nome nao ha o que abrir."
 output_data:
   type: "NTSTATUS"
   name: "status"

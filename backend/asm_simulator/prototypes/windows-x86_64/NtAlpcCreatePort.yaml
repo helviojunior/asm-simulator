@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntlpcapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtAlpcCreatePort
 ssn: null
-summary: ""
+summary: "Cria uma porta ALPC de servidor, onde os clientes se conectam pelo nome. Ao contrario das outras funcoes Create, NAO abre uma porta existente."
 input_args:
   arg0:
     type: "PHANDLE"

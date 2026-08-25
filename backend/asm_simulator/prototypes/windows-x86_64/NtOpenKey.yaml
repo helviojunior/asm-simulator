@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntregapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtOpenKey
 ssn: null
-summary: ""
+summary: "Abre uma chave de registro pelo caminho NT (\\Registry\\Machine\\...)."
 input_args:
   arg0:
     type: "PHANDLE"
@@ -15,12 +14,12 @@ input_args:
     type: "ACCESS_MASK"
     name: "DesiredAccess"
     direction: "in"
-    description: "Direitos pedidos sobre o objeto."
+    description: "KEY_READ e/ou KEY_WRITE, tipicamente."
   arg2:
     type: "POBJECT_ATTRIBUTES"
     name: "ObjectAttributes"
     direction: "in"
-    description: "Atributos do objeto: nome em UNICODE_STRING, diretorio raiz e flags."
+    description: "Caminho da chave (\\Registry\\Machine\\...). Com RootDirectory preenchido, o nome e relativo aquela chave. O nome nunca e sensivel a maiusculas, mesmo sem OBJ_CASE_INSENSITIVE."
 output_data:
   type: "NTSTATUS"
   name: "status"

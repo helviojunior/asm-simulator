@@ -1,10 +1,9 @@
 # Prototipo de syscall. Ver prototypes/README.md.
 # Assinatura extraida dos headers do projeto phnt (MIT):
 #   https://github.com/winsiderss/phnt — ntobapi.h
-# TODO: resumo e descricoes derivados da assinatura; revisar.
 function_name: NtQuerySymbolicLinkObject
 ssn: null
-summary: ""
+summary: "Le o destino de um link simbolico do namespace de objetos."
 input_args:
   arg0:
     type: "HANDLE"
@@ -15,7 +14,7 @@ input_args:
     type: "PUNICODE_STRING"
     name: "LinkTarget"
     direction: "inout"
-    description: "Entra e sai: PUNICODE_STRING."
+    description: "Recebe o destino do link. Buffer e MaximumLength precisam ja apontar para espaco seu."
   arg2:
     type: "PULONG"
     name: "ReturnedLength"
