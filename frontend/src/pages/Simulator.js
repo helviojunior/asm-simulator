@@ -72,7 +72,7 @@ function decodeBase64(value) {
 export default function Simulator() {
   const { t, tf, lang, setLanguage } = useI18n();
   const { alert, confirm, choose } = useDialog();
-  const { toast } = useToast();
+  const { toast, dismissAll } = useToast();
 
   const [arch, setArch] = useState("x86");
   // Alvo do programa. null = ainda nao definido; e resolvido (por deteccao ou
@@ -95,7 +95,7 @@ export default function Simulator() {
   // automodificavel precisa reaplica-las, senao a string embutida volta a ser
   // lida como instrucao.
   const [dataRanges, setDataRanges] = useState([]);
-  // Quantos argumentos inspecionar num `call`. A descrição real e desconhecida,
+  // Quantos argumentos inspecionar num `call`. A quantidade real e desconhecida,
   // entao quem decide e quem esta olhando.
   const [argCount, setArgCount] = useState(4);
   const [convention, setConvention] = useState(() => defaultConvention("x86", null));
@@ -238,6 +238,8 @@ export default function Simulator() {
     setDataRanges([]);
     setMessages([]);
     setChanges({ registers: [], flags: [], memory: [] });
+    // Idem para os avisos: eles falavam de um programa que nao existe mais.
+    dismissAll();
     refresh();
   };
 
@@ -476,6 +478,8 @@ export default function Simulator() {
   const assemble = useCallback(async () => {
     setBusy(true);
     setMessages([]);
+    // Montar de novo joga fora o programa que gerou os avisos na tela.
+    dismissAll();
     try {
       // Editor vazio e o estado inicial: montar dai carregaria um programa de
       // zero bytes e a barra de status diria apenas "sem instrucao", sem dizer
@@ -583,7 +587,7 @@ export default function Simulator() {
     } finally {
       setBusy(false);
     }
-  }, [alert, arch, codeBase, confirm, offerNtdll, refresh, resolveOs, showSource,
+  }, [alert, arch, codeBase, confirm, dismissAll, offerNtdll, refresh, resolveOs, showSource,
       source, stackTop, t, tf]);
 
   /**
@@ -749,6 +753,10 @@ export default function Simulator() {
     (command) => {
       const current = machineRef.current;
       if (!current) return;
+      // O aviso na tela fala do passo ANTERIOR. Dado outro comando, ele deixa
+      // de descrever o que se ve — some aqui, ANTES de executar, para o que
+      // este passo tiver a dizer aparecer em seguida.
+      dismissAll();
       // Comparar ANTES e DEPOIS: so a parada NOVA abre modal. Sem isso, cada
       // passo dado com o programa ja parado reabriria o mesmo aviso.
       const wasHalted = Boolean(current.halted);
@@ -764,7 +772,7 @@ export default function Simulator() {
       // outro arquivo descarta o programa montado.
       showSource();
     },
-    [announceExternalCall, announceHalt, announceUnsimulated, refresh,
+    [announceExternalCall, announceHalt, announceUnsimulated, dismissAll, refresh,
      refreshDisassembly, showSource]
   );
 

@@ -14,21 +14,27 @@ import React, { createContext, useCallback, useContext, useRef, useState } from 
  *   const { toast } = useToast();
  *   toast({ title: "...", description: <>...</>, variant: "warning", key: "..." });
  *
- * `key` opcional: com ela, um aviso repetido REINICIA o tempo do que ja esta na
- * tela em vez de empilhar outro igual — o caso de um `call` dentro de um laco.
+ * `key` opcional: com ela, um aviso repetido ATUALIZA o que ja esta na tela em
+ * vez de empilhar outro igual — o caso de um `call` dentro de um laco.
+ *
+ * NAO ha relogio. O aviso fica ate ser dispensado, por duas razoes:
+ *
+ * 1. Ele fala do passo que ACABOU de acontecer. Enquanto aquele passo e o
+ *    ultimo, o aviso continua sendo a leitura correta da tela — sumir sozinho
+ *    apagaria a explicacao do estado que ainda esta ali.
+ * 2. Quem esta lendo registrador por registrador nao olha para o aviso nos
+ *    primeiros segundos. Um tempo curto some antes de ser lido; um longo
+ *    atrapalha o passo seguinte. Nao ha numero certo — entao quem decide e
+ *    quem esta lendo, pelo OK, ou o proprio proximo comando (`dismissAll`).
  */
 const ToastContext = createContext(null);
 
-/** Quanto tempo um aviso fica no ar antes de sair sozinho. */
-export const TOAST_TIMEOUT = 5000;
-
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
-  // Espelho sincrono da lista. O `id` de um aviso precisa existir ANTES de
-  // agendar a saida dele, e calcula-lo dentro do updater do `setState` daria
-  // certo so por acidente: o React nao garante quando aquela funcao roda.
+  // Espelho sincrono da lista: dois avisos publicados no mesmo passo (uma
+  // chamada externa e uma syscall ignorada) precisam ver um ao outro, e o
+  // estado do React so chega no render seguinte.
   const items = useRef([]);
-  const timers = useRef(new Map());
   const nextId = useRef(0);
 
   const publish = useCallback((next) => {
@@ -37,44 +43,42 @@ export function ToastProvider({ children }) {
   }, []);
 
   const dismiss = useCallback(
-    (id) => {
-      const timer = timers.current.get(id);
-      if (timer) {
-        clearTimeout(timer);
-        timers.current.delete(id);
+    (id) => publish(items.current.filter((item) => item.id !== id)),
+    [publish]
+  );
+
+  /**
+   * Limpa a tela de avisos.
+   *
+   * E o que o proximo COMANDO chama: dado outro passo, o aviso do passo
+   * anterior deixa de descrever o que esta na tela, e mante-lo seria pior que
+   * nao te-lo mostrado.
+   */
+  const dismissAll = useCallback(() => {
+    if (items.current.length) publish([]);
+  }, [publish]);
+
+  const toast = useCallback(
+    ({ title, description, variant = "info", key } = {}) => {
+      // Mesma chave ja na tela: atualiza o conteudo, em vez de virar uma pilha
+      // de avisos identicos.
+      const existing = key ? items.current.find((item) => item.key === key) : null;
+      if (existing) {
+        publish(items.current.map((item) =>
+          item.id === existing.id ? { ...item, title, description, variant } : item));
+        return existing.id;
       }
-      publish(items.current.filter((item) => item.id !== id));
+
+      nextId.current += 1;
+      const id = nextId.current;
+      publish([...items.current, { id, key, title, description, variant }]);
+      return id;
     },
     [publish]
   );
 
-  const toast = useCallback(
-    ({ title, description, variant = "info", key, timeout = TOAST_TIMEOUT } = {}) => {
-      // Mesma chave ja na tela: atualiza o conteudo e o relogio recomeca, em
-      // vez de virar uma pilha de avisos identicos.
-      const existing = key ? items.current.find((item) => item.key === key) : null;
-
-      let id;
-      if (existing) {
-        id = existing.id;
-        publish(items.current.map((item) =>
-          item.id === id ? { ...item, title, description, variant } : item));
-      } else {
-        nextId.current += 1;
-        id = nextId.current;
-        publish([...items.current, { id, key, title, description, variant }]);
-      }
-
-      const previous = timers.current.get(id);
-      if (previous) clearTimeout(previous);
-      timers.current.set(id, setTimeout(() => dismiss(id), timeout));
-      return id;
-    },
-    [dismiss, publish]
-  );
-
   return (
-    <ToastContext.Provider value={{ toast, dismiss, toasts }}>
+    <ToastContext.Provider value={{ toast, dismiss, dismissAll, toasts }}>
       {children}
     </ToastContext.Provider>
   );
