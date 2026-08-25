@@ -1,0 +1,31 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: KEY_VALUE_ENTRY
+kind: struct
+size: 24
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "PUNICODE_STRING"
+    name: "ValueName"
+    offset: 0
+    size: 8
+  field1:
+    type: "ULONG"
+    name: "DataLength"
+    offset: 8
+    size: 4
+  field2:
+    type: "ULONG"
+    name: "DataOffset"
+    offset: 12
+    size: 4
+  field3:
+    type: "ULONG"
+    name: "Type"
+    offset: 16
+    size: 4

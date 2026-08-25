@@ -1,0 +1,21 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: MEMORY_RANGE_ENTRY
+kind: struct
+size: 16
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "PVOID"
+    name: "VirtualAddress"
+    offset: 0
+    size: 8
+  field1:
+    type: "SIZE_T"
+    name: "NumberOfBytes"
+    offset: 8
+    size: 8

@@ -1,0 +1,16 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: WNF_TYPE_ID
+kind: struct
+size: 16
+align: 4
+summary: ""
+fields:
+  field0:
+    type: "GUID"
+    name: "TypeId"
+    offset: 0
+    size: 16

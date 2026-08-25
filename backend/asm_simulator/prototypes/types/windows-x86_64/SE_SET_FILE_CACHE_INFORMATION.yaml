@@ -1,0 +1,26 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: SE_SET_FILE_CACHE_INFORMATION
+kind: struct
+size: 40
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "ULONG"
+    name: "Size"
+    offset: 0
+    size: 4
+  field1:
+    type: "UNICODE_STRING"
+    name: "CatalogDirectoryPath"
+    offset: 8
+    size: 16
+  field2:
+    type: "SE_FILE_CACHE_CLAIM_INFORMATION"
+    name: "OriginClaimInfo"
+    offset: 24
+    size: 16

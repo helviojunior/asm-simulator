@@ -1,0 +1,20 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m32.
+type_name: timespec
+kind: struct
+size: 8
+align: 4
+summary: "Instante ou intervalo, em segundos e nanossegundos."
+fields:
+  field0:
+    type: "time_t"
+    name: "tv_sec"
+    offset: 0
+    size: 4
+    description: "Segundos."
+  field1:
+    type: "long"
+    name: "tv_nsec"
+    offset: 4
+    size: 4
+    description: "Nanossegundos (0 a 999999999)."

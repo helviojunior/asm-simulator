@@ -1,0 +1,40 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+type_name: OBJECT_ATTRIBUTES
+kind: struct
+size: 48
+align: 8
+summary: "Identifica um objeto para as chamadas nativas: nome, diretorio raiz e atributos. `Length` tem de ser sizeof(OBJECT_ATTRIBUTES)."
+fields:
+  field0:
+    type: "ULONG"
+    name: "Length"
+    offset: 0
+    size: 4
+  field1:
+    type: "HANDLE"
+    name: "RootDirectory"
+    offset: 8
+    size: 8
+  field2:
+    type: "PCUNICODE_STRING"
+    name: "ObjectName"
+    offset: 16
+    size: 8
+  field3:
+    type: "ULONG"
+    name: "Attributes"
+    offset: 24
+    size: 4
+  field4:
+    type: "PSECURITY_DESCRIPTOR"
+    name: "SecurityDescriptor"
+    offset: 32
+    size: 8
+  field5:
+    type: "PSECURITY_QUALITY_OF_SERVICE"
+    name: "SecurityQualityOfService"
+    offset: 40
+    size: 8

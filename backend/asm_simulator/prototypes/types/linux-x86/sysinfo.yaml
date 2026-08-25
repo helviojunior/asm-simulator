@@ -1,0 +1,62 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m32.
+type_name: sysinfo
+kind: struct
+size: 64
+align: 4
+summary: "Estatisticas do sistema: tempo ligado, memoria e processos."
+fields:
+  field0:
+    type: "long"
+    name: "uptime"
+    offset: 0
+    size: 4
+    description: ""
+  field1:
+    type: "unsigned long[]"
+    name: "loads"
+    offset: 4
+    size: 12
+    description: ""
+  field2:
+    type: "unsigned long"
+    name: "totalram"
+    offset: 16
+    size: 4
+    description: ""
+  field3:
+    type: "unsigned long"
+    name: "freeram"
+    offset: 20
+    size: 4
+    description: ""
+  field4:
+    type: "unsigned long"
+    name: "sharedram"
+    offset: 24
+    size: 4
+    description: ""
+  field5:
+    type: "unsigned long"
+    name: "bufferram"
+    offset: 28
+    size: 4
+    description: ""
+  field6:
+    type: "unsigned long"
+    name: "totalswap"
+    offset: 32
+    size: 4
+    description: ""
+  field7:
+    type: "unsigned long"
+    name: "freeswap"
+    offset: 36
+    size: 4
+    description: ""
+  field8:
+    type: "unsigned short"
+    name: "procs"
+    offset: 40
+    size: 2
+    description: ""

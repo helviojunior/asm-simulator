@@ -1,0 +1,45 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+# TODO: resumo e descricoes a revisar.
+type_name: MEMORY_REGION_INFORMATION_EX
+kind: struct
+size: 48
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "PVOID"
+    name: "AllocationBase"
+    offset: 0
+    size: 8
+  field1:
+    type: "ULONG"
+    name: "AllocationProtect"
+    offset: 8
+    size: 4
+  field2:
+    type: "ULONG"
+    name: "RegionType"
+    offset: 12
+    size: 4
+  field3:
+    type: "SIZE_T"
+    name: "RegionSize"
+    offset: 16
+    size: 8
+  field4:
+    type: "SIZE_T"
+    name: "CommitSize"
+    offset: 24
+    size: 8
+  field5:
+    type: "ULONG_PTR"
+    name: "PartitionId"
+    offset: 32
+    size: 8
+  field6:
+    type: "ULONG_PTR"
+    name: "NodePreference"
+    offset: 40
+    size: 8

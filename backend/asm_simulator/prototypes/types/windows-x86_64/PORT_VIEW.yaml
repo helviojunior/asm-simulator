@@ -1,0 +1,41 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: PORT_VIEW
+kind: struct
+size: 48
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "ULONG"
+    name: "Length"
+    offset: 0
+    size: 4
+  field1:
+    type: "HANDLE"
+    name: "SectionHandle"
+    offset: 8
+    size: 8
+  field2:
+    type: "ULONG"
+    name: "SectionOffset"
+    offset: 16
+    size: 4
+  field3:
+    type: "SIZE_T"
+    name: "ViewSize"
+    offset: 24
+    size: 8
+  field4:
+    type: "PVOID"
+    name: "ViewBase"
+    offset: 32
+    size: 8
+  field5:
+    type: "PVOID"
+    name: "ViewRemoteBase"
+    offset: 40
+    size: 8

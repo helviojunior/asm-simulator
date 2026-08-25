@@ -1,0 +1,26 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: FILE_IO_COMPLETION_INFORMATION
+kind: struct
+size: 32
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "PVOID"
+    name: "KeyContext"
+    offset: 0
+    size: 8
+  field1:
+    type: "PVOID"
+    name: "ApcContext"
+    offset: 8
+    size: 8
+  field2:
+    type: "IO_STATUS_BLOCK"
+    name: "IoStatusBlock"
+    offset: 16
+    size: 16

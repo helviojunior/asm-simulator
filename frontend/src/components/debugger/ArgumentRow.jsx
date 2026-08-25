@@ -1,8 +1,9 @@
 import React from "react";
-import { Link2 } from "lucide-react";
+import { Braces, Link2 } from "lucide-react";
 import { useI18n } from "i18n";
 import { hex } from "lib/cpu/format";
 import { describePointer } from "lib/cpu/inspect";
+import { isParseable } from "lib/types";
 
 /**
  * Uma posicao de argumento: de onde vem, que valor tem, e — se for ponteiro —
@@ -15,9 +16,18 @@ import { describePointer } from "lib/cpu/inspect";
  * `name` e opcional: existe quando o prototipo e conhecido (o caso das
  * syscalls), e ai a coluna mostra `buf` em vez de so o registrador.
  */
-export default function ArgumentRow({ machine, arg, digits, name, type, description }) {
+export default function ArgumentRow({
+  machine, arg, digits, name, type, description, onParse,
+}) {
   const { t } = useI18n();
   const pointer = describePointer(machine, arg.value);
+
+  // So oferece "ler como tipo" quando ha layout para aquele tipo E o valor
+  // aponta para algum lugar. Um `ULONG` nao tem o que expandir, e um ponteiro
+  // nulo levaria o painel a ler o endereco 0.
+  const parseable =
+    Boolean(onParse) && Boolean(arg.value) &&
+    isParseable(machine.osId, machine.archId, type);
 
   return (
     <div
@@ -32,6 +42,16 @@ export default function ArgumentRow({ machine, arg, digits, name, type, descript
           um ponteiro para uma estrutura. */}
       {type && <span className="w-[16ch] shrink-0 truncate text-[#4ec9b0]">{type}</span>}
       {name && <span className="w-[14ch] shrink-0 truncate text-[#4fc1ff]">{name}</span>}
+      {parseable && (
+        <button
+          type="button"
+          onClick={() => onParse({ address: arg.value, type, name })}
+          title={t("sim.parseAsType", "Read this pointer as a structure")}
+          className="shrink-0 rounded px-1 text-[#c586c0] transition-colors hover:bg-[#3c3c3c] hover:text-[#dda0dd]"
+        >
+          <Braces size={11} />
+        </button>
+      )}
       <span className="shrink-0 text-[#d4d4d4]">{hex(arg.value, digits)}</span>
 
       {/* Marcador visual de ponteiro: o icone diz "isto aponta para algo",

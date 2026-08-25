@@ -1,0 +1,20 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m64.
+type_name: rlimit
+kind: struct
+size: 16
+align: 8
+summary: "Limite corrente e maximo de um recurso."
+fields:
+  field0:
+    type: "rlim_t"
+    name: "rlim_cur"
+    offset: 0
+    size: 8
+    description: "Limite corrente."
+  field1:
+    type: "rlim_t"
+    name: "rlim_max"
+    offset: 8
+    size: 8
+    description: "Teto que o limite corrente pode alcancar."

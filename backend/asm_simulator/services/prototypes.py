@@ -167,3 +167,138 @@ def load(os_id, arch_id, function_name):
     except PrototypeError:
         log.exception('Malformed prototype %s', path)
         return None
+
+
+# ---------------------------------------------------------------------------
+# Tipos (structs e unions)
+# ---------------------------------------------------------------------------
+
+TYPE_REQUIRED = ('type_name', 'size', 'fields')
+_TYPE_CACHE = {}
+
+
+def types_dir(os_id, arch_id):
+    """Diretorio dos tipos do alvo, ou None."""
+    name = TARGETS.get((os_id, arch_id))
+    return PROTOTYPES_DIR / 'types' / name if name else None
+
+
+def _parse_fields(where, raw, depth=0):
+    """Campos de um tipo: `field0`, `field1`, ... sem buracos na sequencia.
+
+    Recursivo: um campo pode ser um bloco anonimo com campos proprios — e o
+    caso da union dentro do IO_STATUS_BLOCK.
+    """
+    if depth > 8:
+        raise PrototypeError(f'{where}: nested too deeply.')
+    if not isinstance(raw, dict):
+        raise PrototypeError(f'{where}: fields must be a mapping (field0, field1, ...).')
+
+    out = []
+    for index in range(len(raw)):
+        key = f'field{index}'
+        if key not in raw:
+            raise PrototypeError(f'{where}: fields is missing "{key}".')
+        field = raw[key]
+        if not isinstance(field, dict):
+            raise PrototypeError(f'{where}:{key}: expected a mapping.')
+        for required in ('name', 'offset', 'size'):
+            if required not in field:
+                raise PrototypeError(f'{where}:{key}: missing "{required}".')
+        if not isinstance(field['offset'], int) or not isinstance(field['size'], int):
+            raise PrototypeError(f'{where}:{key}: offset and size must be integers.')
+
+        item = {
+            'index': index,
+            'name': field['name'],
+            'type': field.get('type', ''),
+            'offset': field['offset'],
+            'size': field['size'],
+            'description': field.get('description', ''),
+        }
+        if field.get('array'):
+            item['array'] = field['array']
+        if field.get('fields'):
+            item['fields'] = _parse_fields(f'{where}:{key}', field['fields'], depth + 1)
+        out.append(item)
+    return out
+
+
+def parse_type(path):
+    """Le e VALIDA um arquivo de tipo.
+
+    Offset e tamanho sao o que permite LER a memoria: um erro aqui nao aparece
+    como falha, aparece como um campo mostrando o byte errado com toda a
+    aparencia de estar certo. Dai a validacao ser estrita.
+    """
+    try:
+        data = yaml.safe_load(path.read_text(encoding='utf-8'))
+    except (OSError, yaml.YAMLError) as exc:
+        raise PrototypeError(f'{path.name}: {exc}') from exc
+
+    if not isinstance(data, dict):
+        raise PrototypeError(f'{path.name}: expected a mapping at the top level.')
+    for field in TYPE_REQUIRED:
+        if field not in data:
+            raise PrototypeError(f'{path.name}: missing "{field}".')
+    if data['type_name'] != path.stem:
+        raise PrototypeError(
+            f'{path.name}: type_name is {data["type_name"]!r}; '
+            'it must match the file name.')
+    if not isinstance(data['size'], int) or data['size'] <= 0:
+        raise PrototypeError(f'{path.name}: size must be a positive integer.')
+
+    fields = _parse_fields(path.name, data['fields'])
+
+    # Campo que termina depois do fim da struct significa layout errado, e
+    # levaria o painel a ler memoria de fora do objeto.
+    for field in fields:
+        if field['offset'] + field['size'] > data['size']:
+            raise PrototypeError(
+                f'{path.name}:{field["name"]}: ends at '
+                f'{field["offset"] + field["size"]}, past the {data["size"]}-byte type.')
+
+    return {
+        'type_name': data['type_name'],
+        'kind': data.get('kind', 'struct'),
+        'size': data['size'],
+        'align': data.get('align'),
+        'summary': data.get('summary', ''),
+        'fields': fields,
+    }
+
+
+def load_types(os_id, arch_id):
+    """Todos os tipos de um alvo, indexados pelo nome."""
+    cached = _TYPE_CACHE.get((os_id, arch_id))
+    if cached is not None:
+        return cached
+
+    directory = types_dir(os_id, arch_id)
+    if directory is None or not directory.is_dir():
+        return {}
+
+    found = {}
+    for path in sorted(directory.glob('*.yaml')):
+        try:
+            found[parse_type(path)['type_name']] = parse_type(path)
+        except PrototypeError:
+            log.exception('Skipping malformed type %s', path)
+
+    _TYPE_CACHE[(os_id, arch_id)] = found
+    return found
+
+
+def load_type(os_id, arch_id, type_name):
+    """Um tipo, ou None. Aceita a convencao `PFOO`/`PCFOO` do Windows."""
+    if not type_name:
+        return None
+    known = load_types(os_id, arch_id)
+
+    candidate = type_name.replace('*', '').strip()
+    for name in (candidate,
+                 candidate[1:] if candidate.startswith('P') else None,
+                 candidate[2:] if candidate.startswith('PC') else None):
+        if name and name in known:
+            return known[name]
+    return None

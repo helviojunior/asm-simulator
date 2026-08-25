@@ -68,6 +68,58 @@ O **número** vem de `/usr/include/x86_64-linux-gnu/asm/unistd_64.h` e
 página existe: 250 e 261 delas. As demais têm só o número, e o arquivo diz isso
 em comentário.
 
+## Tipos (`types/`)
+
+Structs e unions, um arquivo por tipo, no mesmo agrupamento por alvo:
+
+    prototypes/types/
+      linux-x86/
+      linux-x86_64/
+      windows-x86_64/
+
+```yaml
+type_name: OBJECT_ATTRIBUTES
+kind: struct
+size: 48                 # bytes
+align: 8
+fields:
+  field0:
+    type: "ULONG"
+    name: "Length"
+    offset: 0            # em bytes, a partir do início da struct
+    size: 4
+    description: "..."
+  field1:
+    type: "HANDLE"
+    name: "RootDirectory"
+    offset: 8            # 8, e não 4: o compilador insere preenchimento
+    size: 8
+```
+
+Um campo pode ter `fields` próprios — é como um bloco anônimo (a union dentro
+do `IO_STATUS_BLOCK`) aparece: mesmo endereço da struct, campos como filhos.
+
+`offset` e `size` não são documentação, são o que **lê a memória**. Um erro aqui
+não aparece como falha: aparece como um campo mostrando o byte errado, com toda
+a aparência de estar certo. Por isso o carregador recusa um campo que termine
+depois do fim do tipo, e a suíte confere os tamanhos contra valores conhecidos.
+
+### De onde vêm os offsets
+
+| alvo | como |
+|---|---|
+| Linux (32 e 64) | medidos pelo **compilador**, com `offsetof` e `-m32`/`-m64` |
+| Win32 (`STARTUPINFOW`, `WSADATA`…) | medidos pelo **mingw**, mesma técnica |
+| Native API (phnt) | **calculados** pelas regras de alinhamento do x86-64 |
+
+Os do phnt são calculados porque ele não compila fora do SDK da Microsoft (usa
+sufixos literais do MSVC). O cálculo é conferido contra tamanhos conhecidos —
+`OBJECT_ATTRIBUTES` 48, `UNICODE_STRING` 16, `IO_STATUS_BLOCK` 16 — e a suíte
+falha se uma regra de alinhamento sair errada.
+
+O mesmo tipo pode ter layouts diferentes por arquitetura: `iovec` tem 16 bytes
+em 64 bits e 8 em 32. Por isso o agrupamento por alvo vale aqui também.
+
 ## `TODO:` no cabeçalho
 
 Marca o que ainda não passou por revisão humana: o resumo está vazio e as

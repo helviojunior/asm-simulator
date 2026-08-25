@@ -1,0 +1,26 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m32.
+type_name: sockaddr_in
+kind: struct
+size: 16
+align: 4
+summary: "Endereco IPv4 de um socket. A porta e o IP ficam em BIG-endian — e o `htons` que todo shellcode de rede faz na mao."
+fields:
+  field0:
+    type: "sa_family_t"
+    name: "sin_family"
+    offset: 0
+    size: 2
+    description: "AF_INET (2). Em little-endian, os dois bytes saem como 02 00."
+  field1:
+    type: "in_port_t"
+    name: "sin_port"
+    offset: 2
+    size: 2
+    description: "Porta em BIG-endian: a porta 4444 e 0x5C11 na memoria, e nao 0x115C."
+  field2:
+    type: "struct in_addr"
+    name: "sin_addr"
+    offset: 4
+    size: 4
+    description: "IPv4 em big-endian. 127.0.0.1 e 0x0100007F na memoria."

@@ -1,0 +1,21 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: ALPC_MESSAGE_ATTRIBUTES
+kind: struct
+size: 8
+align: 4
+summary: ""
+fields:
+  field0:
+    type: "ULONG"
+    name: "AllocatedAttributes"
+    offset: 0
+    size: 4
+  field1:
+    type: "ULONG"
+    name: "ValidAttributes"
+    offset: 4
+    size: 4

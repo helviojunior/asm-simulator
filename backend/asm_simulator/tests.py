@@ -811,3 +811,110 @@ class PrototypeTests(TransactionTestCase):
 
             with self.assertRaises(self.prototypes.PrototypeError):
                 self.prototypes.parse(path)
+
+
+class TypePrototypeTests(TransactionTestCase):
+    """Layout de struct: offset e tamanho precisam estar EXATOS.
+
+    Um erro aqui não aparece como falha — aparece como um campo mostrando o
+    byte errado, com toda a aparência de estar certo.
+    """
+
+    def setUp(self):
+        super().setUp()
+        from asm_simulator.services import prototypes
+        self.prototypes = prototypes
+
+    def test_every_shipped_type_parses(self):
+        directory = self.prototypes.PROTOTYPES_DIR / 'types'
+        files = sorted(directory.glob('*/*.yaml'))
+        self.assertGreater(len(files), 0)
+        for path in files:
+            with self.subTest(path=str(path.relative_to(directory))):
+                self.prototypes.parse_type(path)
+
+    def test_windows_layout_matches_the_known_sizes(self):
+        # Os offsets do Windows são CALCULADOS (o phnt não compila fora do SDK
+        # da Microsoft), então batem contra valores conhecidos do x86-64.
+        known = {'OBJECT_ATTRIBUTES': 48, 'UNICODE_STRING': 16,
+                 'IO_STATUS_BLOCK': 16, 'CLIENT_ID': 16}
+        for name, size in known.items():
+            with self.subTest(type=name):
+                found = self.prototypes.load_type('windows', 'x86_64', name)
+                self.assertIsNotNone(found, f'{name} não está no catálogo')
+                self.assertEqual(found['size'], size)
+
+    def test_object_attributes_has_the_padding_right(self):
+        found = self.prototypes.load_type('windows', 'x86_64', 'OBJECT_ATTRIBUTES')
+        by_name = {f['name']: f for f in found['fields']}
+
+        # `Length` é ULONG (4 bytes) mas `RootDirectory` é HANDLE (8): o
+        # compilador insere 4 bytes de preenchimento entre os dois.
+        self.assertEqual(by_name['Length']['offset'], 0)
+        self.assertEqual(by_name['RootDirectory']['offset'], 8)
+        self.assertEqual(by_name['SecurityQualityOfService']['offset'], 40)
+
+    def test_anonymous_union_becomes_a_nested_block(self):
+        found = self.prototypes.load_type('windows', 'x86_64', 'IO_STATUS_BLOCK')
+        first = found['fields'][0]
+
+        # A union sem nome mora no MESMO endereço da struct e carrega os campos
+        # dela como filhos.
+        self.assertEqual(first['offset'], 0)
+        self.assertIn('fields', first)
+        names = {f['name'] for f in first['fields']}
+        self.assertEqual(names, {'Status', 'Pointer'})
+        self.assertTrue(all(f['offset'] == 0 for f in first['fields']))
+
+    def test_linux_layout_differs_between_32_and_64_bits(self):
+        # Medido pelo compilador nas duas arquiteturas. `iovec` tem um ponteiro
+        # e um size_t: 8 bytes em 32 bits, 16 em 64.
+        wide = self.prototypes.load_type('linux', 'x86_64', 'iovec')
+        narrow = self.prototypes.load_type('linux', 'x86', 'iovec')
+
+        self.assertEqual(wide['size'], 16)
+        self.assertEqual(narrow['size'], 8)
+        self.assertEqual(wide['fields'][1]['offset'], 8)
+        self.assertEqual(narrow['fields'][1]['offset'], 4)
+
+    def test_pointer_type_names_resolve_to_the_struct(self):
+        # A convenção do Windows: `POBJECT_ATTRIBUTES` e `PCOBJECT_ATTRIBUTES`
+        # são ponteiros para `OBJECT_ATTRIBUTES`. É como o argumento do
+        # protótipo chega até aqui.
+        for name in ('OBJECT_ATTRIBUTES', 'POBJECT_ATTRIBUTES', 'PCOBJECT_ATTRIBUTES'):
+            with self.subTest(name=name):
+                found = self.prototypes.load_type('windows', 'x86_64', name)
+                self.assertEqual(found['type_name'], 'OBJECT_ATTRIBUTES')
+
+    def test_a_field_past_the_end_of_the_type_is_refused(self):
+        import tempfile
+        from pathlib import Path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'BROKEN.yaml'
+            path.write_text(
+                'type_name: BROKEN\n'
+                'size: 8\n'
+                'fields:\n'
+                '  field0: {type: "ULONG", name: "a", offset: 4, size: 8}\n',
+                encoding='utf-8')
+
+            # Ler esse campo passaria do fim do objeto e mostraria memória de
+            # outra coisa como se fosse dele.
+            with self.assertRaises(self.prototypes.PrototypeError) as ctx:
+                self.prototypes.parse_type(path)
+            self.assertIn('past the', str(ctx.exception))
+
+    def test_the_api_serves_names_and_layouts(self):
+        listing = self.client.get('/api/types/?os=windows&arch=x86_64').json()
+        self.assertIn('OBJECT_ATTRIBUTES', listing['types'])
+
+        one = self.client.get(
+            '/api/types/?os=linux&arch=x86_64&name=sockaddr_in').json()['type']
+        self.assertEqual(one['size'], 16)
+        self.assertEqual([f['name'] for f in one['fields']],
+                         ['sin_family', 'sin_port', 'sin_addr'])
+
+        self.assertEqual(
+            self.client.get('/api/types/?os=linux&arch=x86_64&name=NaoExiste').status_code,
+            404)

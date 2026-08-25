@@ -1,0 +1,40 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+# TODO: resumo e descricoes a revisar.
+type_name: HEAP_INFORMATION
+kind: struct
+size: 48
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "PVOID"
+    name: "Address"
+    offset: 0
+    size: 8
+  field1:
+    type: "ULONG"
+    name: "Mode"
+    offset: 8
+    size: 4
+  field2:
+    type: "SIZE_T"
+    name: "ReserveSize"
+    offset: 16
+    size: 8
+  field3:
+    type: "SIZE_T"
+    name: "CommitSize"
+    offset: 24
+    size: 8
+  field4:
+    type: "ULONG_PTR"
+    name: "FirstRegionInformationOffset"
+    offset: 32
+    size: 8
+  field5:
+    type: "ULONG_PTR"
+    name: "NextHeapInformationOffset"
+    offset: 40
+    size: 8

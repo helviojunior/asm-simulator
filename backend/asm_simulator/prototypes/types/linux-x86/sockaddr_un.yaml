@@ -1,0 +1,20 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m32.
+type_name: sockaddr_un
+kind: struct
+size: 110
+align: 2
+summary: "Endereco de um socket de dominio UNIX: um caminho no sistema de arquivos."
+fields:
+  field0:
+    type: "sa_family_t"
+    name: "sun_family"
+    offset: 0
+    size: 2
+    description: "AF_UNIX (1)."
+  field1:
+    type: "char[]"
+    name: "sun_path"
+    offset: 2
+    size: 108
+    description: "Caminho do socket no sistema de arquivos."

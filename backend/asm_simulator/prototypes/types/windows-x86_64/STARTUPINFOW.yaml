@@ -1,0 +1,118 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Tipo da API do Windows (nao da API nativa, entao nao esta no phnt).
+# Offsets conferidos pelo compilador: ver scratchpad/verify_win32.c —
+# valor errado ali nao compila.
+type_name: STARTUPINFOW
+kind: struct
+size: 104
+align: 8
+summary: "Como o processo novo comeca: janela, console e handles de E/S. `cb` tem de ser sizeof(STARTUPINFOW). Passada a CreateProcess."
+fields:
+  field0:
+    type: "DWORD"
+    name: "cb"
+    offset: 0
+    size: 4
+    description: "Tamanho da estrutura. CreateProcess recusa se nao for 104."
+  field1:
+    type: "LPWSTR"
+    name: "lpReserved"
+    offset: 8
+    size: 8
+    description: "Reservado; NULL."
+  field2:
+    type: "LPWSTR"
+    name: "lpDesktop"
+    offset: 16
+    size: 8
+    description: "Desktop e window station do processo. NULL herda o do chamador."
+  field3:
+    type: "LPWSTR"
+    name: "lpTitle"
+    offset: 24
+    size: 8
+    description: "Titulo da janela de console. NULL usa o nome do executavel."
+  field4:
+    type: "DWORD"
+    name: "dwX"
+    offset: 32
+    size: 4
+    description: "Posicao X da janela; so vale com STARTF_USEPOSITION 0x4."
+  field5:
+    type: "DWORD"
+    name: "dwY"
+    offset: 36
+    size: 4
+    description: "Posicao Y da janela."
+  field6:
+    type: "DWORD"
+    name: "dwXSize"
+    offset: 40
+    size: 4
+    description: "Largura da janela; so vale com STARTF_USESIZE 0x2."
+  field7:
+    type: "DWORD"
+    name: "dwYSize"
+    offset: 44
+    size: 4
+    description: "Altura da janela."
+  field8:
+    type: "DWORD"
+    name: "dwXCountChars"
+    offset: 48
+    size: 4
+    description: "Colunas do buffer de console."
+  field9:
+    type: "DWORD"
+    name: "dwYCountChars"
+    offset: 52
+    size: 4
+    description: "Linhas do buffer de console."
+  field10:
+    type: "DWORD"
+    name: "dwFillAttribute"
+    offset: 56
+    size: 4
+    description: "Cores do console."
+  field11:
+    type: "DWORD"
+    name: "dwFlags"
+    offset: 60
+    size: 4
+    description: "Quais campos valem. STARTF_USESTDHANDLES 0x100 e STARTF_USESHOWWINDOW 0x1."
+  field12:
+    type: "WORD"
+    name: "wShowWindow"
+    offset: 64
+    size: 2
+    description: "SW_HIDE 0 esconde a janela — combinado com STARTF_USESHOWWINDOW."
+  field13:
+    type: "WORD"
+    name: "cbReserved2"
+    offset: 66
+    size: 2
+    description: "Reservado; 0."
+  field14:
+    type: "LPBYTE"
+    name: "lpReserved2"
+    offset: 72
+    size: 8
+    description: "Reservado; NULL."
+  field15:
+    type: "HANDLE"
+    name: "hStdInput"
+    offset: 80
+    size: 8
+    description: "Entrada padrao do processo novo; so vale com STARTF_USESTDHANDLES."
+  field16:
+    type: "HANDLE"
+    name: "hStdOutput"
+    offset: 88
+    size: 8
+    description: "Saida padrao. E por aqui que se redireciona a saida para um pipe ou socket."
+  field17:
+    type: "HANDLE"
+    name: "hStdError"
+    offset: 96
+    size: 8
+    description: "Saida de erro."

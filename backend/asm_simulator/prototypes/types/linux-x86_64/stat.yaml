@@ -1,0 +1,68 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m64.
+type_name: stat
+kind: struct
+size: 144
+align: 8
+summary: "Metadados de um arquivo: tipo, permissoes, dono, tamanho."
+fields:
+  field0:
+    type: "dev_t"
+    name: "st_dev"
+    offset: 0
+    size: 8
+    description: ""
+  field1:
+    type: "ino_t"
+    name: "st_ino"
+    offset: 8
+    size: 8
+    description: ""
+  field2:
+    type: "mode_t"
+    name: "st_mode"
+    offset: 24
+    size: 4
+    description: "Tipo e permissoes do arquivo."
+  field3:
+    type: "nlink_t"
+    name: "st_nlink"
+    offset: 16
+    size: 8
+    description: ""
+  field4:
+    type: "uid_t"
+    name: "st_uid"
+    offset: 28
+    size: 4
+    description: "Dono do arquivo."
+  field5:
+    type: "gid_t"
+    name: "st_gid"
+    offset: 32
+    size: 4
+    description: "Grupo do arquivo."
+  field6:
+    type: "dev_t"
+    name: "st_rdev"
+    offset: 40
+    size: 8
+    description: ""
+  field7:
+    type: "off_t"
+    name: "st_size"
+    offset: 48
+    size: 8
+    description: "Tamanho em bytes."
+  field8:
+    type: "blksize_t"
+    name: "st_blksize"
+    offset: 56
+    size: 8
+    description: ""
+  field9:
+    type: "blkcnt_t"
+    name: "st_blocks"
+    offset: 64
+    size: 8
+    description: ""

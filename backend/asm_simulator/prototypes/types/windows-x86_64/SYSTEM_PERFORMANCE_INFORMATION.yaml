@@ -1,0 +1,420 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+# TODO: resumo e descricoes a revisar.
+type_name: SYSTEM_PERFORMANCE_INFORMATION
+kind: struct
+size: 376
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "LARGE_INTEGER"
+    name: "IdleProcessTime"
+    offset: 0
+    size: 8
+  field1:
+    type: "LARGE_INTEGER"
+    name: "IoReadTransferCount"
+    offset: 8
+    size: 8
+  field2:
+    type: "LARGE_INTEGER"
+    name: "IoWriteTransferCount"
+    offset: 16
+    size: 8
+  field3:
+    type: "LARGE_INTEGER"
+    name: "IoOtherTransferCount"
+    offset: 24
+    size: 8
+  field4:
+    type: "ULONG"
+    name: "IoReadOperationCount"
+    offset: 32
+    size: 4
+  field5:
+    type: "ULONG"
+    name: "IoWriteOperationCount"
+    offset: 36
+    size: 4
+  field6:
+    type: "ULONG"
+    name: "IoOtherOperationCount"
+    offset: 40
+    size: 4
+  field7:
+    type: "ULONG"
+    name: "AvailablePages"
+    offset: 44
+    size: 4
+  field8:
+    type: "ULONG"
+    name: "CommittedPages"
+    offset: 48
+    size: 4
+  field9:
+    type: "ULONG"
+    name: "CommitLimit"
+    offset: 52
+    size: 4
+  field10:
+    type: "ULONG"
+    name: "PeakCommitment"
+    offset: 56
+    size: 4
+  field11:
+    type: "ULONG"
+    name: "PageFaultCount"
+    offset: 60
+    size: 4
+  field12:
+    type: "ULONG"
+    name: "CopyOnWriteCount"
+    offset: 64
+    size: 4
+  field13:
+    type: "ULONG"
+    name: "TransitionCount"
+    offset: 68
+    size: 4
+  field14:
+    type: "ULONG"
+    name: "CacheTransitionCount"
+    offset: 72
+    size: 4
+  field15:
+    type: "ULONG"
+    name: "DemandZeroCount"
+    offset: 76
+    size: 4
+  field16:
+    type: "ULONG"
+    name: "PageReadCount"
+    offset: 80
+    size: 4
+  field17:
+    type: "ULONG"
+    name: "PageReadIoCount"
+    offset: 84
+    size: 4
+  field18:
+    type: "ULONG"
+    name: "CacheReadCount"
+    offset: 88
+    size: 4
+  field19:
+    type: "ULONG"
+    name: "CacheIoCount"
+    offset: 92
+    size: 4
+  field20:
+    type: "ULONG"
+    name: "DirtyPagesWriteCount"
+    offset: 96
+    size: 4
+  field21:
+    type: "ULONG"
+    name: "DirtyWriteIoCount"
+    offset: 100
+    size: 4
+  field22:
+    type: "ULONG"
+    name: "MappedPagesWriteCount"
+    offset: 104
+    size: 4
+  field23:
+    type: "ULONG"
+    name: "MappedWriteIoCount"
+    offset: 108
+    size: 4
+  field24:
+    type: "ULONG"
+    name: "PagedPoolPages"
+    offset: 112
+    size: 4
+  field25:
+    type: "ULONG"
+    name: "NonPagedPoolPages"
+    offset: 116
+    size: 4
+  field26:
+    type: "ULONG"
+    name: "PagedPoolAllocs"
+    offset: 120
+    size: 4
+  field27:
+    type: "ULONG"
+    name: "PagedPoolFrees"
+    offset: 124
+    size: 4
+  field28:
+    type: "ULONG"
+    name: "NonPagedPoolAllocs"
+    offset: 128
+    size: 4
+  field29:
+    type: "ULONG"
+    name: "NonPagedPoolFrees"
+    offset: 132
+    size: 4
+  field30:
+    type: "ULONG"
+    name: "FreeSystemPtes"
+    offset: 136
+    size: 4
+  field31:
+    type: "ULONG"
+    name: "ResidentSystemCodePage"
+    offset: 140
+    size: 4
+  field32:
+    type: "ULONG"
+    name: "TotalSystemDriverPages"
+    offset: 144
+    size: 4
+  field33:
+    type: "ULONG"
+    name: "TotalSystemCodePages"
+    offset: 148
+    size: 4
+  field34:
+    type: "ULONG"
+    name: "NonPagedPoolLookasideHits"
+    offset: 152
+    size: 4
+  field35:
+    type: "ULONG"
+    name: "PagedPoolLookasideHits"
+    offset: 156
+    size: 4
+  field36:
+    type: "ULONG"
+    name: "AvailablePagedPoolPages"
+    offset: 160
+    size: 4
+  field37:
+    type: "ULONG"
+    name: "ResidentSystemCachePage"
+    offset: 164
+    size: 4
+  field38:
+    type: "ULONG"
+    name: "ResidentPagedPoolPage"
+    offset: 168
+    size: 4
+  field39:
+    type: "ULONG"
+    name: "ResidentSystemDriverPage"
+    offset: 172
+    size: 4
+  field40:
+    type: "ULONG"
+    name: "CcFastReadNoWait"
+    offset: 176
+    size: 4
+  field41:
+    type: "ULONG"
+    name: "CcFastReadWait"
+    offset: 180
+    size: 4
+  field42:
+    type: "ULONG"
+    name: "CcFastReadResourceMiss"
+    offset: 184
+    size: 4
+  field43:
+    type: "ULONG"
+    name: "CcFastReadNotPossible"
+    offset: 188
+    size: 4
+  field44:
+    type: "ULONG"
+    name: "CcFastMdlReadNoWait"
+    offset: 192
+    size: 4
+  field45:
+    type: "ULONG"
+    name: "CcFastMdlReadWait"
+    offset: 196
+    size: 4
+  field46:
+    type: "ULONG"
+    name: "CcFastMdlReadResourceMiss"
+    offset: 200
+    size: 4
+  field47:
+    type: "ULONG"
+    name: "CcFastMdlReadNotPossible"
+    offset: 204
+    size: 4
+  field48:
+    type: "ULONG"
+    name: "CcMapDataNoWait"
+    offset: 208
+    size: 4
+  field49:
+    type: "ULONG"
+    name: "CcMapDataWait"
+    offset: 212
+    size: 4
+  field50:
+    type: "ULONG"
+    name: "CcMapDataNoWaitMiss"
+    offset: 216
+    size: 4
+  field51:
+    type: "ULONG"
+    name: "CcMapDataWaitMiss"
+    offset: 220
+    size: 4
+  field52:
+    type: "ULONG"
+    name: "CcPinMappedDataCount"
+    offset: 224
+    size: 4
+  field53:
+    type: "ULONG"
+    name: "CcPinReadNoWait"
+    offset: 228
+    size: 4
+  field54:
+    type: "ULONG"
+    name: "CcPinReadWait"
+    offset: 232
+    size: 4
+  field55:
+    type: "ULONG"
+    name: "CcPinReadNoWaitMiss"
+    offset: 236
+    size: 4
+  field56:
+    type: "ULONG"
+    name: "CcPinReadWaitMiss"
+    offset: 240
+    size: 4
+  field57:
+    type: "ULONG"
+    name: "CcCopyReadNoWait"
+    offset: 244
+    size: 4
+  field58:
+    type: "ULONG"
+    name: "CcCopyReadWait"
+    offset: 248
+    size: 4
+  field59:
+    type: "ULONG"
+    name: "CcCopyReadNoWaitMiss"
+    offset: 252
+    size: 4
+  field60:
+    type: "ULONG"
+    name: "CcCopyReadWaitMiss"
+    offset: 256
+    size: 4
+  field61:
+    type: "ULONG"
+    name: "CcMdlReadNoWait"
+    offset: 260
+    size: 4
+  field62:
+    type: "ULONG"
+    name: "CcMdlReadWait"
+    offset: 264
+    size: 4
+  field63:
+    type: "ULONG"
+    name: "CcMdlReadNoWaitMiss"
+    offset: 268
+    size: 4
+  field64:
+    type: "ULONG"
+    name: "CcMdlReadWaitMiss"
+    offset: 272
+    size: 4
+  field65:
+    type: "ULONG"
+    name: "CcReadAheadIos"
+    offset: 276
+    size: 4
+  field66:
+    type: "ULONG"
+    name: "CcLazyWriteIos"
+    offset: 280
+    size: 4
+  field67:
+    type: "ULONG"
+    name: "CcLazyWritePages"
+    offset: 284
+    size: 4
+  field68:
+    type: "ULONG"
+    name: "CcDataFlushes"
+    offset: 288
+    size: 4
+  field69:
+    type: "ULONG"
+    name: "CcDataPages"
+    offset: 292
+    size: 4
+  field70:
+    type: "ULONG"
+    name: "ContextSwitches"
+    offset: 296
+    size: 4
+  field71:
+    type: "ULONG"
+    name: "FirstLevelTbFills"
+    offset: 300
+    size: 4
+  field72:
+    type: "ULONG"
+    name: "SecondLevelTbFills"
+    offset: 304
+    size: 4
+  field73:
+    type: "ULONG"
+    name: "SystemCalls"
+    offset: 308
+    size: 4
+  field74:
+    type: "ULONGLONG"
+    name: "CcTotalDirtyPages"
+    offset: 312
+    size: 8
+  field75:
+    type: "ULONGLONG"
+    name: "CcDirtyPageThreshold"
+    offset: 320
+    size: 8
+  field76:
+    type: "LONGLONG"
+    name: "ResidentAvailablePages"
+    offset: 328
+    size: 8
+  field77:
+    type: "ULONGLONG"
+    name: "SharedCommittedPages"
+    offset: 336
+    size: 8
+  field78:
+    type: "ULONGLONG"
+    name: "MdlPagesAllocated"
+    offset: 344
+    size: 8
+  field79:
+    type: "ULONGLONG"
+    name: "PfnDatabaseCommittedPages"
+    offset: 352
+    size: 8
+  field80:
+    type: "ULONGLONG"
+    name: "SystemPageTableCommittedPages"
+    offset: 360
+    size: 8
+  field81:
+    type: "ULONGLONG"
+    name: "ContiguousPagesAllocated"
+    offset: 368
+    size: 8

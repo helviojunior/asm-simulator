@@ -1,0 +1,65 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+# TODO: resumo e descricoes a revisar.
+type_name: ALPC_HANDLE_ATTR32
+kind: struct
+size: 44
+align: 4
+summary: ""
+fields:
+  field0:
+    type: "ULONG"
+    name: "Flags"
+    offset: 0
+    size: 4
+  field1:
+    type: "ULONG"
+    name: "Reserved0"
+    offset: 4
+    size: 4
+  field2:
+    type: "ULONG"
+    name: "SameAccess"
+    offset: 8
+    size: 4
+  field3:
+    type: "ULONG"
+    name: "SameAttributes"
+    offset: 12
+    size: 4
+  field4:
+    type: "ULONG"
+    name: "Indirect"
+    offset: 16
+    size: 4
+  field5:
+    type: "ULONG"
+    name: "Inherit"
+    offset: 20
+    size: 4
+  field6:
+    type: "ULONG"
+    name: "Reserved1"
+    offset: 24
+    size: 4
+  field7:
+    type: "ULONG"
+    name: "Handle"
+    offset: 28
+    size: 4
+  field8:
+    type: "ULONG"
+    name: "ObjectType"
+    offset: 32
+    size: 4
+  field9:
+    type: "ACCESS_MASK"
+    name: "DesiredAccess"
+    offset: 36
+    size: 4
+  field10:
+    type: "ACCESS_MASK"
+    name: "GrantedAccess"
+    offset: 40
+    size: 4

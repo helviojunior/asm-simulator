@@ -1,0 +1,52 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Tipo da API do Windows (nao da API nativa, entao nao esta no phnt).
+# Offsets conferidos pelo compilador: ver scratchpad/verify_win32.c —
+# valor errado ali nao compila.
+type_name: WSADATA
+kind: struct
+size: 408
+align: 8
+summary: "Devolvida por WSAStartup. Em x64 os campos numericos vem ANTES das strings; em x86, depois — pegadinha classica ao portar shellcode."
+fields:
+  field0:
+    type: "WORD"
+    name: "wVersion"
+    offset: 0
+    size: 2
+    description: "Versao do Winsock em uso."
+  field1:
+    type: "WORD"
+    name: "wHighVersion"
+    offset: 2
+    size: 2
+    description: "Versao mais alta suportada."
+  field2:
+    type: "unsigned short"
+    name: "iMaxSockets"
+    offset: 4
+    size: 2
+    description: "Obsoleto; ignorado nas versoes atuais."
+  field3:
+    type: "unsigned short"
+    name: "iMaxUdpDg"
+    offset: 6
+    size: 2
+    description: "Obsoleto."
+  field4:
+    type: "char *"
+    name: "lpVendorInfo"
+    offset: 8
+    size: 8
+    description: "Reservado."
+  field5:
+    type: "char[257]"
+    name: "szDescription"
+    offset: 16
+    size: 257
+    description: "Descricao da implementacao."
+  field6:
+    type: "char[129]"
+    name: "szSystemStatus"
+    offset: 273
+    size: 129
+    description: "Estado do sistema."

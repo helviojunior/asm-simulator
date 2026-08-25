@@ -1,0 +1,38 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m64.
+type_name: sockaddr_in6
+kind: struct
+size: 28
+align: 4
+summary: "Endereco IPv6 de um socket."
+fields:
+  field0:
+    type: "sa_family_t"
+    name: "sin6_family"
+    offset: 0
+    size: 2
+    description: "AF_INET6 (10)."
+  field1:
+    type: "in_port_t"
+    name: "sin6_port"
+    offset: 2
+    size: 2
+    description: "Porta em big-endian."
+  field2:
+    type: "uint32_t"
+    name: "sin6_flowinfo"
+    offset: 4
+    size: 4
+    description: ""
+  field3:
+    type: "struct in6_addr"
+    name: "sin6_addr"
+    offset: 8
+    size: 16
+    description: ""
+  field4:
+    type: "uint32_t"
+    name: "sin6_scope_id"
+    offset: 24
+    size: 4
+    description: ""

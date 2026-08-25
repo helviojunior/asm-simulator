@@ -1,0 +1,64 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+type_name: SYSTEM_BASIC_INFORMATION
+kind: struct
+size: 64
+align: 8
+summary: "Numeros basicos do sistema: paginas, processadores, faixa de enderecos."
+fields:
+  field0:
+    type: "ULONG"
+    name: "Reserved"
+    offset: 0
+    size: 4
+  field1:
+    type: "ULONG"
+    name: "TimerResolution"
+    offset: 4
+    size: 4
+  field2:
+    type: "ULONG"
+    name: "PageSize"
+    offset: 8
+    size: 4
+  field3:
+    type: "ULONG"
+    name: "NumberOfPhysicalPages"
+    offset: 12
+    size: 4
+  field4:
+    type: "ULONG"
+    name: "LowestPhysicalPageNumber"
+    offset: 16
+    size: 4
+  field5:
+    type: "ULONG"
+    name: "HighestPhysicalPageNumber"
+    offset: 20
+    size: 4
+  field6:
+    type: "ULONG"
+    name: "AllocationGranularity"
+    offset: 24
+    size: 4
+  field7:
+    type: "ULONG_PTR"
+    name: "MinimumUserModeAddress"
+    offset: 32
+    size: 8
+  field8:
+    type: "ULONG_PTR"
+    name: "MaximumUserModeAddress"
+    offset: 40
+    size: 8
+  field9:
+    type: "KAFFINITY"
+    name: "ActiveProcessorsAffinityMask"
+    offset: 48
+    size: 8
+  field10:
+    type: "UCHAR"
+    name: "NumberOfProcessors"
+    offset: 56
+    size: 1

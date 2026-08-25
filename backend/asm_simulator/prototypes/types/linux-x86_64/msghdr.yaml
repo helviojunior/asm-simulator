@@ -1,0 +1,50 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m64.
+type_name: msghdr
+kind: struct
+size: 56
+align: 8
+summary: "Mensagem completa de sendmsg/recvmsg: destino, blocos de dados e dados auxiliares."
+fields:
+  field0:
+    type: "void *"
+    name: "msg_name"
+    offset: 0
+    size: 8
+    description: "Endereco de destino; NULL num socket ja conectado."
+  field1:
+    type: "socklen_t"
+    name: "msg_namelen"
+    offset: 8
+    size: 4
+    description: ""
+  field2:
+    type: "struct iovec *"
+    name: "msg_iov"
+    offset: 16
+    size: 8
+    description: "Vetor de blocos de dados."
+  field3:
+    type: "size_t"
+    name: "msg_iovlen"
+    offset: 24
+    size: 8
+    description: "Quantos blocos ha no vetor."
+  field4:
+    type: "void *"
+    name: "msg_control"
+    offset: 32
+    size: 8
+    description: ""
+  field5:
+    type: "size_t"
+    name: "msg_controllen"
+    offset: 40
+    size: 8
+    description: ""
+  field6:
+    type: "int"
+    name: "msg_flags"
+    offset: 48
+    size: 4
+    description: ""

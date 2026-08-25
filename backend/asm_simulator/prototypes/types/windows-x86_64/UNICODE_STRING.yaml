@@ -1,0 +1,25 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+type_name: UNICODE_STRING
+kind: struct
+size: 16
+align: 8
+summary: "String UTF-16 com tamanho explicito. NAO e terminada em NUL: `Length` e em BYTES, nao em caracteres."
+fields:
+  field0:
+    type: "USHORT"
+    name: "Length"
+    offset: 0
+    size: 2
+  field1:
+    type: "USHORT"
+    name: "MaximumLength"
+    offset: 2
+    size: 2
+  field2:
+    type: "PWCH"
+    name: "Buffer"
+    offset: 8
+    size: 8

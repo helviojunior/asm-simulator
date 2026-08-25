@@ -1,0 +1,36 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: ALPC_CONTEXT_ATTR
+kind: struct
+size: 32
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "PVOID"
+    name: "PortContext"
+    offset: 0
+    size: 8
+  field1:
+    type: "PVOID"
+    name: "MessageContext"
+    offset: 8
+    size: 8
+  field2:
+    type: "ULONG"
+    name: "Sequence"
+    offset: 16
+    size: 4
+  field3:
+    type: "ULONG"
+    name: "MessageId"
+    offset: 20
+    size: 4
+  field4:
+    type: "ULONG"
+    name: "CallbackId"
+    offset: 24
+    size: 4

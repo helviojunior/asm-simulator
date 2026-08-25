@@ -9,7 +9,7 @@ import { Machine } from "lib/cpu/machine";
 import { HALT } from "lib/cpu/halt";
 import { ARCH } from "lib/cpu/registers";
 import { OS, OS_OPTIONS, detectOs, osIcon } from "lib/cpu/os";
-import { defaultConvention } from "lib/cpu/inspect";
+import { defaultConvention, syscallGate } from "lib/cpu/inspect";
 import { findArchMismatch } from "lib/asm/archCheck";
 import { fromParams, updateNode } from "lib/library";
 import { hex, parseAddress } from "lib/cpu/format";
@@ -22,6 +22,8 @@ import StackPane from "components/debugger/StackPane";
 import OperandsPane from "components/debugger/OperandsPane";
 import CallPane from "components/debugger/CallPane";
 import SyscallPane from "components/debugger/SyscallPane";
+import StructPane from "components/debugger/StructPane";
+import { loadTypeNames } from "lib/types";
 import Splitter from "components/debugger/Splitter";
 import AboutModal, { AboutButton } from "components/AboutModal";
 import ImportBinaryWizard from "components/ImportBinaryWizard";
@@ -41,6 +43,9 @@ const DEFAULT_PANE_SIZES = {
   operands: 128,
   source: 380,
   stack: 260,
+  callArgs: 150,
+  syscall: 170,
+  struct: 200,
 };
 
 // Quantos indicadores listar no aviso de arquitetura divergente. A lista serve
@@ -107,6 +112,8 @@ export default function Simulator() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [ntdllOpen, setNtdllOpen] = useState(false);
+  // Ponteiro sendo lido como estrutura: `{ address, type, name }`, ou null.
+  const [parsed, setParsed] = useState(null);
   // Contador de salvamentos. A arvore da biblioteca mostra a data de alteracao
   // de cada arquivo; sem este sinal ela ficaria defasada ate a proxima troca
   // de aba.
@@ -221,6 +228,7 @@ export default function Simulator() {
     machineRef.current = null;
     // Os nomes que o aluno deu valem para o programa que estava carregado.
     clearSyscallNames();
+    setParsed(null);
     setInstructions([]);
     setLineMap({});
     setDataRanges([]);
@@ -871,7 +879,20 @@ export default function Simulator() {
   const canStepBack = Boolean(machine) && machine.history.length > 0;
   // Pular vale mesmo PARADO: e o jeito de sair de uma instrucao que o
   // simulador nao cobre. So nao vale quando nao ha instrucao sob o ponteiro.
+  // Quais tipos existem para o alvo. Chega uma vez e habilita o botao de ler
+  // ponteiro como estrutura nas linhas de argumento.
+  useEffect(() => {
+    if (os) loadTypeNames(os, arch).then(() => refresh());
+  }, [os, arch, refresh]);
+
   const canSkip = Boolean(machine?.currentInstruction);
+
+  // Quais paineis de chamada estao na tela agora. A condicao e a mesma que os
+  // proprios paineis aplicam; aqui ela decide se a divisoria aparece junto.
+  const currentInsn = machine?.halted ? null : machine?.currentInstruction;
+  const showsCall = Boolean(currentInsn && !currentInsn.data
+    && currentInsn.groups?.includes("call"));
+  const showsSyscall = Boolean(currentInsn && syscallGate(currentInsn));
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-[#1e1e1e] text-[#d4d4d4]">
@@ -1019,6 +1040,26 @@ export default function Simulator() {
             <OperandsPane machine={machine} tick={tick} />
           </div>
 
+          {/* Ponteiro lido como estrutura. Fica na coluna da esquerda, dividindo
+              a altura com o editor: e leitura demorada, e a pilha ao lado
+              continua visivel para comparar endereco por endereco. */}
+          {parsed && (
+            <>
+              <Splitter
+                label={t("sim.resizeStruct", "Resize structure panel")}
+                onResize={(delta) => resizePane("struct", -delta, { min: 80, max: 900 })}
+              />
+              <div style={{ height: paneSizes.struct }} className="shrink-0 overflow-hidden">
+                <StructPane
+                  machine={machine}
+                  target={parsed}
+                  tick={tick}
+                  onClose={() => setParsed(null)}
+                />
+              </div>
+            </>
+          )}
+
           <Splitter
             label={t("sim.resizeSource", "Resize source panel")}
             onResize={(delta) => resizePane("source", -delta, { min: 80, max: 1200 })}
@@ -1065,22 +1106,47 @@ export default function Simulator() {
           </div>
           <FlagsPane machine={machine} changed={changes.flags} />
           {/* So aparece quando a instrucao atual e um `call`. */}
-          <CallPane
-            machine={machine}
-            count={argCount}
-            convention={convention}
-            onConventionChange={setConvention}
-            tick={tick}
-          />
+          {/* A divisoria so aparece com o painel: uma alca para redimensionar
+              o que nao esta na tela seria um controle sem efeito. */}
+          {showsCall && (
+            <>
+              <Splitter
+                label={t("sim.resizeCallArgs", "Resize call arguments panel")}
+                onResize={(delta) => resizePane("callArgs", -delta, { min: 60, max: 600 })}
+              />
+              <div style={{ height: paneSizes.callArgs }} className="shrink-0 overflow-hidden">
+                <CallPane
+                  machine={machine}
+                  count={argCount}
+                  convention={convention}
+                  onConventionChange={setConvention}
+                  tick={tick}
+                  onParse={setParsed}
+                />
+              </div>
+            </>
+          )}
+
           {/* ...e este quando ela e `int 0x80`/`syscall`. Os dois se excluem:
               uma instrucao nao e chamada e porta de kernel ao mesmo tempo. */}
-          <SyscallPane
-            machine={machine}
-            count={argCount}
-            tick={tick}
-            onImportNtdll={() => setNtdllOpen(true)}
-            onNameChange={refresh}
-          />
+          {showsSyscall && (
+            <>
+              <Splitter
+                label={t("sim.resizeSyscall", "Resize system call panel")}
+                onResize={(delta) => resizePane("syscall", -delta, { min: 60, max: 600 })}
+              />
+              <div style={{ height: paneSizes.syscall }} className="shrink-0 overflow-hidden">
+                <SyscallPane
+                  machine={machine}
+                  count={argCount}
+                  tick={tick}
+                  onImportNtdll={() => setNtdllOpen(true)}
+                  onNameChange={refresh}
+                  onParse={setParsed}
+                />
+              </div>
+            </>
+          )}
 
           <Splitter
             label={t("sim.resizeStack", "Resize stack panel")}

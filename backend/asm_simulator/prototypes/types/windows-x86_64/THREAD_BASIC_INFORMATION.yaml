@@ -1,0 +1,39 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+type_name: THREAD_BASIC_INFORMATION
+kind: struct
+size: 48
+align: 8
+summary: "Informacao basica de uma thread: TEB, identificadores e prioridade."
+fields:
+  field0:
+    type: "NTSTATUS"
+    name: "ExitStatus"
+    offset: 0
+    size: 4
+  field1:
+    type: "PTEB"
+    name: "TebBaseAddress"
+    offset: 8
+    size: 8
+  field2:
+    type: "CLIENT_ID"
+    name: "ClientId"
+    offset: 16
+    size: 16
+  field3:
+    type: "KAFFINITY"
+    name: "AffinityMask"
+    offset: 32
+    size: 8
+  field4:
+    type: "KPRIORITY"
+    name: "Priority"
+    offset: 40
+    size: 4
+  field5:
+    type: "KPRIORITY"
+    name: "BasePriority"
+    offset: 44
+    size: 4

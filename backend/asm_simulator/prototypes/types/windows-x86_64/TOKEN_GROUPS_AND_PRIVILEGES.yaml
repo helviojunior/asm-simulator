@@ -1,0 +1,60 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+# TODO: resumo e descricoes a revisar.
+type_name: TOKEN_GROUPS_AND_PRIVILEGES
+kind: struct
+size: 56
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "ULONG"
+    name: "SidCount"
+    offset: 0
+    size: 4
+  field1:
+    type: "ULONG"
+    name: "SidLength"
+    offset: 4
+    size: 4
+  field2:
+    type: "PSID_AND_ATTRIBUTES"
+    name: "Sids"
+    offset: 8
+    size: 8
+  field3:
+    type: "ULONG"
+    name: "RestrictedSidCount"
+    offset: 16
+    size: 4
+  field4:
+    type: "ULONG"
+    name: "RestrictedSidLength"
+    offset: 20
+    size: 4
+  field5:
+    type: "PSID_AND_ATTRIBUTES"
+    name: "RestrictedSids"
+    offset: 24
+    size: 8
+  field6:
+    type: "ULONG"
+    name: "PrivilegeCount"
+    offset: 32
+    size: 4
+  field7:
+    type: "ULONG"
+    name: "PrivilegeLength"
+    offset: 36
+    size: 4
+  field8:
+    type: "PLUID_AND_ATTRIBUTES"
+    name: "Privileges"
+    offset: 40
+    size: 8
+  field9:
+    type: "LUID"
+    name: "AuthenticationId"
+    offset: 48
+    size: 8

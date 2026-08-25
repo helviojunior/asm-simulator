@@ -6,6 +6,7 @@ from asm_simulator.views.library import (
 )
 from asm_simulator.views.ntdll import NtdllView
 from asm_simulator.views.prototypes import PrototypeListView
+from asm_simulator.views.types import TypeListView
 from asm_simulator.views.program import AssembleView, DisassembleView, ImportBinaryView
 
 app_name = 'asm_simulator'
@@ -22,6 +23,9 @@ urlpatterns = [
     path('api/program/disassemble/', DisassembleView.as_view(), name='program-disassemble'),
     # Binario cru -> codigo-fonte editavel (o import do wizard).
     path('api/program/import/', ImportBinaryView.as_view(), name='program-import'),
+
+    # Prototipos de TIPO: layout de struct/union, para ler um ponteiro.
+    path('api/types/', TypeListView.as_view(), name='types'),
 
     # Prototipos das syscalls: nomes, tipos e o que cada argumento significa.
     path('api/prototypes/', PrototypeListView.as_view(), name='prototypes'),

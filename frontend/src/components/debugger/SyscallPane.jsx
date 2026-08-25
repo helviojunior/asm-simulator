@@ -21,7 +21,7 @@ import { loadPrototype } from "lib/prototypes";
  * `int 0x80` e 1 em `syscall`. Por isso a resolucao numero -> nome fica na
  * primeira linha, e nao escondida num tooltip.
  */
-export default function SyscallPane({ machine, count, tick, onImportNtdll, onNameChange }) {
+export default function SyscallPane({ machine, count, tick, onImportNtdll, onNameChange, onParse }) {
   const { t, tf } = useI18n();
 
   // A maquina muda por mutacao; `tick` forca o recalculo a cada passo.
@@ -50,7 +50,7 @@ export default function SyscallPane({ machine, count, tick, onImportNtdll, onNam
   const numberDigits = digits;
 
   return (
-    <section className="flex max-h-56 flex-col overflow-hidden border-t border-[#3c3c3c] bg-[#252526]">
+    <section className="flex h-full flex-col overflow-hidden border-t border-[#3c3c3c] bg-[#252526]">
       <header className="flex shrink-0 items-center gap-2 border-b border-[#3c3c3c] px-3 py-1.5">
         <Terminal size={12} className="shrink-0 text-[#9cdcfe]" />
         <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9cdcfe]">
@@ -112,6 +112,7 @@ export default function SyscallPane({ machine, count, tick, onImportNtdll, onNam
             machine={machine}
             arg={arg}
             digits={digits}
+            onParse={onParse}
             name={call.known ? arg.name : null}
             type={arg.type}
             description={arg.description}

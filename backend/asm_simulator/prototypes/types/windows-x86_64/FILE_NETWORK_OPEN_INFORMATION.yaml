@@ -1,0 +1,46 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: FILE_NETWORK_OPEN_INFORMATION
+kind: struct
+size: 56
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "LARGE_INTEGER"
+    name: "CreationTime"
+    offset: 0
+    size: 8
+  field1:
+    type: "LARGE_INTEGER"
+    name: "LastAccessTime"
+    offset: 8
+    size: 8
+  field2:
+    type: "LARGE_INTEGER"
+    name: "LastWriteTime"
+    offset: 16
+    size: 8
+  field3:
+    type: "LARGE_INTEGER"
+    name: "ChangeTime"
+    offset: 24
+    size: 8
+  field4:
+    type: "LARGE_INTEGER"
+    name: "AllocationSize"
+    offset: 32
+    size: 8
+  field5:
+    type: "LARGE_INTEGER"
+    name: "EndOfFile"
+    offset: 40
+    size: 8
+  field6:
+    type: "ULONG"
+    name: "FileAttributes"
+    offset: 48
+    size: 4

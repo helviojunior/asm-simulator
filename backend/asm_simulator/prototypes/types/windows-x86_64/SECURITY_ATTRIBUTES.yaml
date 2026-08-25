@@ -1,0 +1,28 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Tipo da API do Windows (nao da API nativa, entao nao esta no phnt).
+# Offsets conferidos pelo compilador: ver scratchpad/verify_win32.c —
+# valor errado ali nao compila.
+type_name: SECURITY_ATTRIBUTES
+kind: struct
+size: 24
+align: 8
+summary: "Seguranca de um objeto e se o handle e herdado por processos filhos."
+fields:
+  field0:
+    type: "DWORD"
+    name: "nLength"
+    offset: 0
+    size: 4
+    description: "Tamanho da estrutura: 24."
+  field1:
+    type: "LPVOID"
+    name: "lpSecurityDescriptor"
+    offset: 8
+    size: 8
+    description: "Descritor de seguranca. NULL usa o padrao do chamador."
+  field2:
+    type: "BOOL"
+    name: "bInheritHandle"
+    offset: 16
+    size: 4
+    description: "TRUE faz o handle ser herdado — e o que permite um pipe chegar ao processo filho."

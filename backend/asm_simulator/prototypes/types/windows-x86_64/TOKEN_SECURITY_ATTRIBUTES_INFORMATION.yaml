@@ -1,0 +1,37 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: TOKEN_SECURITY_ATTRIBUTES_INFORMATION
+kind: struct
+size: 16
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "USHORT"
+    name: "Version"
+    offset: 0
+    size: 2
+  field1:
+    type: "USHORT"
+    name: "Reserved"
+    offset: 2
+    size: 2
+  field2:
+    type: "ULONG"
+    name: "AttributeCount"
+    offset: 4
+    size: 4
+  field3:
+    type: "union"
+    name: "anonymous3"
+    offset: 8
+    size: 8
+    fields:
+      field0:
+        type: "PTOKEN_SECURITY_ATTRIBUTE_V1"
+        name: "AttributeV1"
+        offset: 0
+        size: 8

@@ -1,0 +1,52 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: BOOT_ENTRY
+kind: struct
+size: 32
+align: 4
+summary: ""
+fields:
+  field0:
+    type: "ULONG"
+    name: "Version"
+    offset: 0
+    size: 4
+  field1:
+    type: "ULONG"
+    name: "Length"
+    offset: 4
+    size: 4
+  field2:
+    type: "ULONG"
+    name: "Id"
+    offset: 8
+    size: 4
+  field3:
+    type: "ULONG"
+    name: "Attributes"
+    offset: 12
+    size: 4
+  field4:
+    type: "ULONG"
+    name: "FriendlyNameOffset"
+    offset: 16
+    size: 4
+  field5:
+    type: "ULONG"
+    name: "BootFilePathOffset"
+    offset: 20
+    size: 4
+  field6:
+    type: "ULONG"
+    name: "OsOptionsLength"
+    offset: 24
+    size: 4
+  field7:
+    type: "UCHAR"
+    name: "OsOptions"
+    offset: 28
+    size: 1
+    array: 1

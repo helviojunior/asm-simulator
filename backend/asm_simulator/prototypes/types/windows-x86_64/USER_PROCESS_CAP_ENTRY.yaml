@@ -1,0 +1,36 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: USER_PROCESS_CAP_ENTRY
+kind: struct
+size: 24
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    offset: 0
+    size: 8
+  field1:
+    type: "ULONG"
+    name: "Flags1"
+    offset: 8
+    size: 4
+  field2:
+    type: "ULONG"
+    name: "Flags2"
+    offset: 12
+    size: 4
+  field3:
+    type: "ULONG"
+    name: "EnableMask"
+    offset: 16
+    size: 4
+  field4:
+    type: "ULONG"
+    name: "DisableMask"
+    offset: 20
+    size: 4

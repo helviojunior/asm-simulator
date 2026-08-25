@@ -1,0 +1,20 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+# TODO: resumo e descricoes a revisar.
+type_name: ALPC_PORT_ASSOCIATE_COMPLETION_PORT
+kind: struct
+size: 16
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "PVOID"
+    name: "CompletionKey"
+    offset: 0
+    size: 8
+  field1:
+    type: "HANDLE"
+    name: "CompletionPort"
+    offset: 8
+    size: 8

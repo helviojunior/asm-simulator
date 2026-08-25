@@ -1,0 +1,14 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+type_name: OBJECT_NAME_INFORMATION
+kind: struct
+size: 16
+align: 8
+summary: "Nome de um objeto, numa UNICODE_STRING seguida do texto."
+fields:
+  field0:
+    type: "UNICODE_STRING"
+    name: "Name"
+    offset: 0
+    size: 16

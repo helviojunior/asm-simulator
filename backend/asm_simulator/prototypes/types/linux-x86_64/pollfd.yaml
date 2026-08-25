@@ -1,0 +1,26 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m64.
+type_name: pollfd
+kind: struct
+size: 8
+align: 4
+summary: "Um descritor e os eventos esperados nele, para poll()."
+fields:
+  field0:
+    type: "int"
+    name: "fd"
+    offset: 0
+    size: 4
+    description: "Descritor observado."
+  field1:
+    type: "short"
+    name: "events"
+    offset: 4
+    size: 2
+    description: "Eventos esperados: POLLIN 1, POLLOUT 4."
+  field2:
+    type: "short"
+    name: "revents"
+    offset: 6
+    size: 2
+    description: "Eventos que de fato ocorreram."

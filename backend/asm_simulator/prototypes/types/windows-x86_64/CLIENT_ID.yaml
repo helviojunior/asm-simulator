@@ -1,0 +1,20 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+type_name: CLIENT_ID
+kind: struct
+size: 16
+align: 8
+summary: "Par (processo, thread) que identifica quem chamou ou o alvo."
+fields:
+  field0:
+    type: "HANDLE"
+    name: "UniqueProcess"
+    offset: 0
+    size: 8
+  field1:
+    type: "HANDLE"
+    name: "UniqueThread"
+    offset: 8
+    size: 8

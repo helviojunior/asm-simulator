@@ -1,0 +1,51 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+# TODO: resumo e descricoes a revisar.
+type_name: HEAP_EXTENDED_INFORMATION
+kind: struct
+size: 88
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "HANDLE"
+    name: "ProcessHandle"
+    offset: 0
+    size: 8
+  field1:
+    type: "HANDLE"
+    name: "HeapHandle"
+    offset: 8
+    size: 8
+  field2:
+    type: "ULONG"
+    name: "Level"
+    offset: 16
+    size: 4
+  field3:
+    type: "PRTL_HEAP_EXTENDED_ENUMERATION_ROUTINE"
+    name: "CallbackRoutine"
+    offset: 24
+    size: 8
+  field4:
+    type: "PVOID"
+    name: "CallbackContext"
+    offset: 32
+    size: 8
+  field5:
+    type: "union"
+    name: "anonymous5"
+    offset: 40
+    size: 48
+    fields:
+      field0:
+        type: "PROCESS_HEAP_INFORMATION"
+        name: "ProcessHeapInformation"
+        offset: 0
+        size: 8
+      field1:
+        type: "HEAP_INFORMATION"
+        name: "HeapInformation"
+        offset: 0
+        size: 48

@@ -1,0 +1,16 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+# TODO: resumo derivado da definicao; revisar.
+type_name: TOKEN_PRIMARY_GROUP
+kind: struct
+size: 8
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "PSID"
+    name: "PrimaryGroup"
+    offset: 0
+    size: 8

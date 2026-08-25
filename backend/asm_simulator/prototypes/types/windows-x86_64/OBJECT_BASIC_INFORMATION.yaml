@@ -1,0 +1,65 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+type_name: OBJECT_BASIC_INFORMATION
+kind: struct
+size: 56
+align: 8
+summary: "Contadores e atributos de um objeto do kernel."
+fields:
+  field0:
+    type: "ULONG"
+    name: "Attributes"
+    offset: 0
+    size: 4
+  field1:
+    type: "ACCESS_MASK"
+    name: "GrantedAccess"
+    offset: 4
+    size: 4
+  field2:
+    type: "ULONG"
+    name: "HandleCount"
+    offset: 8
+    size: 4
+  field3:
+    type: "ULONG"
+    name: "PointerCount"
+    offset: 12
+    size: 4
+  field4:
+    type: "ULONG"
+    name: "PagedPoolCharge"
+    offset: 16
+    size: 4
+  field5:
+    type: "ULONG"
+    name: "NonPagedPoolCharge"
+    offset: 20
+    size: 4
+  field6:
+    type: "ULONG"
+    name: "Reserved"
+    offset: 24
+    size: 12
+    array: 3
+  field7:
+    type: "ULONG"
+    name: "NameInfoSize"
+    offset: 36
+    size: 4
+  field8:
+    type: "ULONG"
+    name: "TypeInfoSize"
+    offset: 40
+    size: 4
+  field9:
+    type: "ULONG"
+    name: "SecurityDescriptorSize"
+    offset: 44
+    size: 4
+  field10:
+    type: "LARGE_INTEGER"
+    name: "CreationTime"
+    offset: 48
+    size: 8

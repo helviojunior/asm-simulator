@@ -1,0 +1,20 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m32.
+type_name: iovec
+kind: struct
+size: 8
+align: 4
+summary: "Um bloco (ponteiro + tamanho) das operacoes vetoriais readv/writev."
+fields:
+  field0:
+    type: "void *"
+    name: "iov_base"
+    offset: 0
+    size: 4
+    description: "Ponteiro para o bloco."
+  field1:
+    type: "size_t"
+    name: "iov_len"
+    offset: 4
+    size: 4
+    description: "Tamanho do bloco, em bytes."

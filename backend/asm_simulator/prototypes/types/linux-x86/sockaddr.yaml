@@ -1,0 +1,20 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m32.
+type_name: sockaddr
+kind: struct
+size: 16
+align: 2
+summary: "Forma generica de endereco de socket; o campo de familia diz qual estrutura de verdade esta ali."
+fields:
+  field0:
+    type: "sa_family_t"
+    name: "sa_family"
+    offset: 0
+    size: 2
+    description: "Familia do endereco: AF_INET 2, AF_INET6 10, AF_UNIX 1."
+  field1:
+    type: "char[]"
+    name: "sa_data"
+    offset: 2
+    size: 14
+    description: "Conteudo do endereco; o formato depende da familia."

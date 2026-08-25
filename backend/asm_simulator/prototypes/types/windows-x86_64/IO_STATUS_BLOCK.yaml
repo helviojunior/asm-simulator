@@ -1,0 +1,31 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 e conferidos contra tamanhos
+# conhecidos — ver services/layout.py.
+type_name: IO_STATUS_BLOCK
+kind: struct
+size: 16
+align: 8
+summary: "Resultado de uma operacao de E/S: o status e quantos bytes foram transferidos."
+fields:
+  field0:
+    type: "union"
+    name: "anonymous0"
+    offset: 0
+    size: 8
+    fields:
+      field0:
+        type: "NTSTATUS"
+        name: "Status"
+        offset: 0
+        size: 4
+      field1:
+        type: "PVOID"
+        name: "Pointer"
+        offset: 0
+        size: 8
+  field1:
+    type: "ULONG_PTR"
+    name: "Information"
+    offset: 8
+    size: 8

@@ -14,7 +14,7 @@ import ArgumentRow from "components/debugger/ArgumentRow";
  * isso a quantidade de posicoes vem da barra superior: o aluno escolhe quantas
  * quer ver.
  */
-export default function CallPane({ machine, count, convention, onConventionChange, tick }) {
+export default function CallPane({ machine, count, convention, onConventionChange, tick, onParse }) {
   const { t } = useI18n();
 
   // A maquina muda por mutacao; `tick` forca o recalculo a cada passo.
@@ -38,7 +38,7 @@ export default function CallPane({ machine, count, convention, onConventionChang
   );
 
   return (
-    <section className="flex max-h-56 flex-col overflow-hidden border-t border-[#3c3c3c] bg-[#252526]">
+    <section className="flex h-full flex-col overflow-hidden border-t border-[#3c3c3c] bg-[#252526]">
       <header className="flex shrink-0 items-center gap-2 border-b border-[#3c3c3c] px-3 py-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9cdcfe]">
           {t("sim.callArgs", "Call arguments")}
@@ -69,7 +69,9 @@ export default function CallPane({ machine, count, convention, onConventionChang
         )}
 
         {args.map((arg) => (
-          <ArgumentRow key={arg.index} machine={machine} arg={arg} digits={digits} />
+          <ArgumentRow key={arg.index} machine={machine} arg={arg} digits={digits}
+                       type={arg.type} name={arg.name} description={arg.description}
+                       onParse={onParse} />
         ))}
       </div>
     </section>

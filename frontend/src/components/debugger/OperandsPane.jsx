@@ -174,11 +174,12 @@ function Shell({ title, subtitle, children }) {
         </span>
         {subtitle && <span className="text-[11px] text-[#d4d4d4]">{subtitle}</span>}
       </header>
-      <div className="flex-1 overflow-auto py-1 text-[12px] leading-[1.6]">
-        {/* Avisos nao bloqueantes vem ANTES do conteudo: e o que mudou agora,
-            e some sozinho em seguida. */}
-        <ToastArea />
+      {/* `relative`: e o referencial do overlay de avisos. */}
+      <div className="relative flex-1 overflow-auto py-1 text-[12px] leading-[1.6]">
         {children}
+        {/* Avisos nao bloqueantes cobrem o painel enquanto duram — e o que
+            mudou agora, e some sozinho em seguida. */}
+        <ToastArea />
       </div>
     </section>
   );

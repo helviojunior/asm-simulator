@@ -1,0 +1,40 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Tipo da API do Windows (nao da API nativa, entao nao esta no phnt).
+# Offsets conferidos pelo compilador: ver scratchpad/verify_win32.c —
+# valor errado ali nao compila.
+type_name: OVERLAPPED
+kind: struct
+size: 32
+align: 8
+summary: "Estado de uma operacao de E/S assincrona."
+fields:
+  field0:
+    type: "ULONG_PTR"
+    name: "Internal"
+    offset: 0
+    size: 8
+    description: "Status da operacao, uso interno."
+  field1:
+    type: "ULONG_PTR"
+    name: "InternalHigh"
+    offset: 8
+    size: 8
+    description: "Bytes transferidos, uso interno."
+  field2:
+    type: "DWORD"
+    name: "Offset"
+    offset: 16
+    size: 4
+    description: "Posicao no arquivo (parte baixa)."
+  field3:
+    type: "DWORD"
+    name: "OffsetHigh"
+    offset: 20
+    size: 4
+    description: "Posicao no arquivo (parte alta)."
+  field4:
+    type: "HANDLE"
+    name: "hEvent"
+    offset: 24
+    size: 8
+    description: "Evento sinalizado ao fim da operacao."

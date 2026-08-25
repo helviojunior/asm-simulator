@@ -1,0 +1,38 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Layout medido pelo compilador (offsetof), com -m64.
+type_name: utsname
+kind: struct
+size: 390
+align: 1
+summary: "Nomes e versao do sistema, devolvidos por uname()."
+fields:
+  field0:
+    type: "char[]"
+    name: "sysname"
+    offset: 0
+    size: 65
+    description: "Nome do sistema (\"Linux\")."
+  field1:
+    type: "char[]"
+    name: "nodename"
+    offset: 65
+    size: 65
+    description: "Nome da maquina na rede."
+  field2:
+    type: "char[]"
+    name: "release"
+    offset: 130
+    size: 65
+    description: "Versao do kernel."
+  field3:
+    type: "char[]"
+    name: "version"
+    offset: 195
+    size: 65
+    description: "Detalhe da compilacao do kernel."
+  field4:
+    type: "char[]"
+    name: "machine"
+    offset: 260
+    size: 65
+    description: "Arquitetura (\"x86_64\")."

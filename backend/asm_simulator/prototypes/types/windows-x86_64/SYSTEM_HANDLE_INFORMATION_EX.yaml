@@ -1,0 +1,26 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+# TODO: resumo e descricoes a revisar.
+type_name: SYSTEM_HANDLE_INFORMATION_EX
+kind: struct
+size: 56
+align: 8
+summary: ""
+fields:
+  field0:
+    type: "ULONG_PTR"
+    name: "NumberOfHandles"
+    offset: 0
+    size: 8
+  field1:
+    type: "ULONG_PTR"
+    name: "Reserved"
+    offset: 8
+    size: 8
+  field2:
+    type: "SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX"
+    name: "Handles"
+    offset: 16
+    size: 40
+    array: 1

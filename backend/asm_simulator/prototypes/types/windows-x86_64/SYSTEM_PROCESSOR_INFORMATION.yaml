@@ -1,0 +1,34 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+type_name: SYSTEM_PROCESSOR_INFORMATION
+kind: struct
+size: 12
+align: 4
+summary: "Arquitetura, nivel e revisao do processador."
+fields:
+  field0:
+    type: "USHORT"
+    name: "ProcessorArchitecture"
+    offset: 0
+    size: 2
+  field1:
+    type: "USHORT"
+    name: "ProcessorLevel"
+    offset: 2
+    size: 2
+  field2:
+    type: "USHORT"
+    name: "ProcessorRevision"
+    offset: 4
+    size: 2
+  field3:
+    type: "USHORT"
+    name: "MaximumProcessors"
+    offset: 6
+    size: 2
+  field4:
+    type: "ULONG"
+    name: "ProcessorFeatureBits"
+    offset: 8
+    size: 4

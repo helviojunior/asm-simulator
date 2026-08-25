@@ -1,0 +1,36 @@
+# Prototipo de TIPO. Ver prototypes/README.md.
+# Definicao dos headers do projeto phnt (MIT); offsets calculados
+# pelas regras de alinhamento do x86-64 — ver services/layout.py.
+# TODO: resumo e descricoes a revisar.
+type_name: FILE_FULL_EA_INFORMATION
+kind: struct
+size: 12
+align: 4
+summary: ""
+fields:
+  field0:
+    type: "ULONG"
+    name: "NextEntryOffset"
+    offset: 0
+    size: 4
+  field1:
+    type: "UCHAR"
+    name: "Flags"
+    offset: 4
+    size: 1
+  field2:
+    type: "UCHAR"
+    name: "EaNameLength"
+    offset: 5
+    size: 1
+  field3:
+    type: "USHORT"
+    name: "EaValueLength"
+    offset: 6
+    size: 2
+  field4:
+    type: "CHAR"
+    name: "EaName"
+    offset: 8
+    size: 1
+    array: 1
