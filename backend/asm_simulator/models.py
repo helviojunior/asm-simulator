@@ -8,4 +8,7 @@ Novos modelos herdam de ``dbmodels.base.Base``, que ja traz id UUID, created,
 updated e enabled.
 """
 
+__all__ = ['Base', 'LibraryNode']
+
 from asm_simulator.dbmodels.base import Base  # noqa: F401
+from asm_simulator.dbmodels.library_node import LibraryNode  # noqa: F401

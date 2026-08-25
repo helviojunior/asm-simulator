@@ -1,0 +1,176 @@
+import React, { useEffect, useState } from "react";
+import { Code2, Library, Save } from "lucide-react";
+import { useI18n } from "i18n";
+import { cn } from "lib/utils";
+import SourcePane from "components/debugger/SourcePane";
+import LibraryPane from "components/debugger/LibraryPane";
+
+// Rotulo do atalho: no macOS o modificador e o Cmd.
+const SAVE_SHORTCUT =
+  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || "")
+    ? "⌘S"
+    : "Ctrl+S";
+
+/**
+ * Painel inferior esquerdo: editor de codigo-fonte e biblioteca, em abas.
+ *
+ * As duas dividem o mesmo espaco de propósito — a biblioteca existe para
+ * alimentar o editor, e ve-las lado a lado tiraria largura justamente de onde
+ * o codigo e lido.
+ */
+export default function EditorPane({
+  source, onSourceChange, messages, busy, currentLine, openFile, onOpenFileChange,
+  // Parametros de execucao atuais e o que fazer com os do arquivo aberto.
+  params, onOpenFile,
+  // Salvamento: `dirty` diz se ha algo pendente, `onSave` grava no arquivo
+  // aberto, e `saveAs` e o pedido de nomear um arquivo novo.
+  dirty, onSave, onSaved, saveAs = false, onSaveAsHandled, savedTick = 0, onImported,
+  // Sobe a cada acao de execucao: traz o fonte do programa em execucao a vista.
+  focusSource = 0,
+  // Guarda assincrona: a biblioteca a consulta ANTES de ler o arquivo.
+  onBeforeOpen,
+}) {
+  const { t } = useI18n();
+  // A biblioteca abre primeiro: com o editor vazio, o caminho natural de quem
+  // chega e abrir um programa guardado, nao encarar uma tela em branco.
+  const [tab, setTab] = useState("library");
+
+  // Pastas abertas e pasta selecionada moram aqui, e nao na biblioteca: ela
+  // desmonta ao trocar de aba, e a arvore voltaria toda fechada a cada ida ao
+  // codigo-fonte.
+  const [expanded, setExpanded] = useState(() => new Set());
+  const [selectedFolder, setSelectedFolder] = useState(null);
+
+  // Comeca em 0 e so cresce: na montagem o efeito nao faz nada, e cada passo
+  // (ou montagem, ou reinicio) depois disso traz o codigo para a frente.
+  useEffect(() => {
+    if (focusSource) setTab("source");
+  }, [focusSource]);
+
+  // "Salvar como" precisa da arvore: e la que se escolhe a pasta e se digita o
+  // nome. Salvar num arquivo JA aberto nao troca de aba nenhuma.
+  useEffect(() => {
+    if (saveAs) setTab("library");
+  }, [saveAs]);
+
+  // Erro de montagem aparece ANCORADO na linha, dentro do painel do fonte —
+  // com a biblioteca aberta por padrao, ninguem o veria sem esta troca de aba.
+  const hasMessages = messages.length > 0;
+  useEffect(() => {
+    if (hasMessages) setTab("source");
+  }, [hasMessages, messages]);
+
+  return (
+    <section className="flex h-full flex-col overflow-hidden bg-[#1e1e1e]">
+      <div className="flex shrink-0 items-center border-b border-[#3c3c3c]">
+        <Tab
+          icon={Library}
+          label={t("library.title", "Library")}
+          active={tab === "library"}
+          onClick={() => setTab("library")}
+        />
+        <Tab
+          icon={Code2}
+          label={t("sim.source", "Source (NASM)")}
+          active={tab === "source"}
+          onClick={() => setTab("source")}
+        />
+
+        {/* O arquivo aberto vale nas duas abas: e o destino do "salvar". */}
+        {openFile && (
+          <span className="ml-auto truncate px-3 text-[11px] text-[#6a9955]">
+            {openFile.name}
+          </span>
+        )}
+        {tab === "source" && currentLine && (
+          <span className={cn("px-3 text-[10px] text-[#6a9955]", openFile && "ml-0")}>
+            {t("sim.line", "line")} {currentLine}
+          </span>
+        )}
+
+        {/* Salvar sem sair da aba: escrever o programa e guarda-lo sao o mesmo
+            gesto. So fica ativo havendo algo pendente. */}
+        {tab === "source" && (
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={busy || !dirty}
+            title={`${
+              openFile
+                ? t("library.save", "Save to open file")
+                : t("library.saveAs", "Save to a new file")
+            } (${SAVE_SHORTCUT})`}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 text-[11px] transition-colors",
+              !openFile && !currentLine && "ml-auto",
+              busy || !dirty
+                ? "cursor-not-allowed text-[#5a5a5a]"
+                : "text-[#d4d4d4] hover:text-[#9cdcfe]"
+            )}
+          >
+            <Save size={13} />
+            {t("common.save", "Save")}
+            {/* O ponto marca alteracao pendente, como em qualquer editor. */}
+            {dirty && openFile && <span className="text-[#dcdcaa]">●</span>}
+          </button>
+        )}
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-hidden">
+        {tab === "source" ? (
+          <SourcePane
+            source={source}
+            onChange={onSourceChange}
+            messages={messages}
+            disabled={busy}
+            currentLine={currentLine}
+            hideHeader
+          />
+        ) : (
+          <LibraryPane
+            source={source}
+            openFile={openFile}
+            onOpen={(text, fileParams) => {
+              // Abrir um arquivo leva para o editor: o proximo gesto e ler ou
+              // montar o codigo, nao continuar navegando na arvore.
+              onOpenFile(text, fileParams);
+              setTab("source");
+            }}
+            onOpenFileChange={onOpenFileChange}
+            onBeforeOpen={onBeforeOpen}
+            params={params}
+            dirty={dirty}
+            onSave={onSave}
+            onSaved={onSaved}
+            saveAs={saveAs}
+            onSaveAsHandled={onSaveAsHandled}
+            savedTick={savedTick}
+            onImported={onImported}
+            expanded={expanded}
+            onExpandedChange={setExpanded}
+            selectedFolder={selectedFolder}
+            onSelectedFolderChange={setSelectedFolder}
+          />
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Tab({ icon: Icon, label, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-1.5 border-b-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-colors",
+        active
+          ? "border-[#0e639c] text-[#9cdcfe]"
+          : "border-transparent text-[#6b6b6b] hover:text-[#d4d4d4]"
+      )}
+    >
+      <Icon size={13} />
+      {label}
+    </button>
+  );
+}

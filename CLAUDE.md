@@ -1,6 +1,6 @@
 # Instruções do Projeto
 
-**ASMSimulator** — simulador Assembly full-stack (Django REST + React), servido
+**ASMSimulator** — Assembly simulador full-stack (Django REST + React), servido
 como **aplicação 100% pública**: não há login, conta de usuário nem
 permissionamento. As convenções abaixo são obrigatórias.
 
@@ -127,13 +127,26 @@ Não há Company nem preferência de conta para consultar.
 
 ## Comunicação e identidade visual
 
-### 7. Favicon e logo remotos
-Favicon e logo são servidos remotamente de `media.sec4us.com.br`:
+### 7. Todo asset é local — o ambiente roda offline
+O simulador é executado pelo próprio aluno, via Docker, **sem internet**.
+Nenhum recurso pode depender de rede em tempo de execução.
 
-- `public/index.html` referencia
-  `https://media.sec4us.com.br/icon/favicon.ico|.png?ts=%REACT_APP_BUILD_TS%`.
-- `src/lib/brand.js` resolve nome, logo, logo escuro, favicon e e-mail de
-  contato a partir de `REACT_APP_BRAND_*` / `REACT_APP_MEDIA_BASE`.
+- **Proibido:** logo, favicon, webfont (Google Fonts), CDN de biblioteca ou
+  qualquer `src`/`href` para host externo. Offline, isso não carrega — e a
+  falha é silenciosa, então passa despercebida em quem desenvolve com rede.
+- **Como aplicar:** a arte vive em `frontend/public/` (`favicon.ico`,
+  `favicon.png`, `assets/`), e `src/lib/brand.js` usa esses caminhos como
+  padrão. As variáveis `REACT_APP_BRAND_LOGO`, `_LOGO_DARK`, `_FAVICON` e
+  `REACT_APP_MEDIA_BASE` continuam existindo para sobrescrever com URL
+  externa em quem tiver rede — mas o **default é local**.
+- **Tipografia:** `MesloLGS NF` (Nerd Font do powerlevel10k), embarcada em
+  `src/assets/fonts/` como `.woff2` **subsetado** — ver o README daquele
+  diretório. O `@font-face` em `src/index.css` declara `local()` antes do
+  `url()`: quem tem a fonte instalada usa a do sistema, com todos os ícones.
+  Toda a interface é monoespacada, como um debugger.
+- Fontes ficam em `src/` (não em `public/`) para o webpack empacotá-las com
+  hash de conteúdo no nome — o equivalente do `?ts=` da regra 7.1 para assets
+  que passam pelo bundler.
 
 ### 7.1. Cache-busting `?ts=` em todo objeto estático
 Todo asset estático carrega o carimbo do build: `?ts=<REACT_APP_BUILD_TS>`.

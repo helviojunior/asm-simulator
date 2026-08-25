@@ -40,9 +40,7 @@ services:
       args:
         REACT_APP_BACKEND_URL: ""
         REACT_APP_BRAND_NAME: "${REACT_APP_BRAND_NAME:-ASMSimulator}"
-        REACT_APP_MEDIA_BASE: "${REACT_APP_MEDIA_BASE:-https://media.sec4us.com.br}"
-        REACT_APP_BRAND_LOGO: "${REACT_APP_BRAND_LOGO:-https://media.sec4us.com.br/logo/sec4us-light-mode.svg}"
-        REACT_APP_BRAND_LOGO_DARK: "${REACT_APP_BRAND_LOGO_DARK:-https://media.sec4us.com.br/logo/sec4us-dark-mode.svg}"
+        REACT_APP_MEDIA_BASE: "${REACT_APP_MEDIA_BASE:-}"
         REACT_APP_BRAND_CONTACT_EMAIL: "${REACT_APP_BRAND_CONTACT_EMAIL:-contato@asmsimulator.local}"
     container_name: asm-simulator-nginx
     restart: unless-stopped

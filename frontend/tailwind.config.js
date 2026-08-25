@@ -48,7 +48,15 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        // MesloLGS NF embarcada em public/assets/fonts (o ambiente roda
+        // offline). `sans` e `mono` apontam para a mesma familia: o simulador
+        // e uma ferramenta de debug e usa monoespacada em toda a interface.
+        sans: ["MesloLGS NF", "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
+        mono: ["MesloLGS NF", "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
+        // Grade de largura fixa (o dump ASCII): a face embarcada vem primeiro
+        // porque a cobertura de glifos dela e conhecida — ver o @font-face
+        // "MesloLGS NF Embedded" em src/index.css.
+        dump: ["MesloLGS NF Embedded", "MesloLGS NF", "ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
       },
       keyframes: {
         "fade-in": {

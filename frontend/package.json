@@ -27,7 +27,13 @@
   "eslintConfig": {
     "extends": [
       "react-app"
-    ]
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2020
+    },
+    "env": {
+      "es2020": true
+    }
   },
   "proxy": "http://backend:8001",
   "browserslist": {

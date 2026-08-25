@@ -2,17 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+ * MesloLGS NF — fonte da interface.
+ *
+ * `local()` vem ANTES do `url()` de proposito: quem ja tem a fonte instalada
+ * no sistema (comum entre usuarios do powerlevel10k) usa a instalada, com o
+ * conjunto completo de icones Nerd Font, e nao baixa nada.
+ *
+ * Os .woff2 embarcados sao um SUBSET — ver src/assets/fonts/README.md. O
+ * ambiente roda offline, entao nao ha CDN nem Google Fonts: a fonte precisa
+ * estar na imagem.
+ *
+ * Ficam em src/ (e nao em public/) para o webpack empacota-los: ele emite os
+ * arquivos com hash de conteudo no nome, o que ja resolve o cache-busting.
+ * ------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: "MesloLGS NF";
+    src: local("MesloLGS NF"), local("MesloLGS NF Regular"), local("MesloLGS Nerd Font"),
+        url("./assets/fonts/MesloLGS-NF-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* A MESMA fonte, sem o local().
+
+   O dump ASCII desenha um glifo por byte numa grade de largura fixa, e depende
+   de o glifo EXISTIR: faltando, o navegador cai para outra fonte, e a de
+   substituicao vem com outra largura — a coluna inteira desalinha. O subset
+   embarcado tem cobertura conhecida (ver o README de assets/fonts); uma
+   instalacao local qualquer, nao. Aqui a garantia vale mais que os icones
+   extras que o local() traria.
+
+   Nao ha download a mais: e o mesmo arquivo ja baixado acima. */
+@font-face {
+    font-family: "MesloLGS NF Embedded";
+    src: url("./assets/fonts/MesloLGS-NF-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "MesloLGS NF";
+    src: local("MesloLGS NF Bold"), local("MesloLGS Nerd Font Bold"),
+        url("./assets/fonts/MesloLGS-NF-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "MesloLGS NF";
+    src: local("MesloLGS NF Italic"), local("MesloLGS Nerd Font Italic"),
+        url("./assets/fonts/MesloLGS-NF-Italic.woff2") format("woff2");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "MesloLGS NF";
+    src: local("MesloLGS NF Bold Italic"), local("MesloLGS Nerd Font Bold Italic"),
+        url("./assets/fonts/MesloLGS-NF-BoldItalic.woff2") format("woff2");
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
 body {
     margin: 0;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-        "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-        "Helvetica Neue", sans-serif;
+    /* O simulador e uma ferramenta de debug: a interface inteira usa a fonte
+       monoespacada, como o x64dbg. */
+    font-family: "MesloLGS NF", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, "Liberation Mono", "Courier New", monospace;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Colunas de endereco e valor tem que alinhar digito a digito. */
+    font-variant-ligatures: none;
 }
 
 code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-family: "MesloLGS NF", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 @layer base {

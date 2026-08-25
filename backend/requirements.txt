@@ -1,7 +1,10 @@
 requests
+capstone
 py7zr==1.0.0
 Pillow>=7
 python-dotenv==1.1.1
+# Metadados do bundle .scasmlib (ver services/library_bundle.py)
+PyYAML==6.0.2
 cryptography==45.0.7
 
 #DJANGO LIBS

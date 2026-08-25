@@ -1,6 +1,6 @@
 # ASMSimulator
 
-Simulador Assembly **full-stack** (Django REST + React) servido como aplicação
+Assembly Simulador **full-stack** (Django REST + React) servido como aplicação
 **100% pública**: sem login, sem conta de usuário, sem permissionamento. Traz
 internacionalização (EN/PT-BR), identidade visual configurável e uma stack
 Docker (backend + nginx) que sobe com um comando.

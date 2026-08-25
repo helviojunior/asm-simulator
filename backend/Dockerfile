@@ -9,10 +9,14 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 # Instalar dependências do sistema
+# nasm e um MONTADOR: transforma texto em bytes e nao executa nada. E o
+# unico caminho de .asm -> binario; a simulacao acontece no interpretador
+# proprio do frontend.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libmagic1 \
     curl \
     jq \
+    nasm \
     build-essential \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*

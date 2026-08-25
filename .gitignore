@@ -162,3 +162,8 @@ node_modules/
 # Project files
 TODO.md
 
+
+# Volume de dados local (DATA_DIR): banco SQLite, SECRET_KEY gerada no primeiro
+# boot e a biblioteca .asm do aluno. E estado de execucao, nao configuracao —
+# ver CLAUDE.md secoes 8 e 9.1.
+backend/data/
