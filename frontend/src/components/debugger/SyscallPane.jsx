@@ -13,7 +13,7 @@ import { loadPrototype } from "lib/prototypes";
  * A chamada de sistema prestes a acontecer.
  *
  * Irmao do painel de `call`, para a outra forma de chamar codigo alheio. A
- * diferenca esta no que da para afirmar: num `call` a aridade e desconhecida,
+ * diferenca esta no que da para afirmar: num `call` a descrição e desconhecida,
  * mas aqui o numero em EAX/RAX identifica a funcao — entao o painel mostra o
  * NOME dela e o nome de cada parametro.
  *

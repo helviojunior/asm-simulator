@@ -47,7 +47,9 @@ export function ToastArea({ className }) {
     <div
       className={cn(
         "absolute inset-0 z-10 flex flex-col gap-2 overflow-auto",
-        "bg-[#1e1e1e]/95 p-3 backdrop-blur-[1px] animate-fade-in",
+        // Respiro curto: o painel de operandos tem 128px por padrao, e cada
+        // 4px de folga aqui e uma linha a menos de texto visivel.
+        "bg-[#1e1e1e]/95 p-2 backdrop-blur-[1px] animate-fade-in",
         className
       )}
     >
@@ -57,25 +59,27 @@ export function ToastArea({ className }) {
           <div
             key={item.id}
             role="status"
+            // Uma LINHA so: icone, texto, botao. O painel de operandos pode ter
+            // 60px de altura, e uma caixa em coluna com o botao no rodape nao
+            // cabe ali — o botao era empurrado para fora e atravessava a borda.
+            // Em linha, a altura da caixa e a do texto, e o aviso cabe onde for.
             className={cn(
-              "flex min-h-0 flex-1 flex-col rounded border-l-2 bg-[#252526] p-3",
+              "flex shrink-0 items-start gap-2 rounded border-l-2 bg-[#252526] px-3 py-2",
               variant.border
             )}
           >
-            <div className="flex items-start gap-2">
-              <variant.Icon size={15} className={cn("mt-px shrink-0", variant.accent)} />
-              <div className="min-w-0 flex-1">
-                {item.title && (
-                  <p className={cn("text-[12px] font-semibold", variant.accent)}>
-                    {item.title}
-                  </p>
-                )}
-                {item.description && (
-                  <div className="mt-1 text-[11px] leading-[1.6] text-[#d4d4d4]">
-                    {item.description}
-                  </div>
-                )}
-              </div>
+            <variant.Icon size={15} className={cn("mt-px shrink-0", variant.accent)} />
+            <div className="min-w-0 flex-1">
+              {item.title && (
+                <p className={cn("text-[12px] font-semibold", variant.accent)}>
+                  {item.title}
+                </p>
+              )}
+              {item.description && (
+                <div className="mt-1 text-[11px] leading-[1.6] text-[#d4d4d4]">
+                  {item.description}
+                </div>
+              )}
             </div>
 
             <button
@@ -83,7 +87,7 @@ export function ToastArea({ className }) {
               onClick={() => dismiss(item.id)}
               autoFocus
               className={cn(
-                "mt-auto self-end rounded px-4 py-1 text-[11px] font-semibold",
+                "shrink-0 rounded px-4 py-1 text-[11px] font-semibold",
                 "transition-colors",
                 variant.button
               )}

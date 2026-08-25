@@ -95,7 +95,7 @@ export default function Simulator() {
   // automodificavel precisa reaplica-las, senao a string embutida volta a ser
   // lida como instrucao.
   const [dataRanges, setDataRanges] = useState([]);
-  // Quantos argumentos inspecionar num `call`. A aridade real e desconhecida,
+  // Quantos argumentos inspecionar num `call`. A descrição real e desconhecida,
   // entao quem decide e quem esta olhando.
   const [argCount, setArgCount] = useState(4);
   const [convention, setConvention] = useState(() => defaultConvention("x86", null));

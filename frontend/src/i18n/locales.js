@@ -336,7 +336,7 @@ export const LOCALES = {
     "sim.callIndirect": "indireta",
     "sim.callNameUnknown": "sem nome",
     "sim.callNameEdit": "Clique para nomear esta função",
-    "sim.callNoPrototype": "Aridade desconhecida — estes são os registradores de argumento. Nomeie a função para usar o protótipo dela.",
+    "sim.callNoPrototype": "Definição desconhecida — estes são os registradores de argumento. Nomeie a função para usar o protótipo dela.",
     "sim.protoUserMode": "modo usuário",
     "sim.syscall": "Chamada de sistema",
     "sim.syscallUnknown": "número desconhecido",

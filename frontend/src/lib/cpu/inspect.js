@@ -263,7 +263,7 @@ export function defaultConvention(archId, osId) {
  * Argumentos que a funcao chamada receberia, do ponto de vista do `call`
  * prestes a executar.
  *
- * Nao ha como saber a aridade real da funcao — por isso a quantidade e um
+ * Nao ha como saber a descrição real da funcao — por isso a quantidade e um
  * parametro da interface: o aluno decide quantas posicoes quer inspecionar.
  */
 export function callArguments(machine, { count = 4, convention } = {}) {
@@ -310,7 +310,7 @@ export function callArguments(machine, { count = 4, convention } = {}) {
  * diferenca esta em como o nome aparece: num `syscall` o numero em RAX
  * identifica a funcao, e aqui nao ha o que deduzir de um endereco — o nome e
  * dito pelo aluno (`lib/cpu/callNames`). Dito uma vez, o prototipo do catalogo
- * entra e a aridade deixa de ser um chute da barra superior.
+ * entra e a descrição deixa de ser um chute da barra superior.
  *
  * E o que traz as Rtl* e Ldr* da ntdll para o painel: elas nunca passam por
  * `syscall`, entao so por aqui um `call` para `RtlInitUnicodeString` mostra
@@ -331,7 +331,7 @@ export function callInvocation(machine, { count = 4, convention } = {}) {
   const prototype = name ? prototypeByName(machine.osId, machine.archId, name) : null;
 
   const { convention: spec, args } = callArguments(machine, {
-    // Com prototipo, a aridade e a DELE: mostrar quatro posicoes para uma
+    // Com prototipo, a descrição e a DELE: mostrar quatro posicoes para uma
     // funcao de dois argumentos inventaria dois argumentos.
     count: prototype ? prototype.input_args.length : count,
     convention,
@@ -397,7 +397,7 @@ export function syscallGate(insn) {
 /**
  * O que a syscall prestes a acontecer esta pedindo.
  *
- * Diferente de um `call`, aqui a aridade NAO e desconhecida: o numero em
+ * Diferente de um `call`, aqui a descrição NAO e desconhecida: o numero em
  * EAX/RAX identifica a funcao, e o prototipo dela diz quantos argumentos ler e
  * como se chamam. So quando o numero nao esta na tabela e que se cai no
  * generico — e ai a quantidade vem da barra superior, como no painel de call.
