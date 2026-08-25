@@ -45,6 +45,9 @@ beforeEach(async () => {
       return Promise.resolve({ data: { id: B, name: "vazio.asm", kind: "file",
                                        source: "", metadata: META } });
     }
+    // O painel de syscall busca o prototipo da funcao resolvida; aqui nao ha
+    // catalogo, e a ausencia dele nao pode quebrar a tela.
+    if (url === "/api/prototypes/") return Promise.resolve({ data: { prototype: null } });
     throw new Error(`URL inesperada: ${url}`);
   });
   // Montagem: `xor ebx, ebx` / `mov eax, 1` / `int 0x80` — termina em exit(0).

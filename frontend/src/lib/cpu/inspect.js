@@ -13,6 +13,7 @@ import {
 } from "./syscalls";
 import { ntdllSummary, resolveSyscall } from "lib/ntdll";
 import { syscallNameOverride } from "./syscallNames";
+import { prototypeByName } from "lib/prototypes";
 
 // Quantos bytes olhar a frente ao tentar reconhecer uma string.
 const STRING_SCAN = 24;
@@ -370,11 +371,22 @@ export function syscallInvocation(machine, { count = 4 } = {}) {
   const name =
     chosen || fromNtdll || (abi.resolvable === false ? null : abi.names[number] || null);
 
-  const signature = name ? SYSCALL_SIGNATURES[name] : null;
-  // Com prototipo conhecido a aridade e a dele; sem, quem decide quantas
-  // posicoes olhar e a barra superior. Nao ha teto no numero de registradores:
-  // do ultimo em diante os argumentos vem da pilha.
-  const params = signature ?? Array.from({ length: count }, (_, i) => `arg${i}`);
+  // O prototipo do catalogo (YAML) tem nome, tipo e descricao de cada
+  // argumento; a tabela embutida so tem os nomes. O catalogo vem primeiro, e o
+  // que faz os campos se atualizarem ao escolher outra funcao.
+  const prototype = name ? prototypeByName(machine.osId, machine.archId, name) : null;
+  const fallback = name ? SYSCALL_SIGNATURES[name] : null;
+
+  const params =
+    prototype?.input_args?.map((arg) => ({
+      name: arg.name,
+      type: arg.type,
+      description: arg.description,
+      direction: arg.direction,
+    })) ??
+    fallback?.map((paramName) => ({ name: paramName })) ??
+    // Sem prototipo, quem decide quantas posicoes olhar e a barra superior.
+    Array.from({ length: count }, (_, i) => ({ name: `arg${i}` }));
 
   return {
     via,
@@ -397,12 +409,16 @@ export function syscallInvocation(machine, { count = 4 } = {}) {
     needsNtdll: abi.resolvable === false && !fromNtdll && !chosen,
     // Sem prototipo conhecido nao ha o que nomear: o painel avisa em vez de
     // apresentar "arg0" como se fosse o nome real do parametro.
-    known: Boolean(signature),
+    known: Boolean(prototype || fallback),
+    prototype,
     simulated: Boolean(name && SIMULATED_SYSCALLS.has(name)),
     args: params.map((param, index) => ({
       index,
-      name: param,
+      ...param,
       ...argumentSlot(machine, abi, index),
+      // `argumentSlot` traz o `name` da ORIGEM (registrador); o do parametro
+      // vem do prototipo e e o que interessa mostrar.
+      name: param.name,
     })),
   };
 }

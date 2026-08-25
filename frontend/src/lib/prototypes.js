@@ -55,7 +55,45 @@ export async function loadPrototypes(os, arch) {
   return request;
 }
 
-/** Um prototipo pelo nome, se ja carregado. */
+/**
+ * Prototipos COMPLETOS (com argumentos), carregados um a um.
+ *
+ * Separados da lista de nomes de proposito: o auto-completar precisa de 773
+ * nomes, e o painel precisa dos argumentos de UM. Carregar tudo para atender os
+ * dois seria trazer 3 MB para usar 2 KB.
+ */
+const FULL = new Map();
+const FULL_PENDING = new Map();
+
+/** Prototipo completo JA carregado, ou null. Sincrono, para o painel ler. */
 export function prototypeByName(os, arch, name) {
-  return prototypesFor(os, arch).find((item) => item.function_name === name) || null;
+  if (!os || !arch || !name) return null;
+  return FULL.get(`${os}:${arch}:${name}`) || null;
+}
+
+/** Busca o prototipo completo de uma funcao e o guarda. */
+export async function loadPrototype(os, arch, name) {
+  if (!os || !arch || !name) return null;
+
+  const key = `${os}:${arch}:${name}`;
+  if (FULL.has(key)) return FULL.get(key);
+  if (FULL_PENDING.has(key)) return FULL_PENDING.get(key);
+
+  const request = api
+    .get("/api/prototypes/", { params: { os, arch, name } })
+    .then(({ data }) => {
+      const prototype = data.prototype || null;
+      FULL.set(key, prototype);
+      return prototype;
+    })
+    .catch(() => {
+      // Nome sem prototipo — um que o aluno digitou, ou uma funcao que ainda
+      // nao esta no catalogo. Guardar o null evita repetir a busca a cada passo.
+      FULL.set(key, null);
+      return null;
+    })
+    .finally(() => FULL_PENDING.delete(key));
+
+  FULL_PENDING.set(key, request);
+  return request;
 }

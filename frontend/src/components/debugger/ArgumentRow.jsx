@@ -15,15 +15,23 @@ import { describePointer } from "lib/cpu/inspect";
  * `name` e opcional: existe quando o prototipo e conhecido (o caso das
  * syscalls), e ai a coluna mostra `buf` em vez de so o registrador.
  */
-export default function ArgumentRow({ machine, arg, digits, name }) {
+export default function ArgumentRow({ machine, arg, digits, name, type, description }) {
   const { t } = useI18n();
   const pointer = describePointer(machine, arg.value);
 
   return (
-    <div className="flex items-baseline gap-2 whitespace-pre px-2 hover:bg-[#2d2d2d]">
+    <div
+      className="flex items-baseline gap-2 whitespace-pre px-2 hover:bg-[#2d2d2d]"
+      // A descricao inteira no title: a linha e estreita, e truncar o texto
+      // util seria pior que escondê-lo atras do ponteiro do mouse.
+      title={description || undefined}
+    >
       <span className="w-6 shrink-0 text-[#6b6b6b]">{arg.index + 1}:</span>
       <span className="w-[14ch] shrink-0 text-[#c586c0]">{arg.source}</span>
-      {name && <span className="w-[9ch] shrink-0 truncate text-[#4fc1ff]">{name}</span>}
+      {/* O TIPO vem do prototipo. E o que diz se aquele numero e um contador ou
+          um ponteiro para uma estrutura. */}
+      {type && <span className="w-[16ch] shrink-0 truncate text-[#4ec9b0]">{type}</span>}
+      {name && <span className="w-[14ch] shrink-0 truncate text-[#4fc1ff]">{name}</span>}
       <span className="shrink-0 text-[#d4d4d4]">{hex(arg.value, digits)}</span>
 
       {/* Marcador visual de ponteiro: o icone diz "isto aponta para algo",

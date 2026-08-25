@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Terminal } from "lucide-react";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
@@ -7,6 +7,7 @@ import { syscallInvocation } from "lib/cpu/inspect";
 import ArgumentRow from "components/debugger/ArgumentRow";
 import SyscallNameField from "components/debugger/SyscallNameField";
 import { setSyscallName } from "lib/cpu/syscallNames";
+import { loadPrototype } from "lib/prototypes";
 
 /**
  * A chamada de sistema prestes a acontecer.
@@ -26,12 +27,24 @@ export default function SyscallPane({ machine, count, tick, onImportNtdll, onNam
   // A maquina muda por mutacao; `tick` forca o recalculo a cada passo.
   void tick;
 
-  // Parado, a instrucao sob o ponteiro nunca vai executar: anunciar a chamada
-  // sugeriria que ela ainda vai acontecer.
-  if (!machine || machine.halted) return null;
+  const call =
+    machine && !machine.halted ? syscallInvocation(machine, { count }) : null;
 
-  const call = syscallInvocation(machine, { count });
-  if (!call) return null;
+  // Busca o prototipo da funcao resolvida. Vem do catalogo YAML e traz tipo e
+  // descricao de cada argumento — e o que faz os campos se atualizarem quando o
+  // aluno escolhe outra funcao. Hook antes de qualquer `return`: a regra dos
+  // hooks nao admite chamada condicional.
+  const resolvedName = call?.name || null;
+  const target = call?.os || null;
+  useEffect(() => {
+    if (resolvedName && target) loadPrototype(target, machine.archId, resolvedName)
+      .then((found) => { if (found) onNameChange?.(); });
+  }, [resolvedName, target, machine?.archId, onNameChange]);
+
+  // Parado, a instrucao sob o ponteiro nunca vai executar: anunciar a chamada
+  // sugeriria que ela ainda vai acontecer. Sem `call`, a instrucao atual nao e
+  // porta de kernel e o painel inteiro nao tem o que dizer.
+  if (!machine || machine.halted || !call) return null;
 
   const digits = machine.arch.bits === 64 ? 16 : 8;
   const numberDigits = digits;
@@ -100,6 +113,8 @@ export default function SyscallPane({ machine, count, tick, onImportNtdll, onNam
             arg={arg}
             digits={digits}
             name={call.known ? arg.name : null}
+            type={arg.type}
+            description={arg.description}
           />
         ))}
 
