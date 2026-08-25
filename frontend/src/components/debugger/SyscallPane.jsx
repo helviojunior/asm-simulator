@@ -13,9 +13,9 @@ import { loadPrototype } from "lib/prototypes";
  * A chamada de sistema prestes a acontecer.
  *
  * Irmao do painel de `call`, para a outra forma de chamar codigo alheio. A
- * diferenca esta no que da para afirmar: num `call` a descrição e desconhecida,
- * mas aqui o numero em EAX/RAX identifica a funcao — entao o painel mostra o
- * NOME dela e o nome de cada parametro.
+ * diferenca esta no que da para afirmar: num `call` nao se sabe quantos
+ * argumentos a funcao recebe, mas aqui o numero em EAX/RAX identifica a
+ * funcao — entao o painel mostra o NOME dela e o nome de cada parametro.
  *
  * O numero e o ponto que mais confunde quem escreve shellcode: `write` e 4 em
  * `int 0x80` e 1 em `syscall`. Por isso a resolucao numero -> nome fica na

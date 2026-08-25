@@ -14,11 +14,11 @@ import { loadPrototype } from "lib/prototypes";
  * atual e um `call` — nas demais nao ha chamada a inspecionar.
  *
  * Sem simbolos, a funcao no outro lado do `call` e um endereco: nao ha como
- * deduzir nem o nome nem a desccrição. Por isso a quantidade de posicoes vem da
- * barra superior — ate o aluno DIZER que funcao e aquela. Dito o nome, o
- * prototipo do catalogo assume: a desccrição passa a ser a dele, e cada linha
- * ganha tipo e descricao. E o unico caminho para as Rtl* e Ldr* da ntdll, que
- * nunca aparecem num `syscall`.
+ * deduzir nem o nome nem quantos argumentos ela recebe. Por isso a quantidade
+ * de posicoes vem da barra superior — ate o aluno DIZER que funcao e aquela.
+ * Dito o nome, o prototipo do catalogo assume: a quantidade passa a ser a
+ * dele, e cada linha ganha tipo e descricao. E o unico caminho para as Rtl* e
+ * Ldr* da ntdll, que nunca aparecem num `syscall`.
  */
 export default function CallPane({ machine, count, convention, onConventionChange, tick, onParse, onNameChange }) {
   const { t } = useI18n();
@@ -112,12 +112,13 @@ export default function CallPane({ machine, count, convention, onConventionChang
         ))}
 
         {/* Sem nome, a quantidade de posicoes e escolha da barra superior — e
-            nao a descrição real, que ninguem sabe. Dizer isso evita ler "1: RCX"
-            como se fosse o primeiro parametro de uma funcao de um argumento. */}
+            nao a quantidade real de argumentos, que ninguem sabe. Dizer isso
+            evita ler "1: RCX" como se fosse o primeiro parametro de uma funcao
+            de um argumento. */}
         {!call.known && (
           <p className="px-2 pt-1 text-[10px] text-[#6b6b6b]">
             {t("sim.callNoPrototype",
-               "Unknown arity — showing the argument registers. Name the function to use its prototype.")}
+               "Unknown argument count — showing the argument registers. Name the function to use its prototype.")}
           </p>
         )}
       </div>

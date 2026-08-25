@@ -263,8 +263,9 @@ export function defaultConvention(archId, osId) {
  * Argumentos que a funcao chamada receberia, do ponto de vista do `call`
  * prestes a executar.
  *
- * Nao ha como saber a descrição real da funcao — por isso a quantidade e um
- * parametro da interface: o aluno decide quantas posicoes quer inspecionar.
+ * Nao ha como saber quantos argumentos a funcao recebe — por isso a
+ * quantidade e um parametro da interface: o aluno decide quantas posicoes quer
+ * inspecionar.
  */
 export function callArguments(machine, { count = 4, convention } = {}) {
   const spec =
@@ -331,7 +332,7 @@ export function callInvocation(machine, { count = 4, convention } = {}) {
   const prototype = name ? prototypeByName(machine.osId, machine.archId, name) : null;
 
   const { convention: spec, args } = callArguments(machine, {
-    // Com prototipo, a descrição e a DELE: mostrar quatro posicoes para uma
+    // Com prototipo, a quantidade e a DELE: mostrar quatro posicoes para uma
     // funcao de dois argumentos inventaria dois argumentos.
     count: prototype ? prototype.input_args.length : count,
     convention,
@@ -397,9 +398,9 @@ export function syscallGate(insn) {
 /**
  * O que a syscall prestes a acontecer esta pedindo.
  *
- * Diferente de um `call`, aqui a descrição NAO e desconhecida: o numero em
- * EAX/RAX identifica a funcao, e o prototipo dela diz quantos argumentos ler e
- * como se chamam. So quando o numero nao esta na tabela e que se cai no
+ * Diferente de um `call`, aqui a quantidade de argumentos NAO e desconhecida:
+ * o numero em EAX/RAX identifica a funcao, e o prototipo dela diz quantos
+ * argumentos ler e como se chamam. So quando o numero nao esta na tabela e que se cai no
  * generico — e ai a quantidade vem da barra superior, como no painel de call.
  */
 export function syscallInvocation(machine, { count = 4 } = {}) {
