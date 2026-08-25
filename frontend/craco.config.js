@@ -44,6 +44,24 @@ class InterpolateStaticPlugin {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Imports absolutos a partir de `src/`
+//
+// O react-scripts montava isto sozinho, lendo o `baseUrl` do jsconfig.json. O
+// `baseUrl` esta DEPRECIADO e para de funcionar no TypeScript 7 (o editor ja
+// acusa), entao o jsconfig passou a declarar `paths: {"*": ["./src/*"]}` — sem
+// `baseUrl`, os padroes sao resolvidos em relacao ao proprio arquivo. Aquilo
+// serve ao EDITOR; a resolucao de modulo do build e do jest vem daqui, porque
+// o react-scripts so olhava para o `baseUrl`.
+//
+// O jsconfig.json nao pode levar comentario explicando isso: o react-scripts o
+// le com `require()`, que e JSON estrito e engasga com `//`.
+//
+// Anexado no FIM das duas listas, como o CRA fazia: assim `node_modules` e
+// consultado primeiro, e uma pasta em src/ com nome de pacote nao o encobre.
+// ---------------------------------------------------------------------------
+const SRC = path.resolve(__dirname, "src");
+
 module.exports = {
   style: {
     postcss: {
@@ -56,6 +74,16 @@ module.exports = {
   webpack: {
     plugins: {
       add: [new InterpolateStaticPlugin()],
+    },
+    configure: (config) => {
+      config.resolve.modules = [...(config.resolve.modules || []), SRC];
+      return config;
+    },
+  },
+  jest: {
+    configure: (config) => {
+      config.modulePaths = [...(config.modulePaths || []), SRC];
+      return config;
     },
   },
 };
