@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { asciiCell, hex } from "lib/cpu/format";
 import { codeReference, pointerString } from "lib/cpu/inspect";
 import { useDumpMenu } from "components/debugger/useDumpMenu";
@@ -6,9 +6,18 @@ import { Switch } from "components/ui/switch";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 
-// Quantas palavras mostrar acima e abaixo do ponteiro de pilha.
-const ROWS_BELOW = 4;
-const ROWS_ABOVE = 12;
+// Altura de uma linha, em pixels — a mesma do dump. Fixa de proposito: e ela
+// que converte posicao de rolagem em endereco, e uma altura medida do DOM
+// tornaria essa conta dependente da fonte que carregou.
+const ROW_HEIGHT = 18;
+
+// Linhas desenhadas alem da area visivel, acima e abaixo. Evita a faixa em
+// branco no instante entre rolar e renderizar.
+const OVERSCAN = 6;
+
+// Onde a linha do ponteiro fica ao ser trazida a vista: algumas linhas abaixo
+// do topo, para o que ja foi empilhado continuar visivel acima dela.
+const POINTER_MARGIN = 4;
 
 // Cor de cada classe de byte no dump: quem le distingue "aqui ha texto" de
 // "aqui ha binario" sem decodificar o hexadecimal ao lado.
@@ -31,14 +40,91 @@ export default function StackPane({ machine, changed = [], onViewInDump }) {
   const { openDumpMenu, dumpMenu } = useDumpMenu(machine, onViewInDump);
   // Ligado por padrao: numa aula de shellcode a pilha quase sempre carrega
   // texto, e o dump e o que revela isso sem precisar abrir outro painel.
-  const [showAscii, setShowAscii] = React.useState(true);
+  const [showAscii, setShowAscii] = useState(true);
+
+  const scrollRef = useRef(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewport, setViewport] = useState(240);
+
+  const arch = machine?.arch;
+  const wordSize = BigInt(arch?.wordSize || 4);
+  // A regiao inteira, do limite ao teto — e nao uma janela de N linhas ao
+  // redor do ponteiro. Quem estuda estouro de buffer precisa ver ATE ONDE a
+  // escrita foi, e um recorte fixo esconde justamente o alcance dela.
+  const limit = machine ? machine.stackLimit : 0n;
+  const total = machine
+    ? Number((machine.stackCeiling - limit) / wordSize) + 1
+    : 0;
+  const sp = machine ? machine.cpu.sp : 0n;
+
+  const rowOf = useCallback(
+    (address) => Number((BigInt(address) - limit) / wordSize),
+    [limit, wordSize]
+  );
+
+  // Ultimo ponteiro ja trazido a vista. Numa ref, e nao no estado: mudar de
+  // valor aqui nao pode, sozinho, pedir outro render.
+  const revealed = useRef(null);
+  const spKey = sp.toString();
+
+  /**
+   * Depois de CADA render: a altura e a rolagem do elemento sao a verdade.
+   *
+   * Duas coisas acontecem aqui, e as duas precisam do DOM ja montado:
+   *
+   * 1. O ponteiro mudou (ou o painel acabou de montar) → a linha dele vem a
+   *    vista. So nesse caso: rolar a pilha a mao para olhar um endereco
+   *    distante e uma leitura legitima — e o motivo de o painel mostrar a
+   *    regiao inteira —, e devolve-lo ao ponteiro a cada render a desfaria.
+   * 2. Altura e rolagem do elemento sao copiadas para o estado. Redimensionar
+   *    o painel muda as duas SEM passar por evento nenhum: o navegador corta
+   *    a rolagem quando a area cresce, e o `onScroll` pode nem disparar. Com o
+   *    estado desatualizado, a janela desenhada fica fora do lugar e sobra uma
+   *    faixa em branco onde deveria haver linhas.
+   *
+   * Sem lista de dependencias de proposito, e por isso a regra fica desligada
+   * aqui: o que muda e a ALTURA DO PAI, que nao e prop nem estado deste
+   * componente — nenhuma dependencia mudaria quando a divisoria e arrastada, e
+   * com lista o efeito simplesmente nao rodaria. Nao ha risco de laco: os dois
+   * `set` so disparam quando o valor difere do que ja esta no estado.
+   */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+
+    if (spKey !== revealed.current) {
+      const top = Math.max(0, (rowOf(sp) - POINTER_MARGIN) * ROW_HEIGHT);
+      const highest = Math.max(0, total * ROW_HEIGHT - element.clientHeight);
+      element.scrollTop = Math.min(top, highest);
+      // So dado por feito com a altura ja medida: antes dela o navegador
+      // limita a rolagem a zero, e a linha nunca teria chegado ao lugar.
+      if (element.clientHeight > 0) revealed.current = spKey;
+    }
+
+    // Altura zero e o painel ainda sem layout (ou um ambiente sem ele): manter
+    // a estimativa desenha algumas linhas, e zero nao desenharia nenhuma.
+    if (element.clientHeight && element.clientHeight !== viewport) {
+      setViewport(element.clientHeight);
+    }
+    if (element.scrollTop !== scrollTop) setScrollTop(element.scrollTop);
+  });
+
+  // Altura visivel: quantas linhas desenhar. Um ResizeObserver, e nao a altura
+  // do primeiro render — a divisoria do painel e arrastavel.
+  useEffect(() => {
+    const element = scrollRef.current;
+    if (!element || typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(() => setViewport(element.clientHeight));
+    observer.observe(element);
+    setViewport(element.clientHeight);
+    return () => observer.disconnect();
+  }, []);
 
   if (!machine) return null;
 
-  const { arch, cpu, memory } = machine;
-  const wordSize = BigInt(arch.wordSize);
+  const { cpu, memory } = machine;
   const digits = arch.bits === 64 ? 16 : 8;
-  const sp = cpu.sp;
 
   // Enderecos alterados no passo (byte a byte) reduzidos a palavra da pilha.
   const changedWords = new Set(
@@ -48,10 +134,17 @@ export default function StackPane({ machine, changed = [], onViewInDump }) {
     })
   );
 
+  // So as linhas visiveis viram DOM: a pilha tem milhares de palavras (e pode
+  // crescer ate 1 MB), e desenha-las todas travaria o painel a cada passo.
+  const first = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+  const count = Math.max(
+    0,
+    Math.min(total - first, Math.ceil(viewport / ROW_HEIGHT) + OVERSCAN * 2)
+  );
+
   const rows = [];
-  for (let i = -ROWS_BELOW; i <= ROWS_ABOVE; i += 1) {
-    const address = sp + BigInt(i) * wordSize;
-    if (address < machine.stackLimit || address > machine.stackCeiling) continue;
+  for (let i = 0; i < count; i += 1) {
+    const address = limit + BigInt(first + i) * wordSize;
     const value = memory.read(address, arch.wordSize);
     rows.push({
       address,
@@ -94,7 +187,15 @@ export default function StackPane({ machine, changed = [], onViewInDump }) {
           </span>
         </div>
       </header>
-      <div className="flex-1 overflow-auto font-mono text-[12px] leading-[1.5]">
+      <div
+        ref={scrollRef}
+        onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+        className="flex-1 overflow-auto font-mono text-[12px] leading-[18px]"
+      >
+        {/* Espacador da altura TOTAL da regiao: e ele que dimensiona a barra
+            de rolagem, ainda que so a janela visivel exista no DOM. */}
+        <div style={{ height: total * ROW_HEIGHT }} className="relative">
+        <div style={{ position: "absolute", top: first * ROW_HEIGHT, left: 0, right: 0 }}>
         {rows.map((row) => (
           <div
             key={row.address.toString()}
@@ -106,6 +207,11 @@ export default function StackPane({ machine, changed = [], onViewInDump }) {
                 { label: t("dump.thisValue", "this value"), address: row.value },
               ])
             }
+            // Altura fixa, e nao a natural: a conta que converte rolagem em
+            // endereco depende dela, e o rotulo em 11px ao lado do valor em
+            // 12px faria a linha crescer uma fracao de pixel — o bastante
+            // para as linhas sairem do lugar depois de algumas centenas.
+            style={{ height: ROW_HEIGHT }}
             className={cn(
               "flex items-baseline gap-3 whitespace-pre px-2",
               row.isPointer && "bg-[#094771]"
@@ -144,6 +250,8 @@ export default function StackPane({ machine, changed = [], onViewInDump }) {
             )}
           </div>
         ))}
+        </div>
+        </div>
       </div>
       {dumpMenu}
     </section>

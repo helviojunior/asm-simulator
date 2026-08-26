@@ -67,6 +67,29 @@ export default function DisassemblyPane({
     (machine?.sections || []).map((item) => [item.start.toString(), item.name])
   );
 
+  /**
+   * Deslocamento a partir do inicio da imagem, no formato do x64dbg:
+   * `<code+0x27>`.
+   *
+   * O endereco absoluto muda com a base — o mesmo programa carregado noutro
+   * lugar tem outros enderecos —, mas o deslocamento nao. E ele que se anota
+   * num exercicio, e ele que aparece no rotulo do endereco de retorno na
+   * pilha; ter os dois lado a lado e o que liga uma leitura a outra.
+   *
+   * A largura da coluna vem do MAIOR deslocamento da listagem: fixa, ela
+   * truncaria a `.data` de um programa grande; solta, desalinharia os bytes
+   * de uma linha para a outra.
+   */
+  const codeBase = machine ? machine.codeBase : 0n;
+  const offsetOf = (address) => {
+    const value = BigInt(address) - codeBase;
+    return value < 0n ? null : value;
+  };
+  const offsetWidth = instructions.reduce((widest, insn) => {
+    const offset = offsetOf(insn.address);
+    return offset === null ? widest : Math.max(widest, offset.toString(16).length);
+  }, 1);
+
   return (
     <section className="flex h-full flex-col overflow-hidden bg-[#1e1e1e]">
       <header className="flex shrink-0 items-center gap-2 border-b border-[#3c3c3c] px-3 py-1.5">
@@ -102,6 +125,7 @@ export default function DisassemblyPane({
           const isCurrent = currentAddress !== null && address === currentAddress;
           const hasBreakpoint = breakpoints.has(address.toString());
           const section = sectionAt.get(address.toString());
+          const offset = offsetOf(address);
 
           return (
             <React.Fragment key={insn.address}>
@@ -123,6 +147,12 @@ export default function DisassemblyPane({
               </button>
               <span className={cn("shrink-0", isCurrent ? "text-[#ffffff]" : "text-[#858585]")}>
                 {hex(address, digits)}
+              </span>
+              <span
+                style={{ width: `${offsetWidth + 9}ch` }}
+                className={cn("shrink-0", isCurrent ? "text-[#9cdcfe]" : "text-[#6b6b6b]")}
+              >
+                {offset === null ? "" : `<code+0x${offset.toString(16).toUpperCase()}>`}
               </span>
               {/* Largura para 10 bytes: cobre desde `50` (push eax) ate um
                   movabs de imediato de 64 bits. E a coluna que explica por que

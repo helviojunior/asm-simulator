@@ -133,3 +133,127 @@ test("celula com valor que nao e endereco so oferece o proprio endereco", async 
   // Um inteiro qualquer nao vira ponteiro: oferecer o salto ensinaria errado.
   expect([...document.querySelectorAll("[role=menuitem]")]).toHaveLength(1);
 });
+
+describe("a pilha inteira, e nao uma janela ao redor do ponteiro", () => {
+  // A regiao vai do limite ao teto: numa pilha de 16 KB com palavras de 4
+  // bytes sao mais de quatro mil linhas. Ve-las todas de uma vez travaria o
+  // painel a cada passo, entao so as visiveis viram DOM — e a barra de
+  // rolagem alcanca o resto.
+  const ROW_HEIGHT = 18;
+
+  const scroller = () => container.querySelector(".overflow-auto");
+  const spacer = () => scroller().firstChild;
+  const rendered = () =>
+    [...container.querySelectorAll("div")].filter((node) =>
+      node.className.includes("items-baseline")
+    );
+
+  // Altura visivel do painel, mutavel: e arrastando a divisoria que ela muda.
+  let panelHeight;
+
+  beforeEach(() => {
+    panelHeight = 180;
+    // jsdom nao calcula layout: sem isto toda altura e 0 e nao ha o que rolar.
+    Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+      configurable: true,
+      get() {
+        return String(this.className || "").includes("overflow-auto") ? panelHeight : 0;
+      },
+    });
+  });
+
+  /** Novo render no mesmo root — o que o arrasto da divisoria provoca. */
+  const rerender = async (machine) => {
+    await act(async () => {
+      root.render(
+        <I18nProvider>
+          <StackPane machine={machine} />
+        </I18nProvider>
+      );
+    });
+  };
+
+  /** O bloco absoluto que carrega as linhas desenhadas. */
+  const block = () => scroller().firstChild.firstChild;
+
+  const scrollTo = async (top) => {
+    await act(async () => {
+      scroller().scrollTop = top;
+      scroller().dispatchEvent(new Event("scroll", { bubbles: false }));
+    });
+  };
+
+  const total = (machine) =>
+    Number((machine.stackCeiling - machine.stackLimit) / BigInt(machine.arch.wordSize)) + 1;
+
+  test("a barra de rolagem cobre do limite ao teto da pilha", async () => {
+    const machine = build();
+    await mount(machine);
+    expect(spacer().style.height).toBe(`${total(machine) * ROW_HEIGHT}px`);
+    expect(total(machine)).toBeGreaterThan(4000);
+  });
+
+  test("mas so as linhas visiveis existem no DOM", async () => {
+    const machine = build();
+    await mount(machine);
+    expect(rendered().length).toBeLessThan(60);
+  });
+
+  test("rolando ate o fim chega-se ao limite da pilha", async () => {
+    // O endereco mais baixo da regiao — onde um estouro de buffer terminaria.
+    const machine = build();
+    await mount(machine);
+    await scrollTo(0);
+    expect(rowFor(machine.stackLimit)).toBeTruthy();
+  });
+
+  test("rolando ate o topo chega-se ao teto da pilha", async () => {
+    const machine = build();
+    await mount(machine);
+    await scrollTo(total(machine) * ROW_HEIGHT);
+    expect(rowFor(machine.stackCeiling)).toBeTruthy();
+  });
+
+  test("redimensionar o painel nao deixa faixa em branco", async () => {
+    // Ao crescer a area, o navegador corta a rolagem sem passar por evento
+    // nenhum. Com o estado desatualizado, o bloco de linhas ficava fora do
+    // lugar e sobrava uma faixa vazia onde deveria haver pilha.
+    const machine = build();
+    await mount(machine);
+
+    const top = 1000 * ROW_HEIGHT;
+    scroller().scrollTop = top;
+    panelHeight = 400;
+    await rerender(machine);
+
+    const drawn = Number(block().style.top.replace("px", ""));
+    expect(drawn).toBeLessThanOrEqual(top);
+    // E as linhas desenhadas passam do fim da area visivel.
+    expect(drawn + rendered().length * ROW_HEIGHT).toBeGreaterThanOrEqual(top + panelHeight);
+  });
+
+  test("redimensionar nao desfaz a rolagem feita a mao", async () => {
+    // Mostrar a regiao inteira so serve se der para ficar olhando um endereco
+    // distante; puxar de volta ao ponteiro a cada arrasto tiraria isso.
+    const machine = build();
+    await mount(machine);
+    await scrollTo(0);
+
+    panelHeight = 400;
+    await rerender(machine);
+    expect(scroller().scrollTop).toBe(0);
+  });
+
+  test("o ponteiro e trazido a vista quando muda", async () => {
+    // Rolar a mao e uma leitura legitima e nao pode ser desfeita a cada
+    // render; um passo que mexe no ponteiro, sim, traz a vista de volta.
+    const machine = build();
+    await mount(machine);
+    await scrollTo(0);
+    expect(rowFor(machine.cpu.sp)).toBeFalsy();
+
+    await act(async () => { machine.push(0x41424344n); });
+    await mount(machine);
+    expect(rowFor(machine.cpu.sp)).toBeTruthy();
+  });
+});

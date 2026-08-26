@@ -1,5 +1,6 @@
 /**
- * A listagem de desmontagem: onde uma seção acaba e a outra começa.
+ * A listagem de desmontagem: onde uma seção acaba e a outra começa, e o
+ * deslocamento que acompanha cada endereço.
  *
  * Sem a marca, a passagem de `.text` para `.data` é só mais uma linha de `db`
  * no meio de outras — some justamente a fronteira que a aula está ensinando.
@@ -123,4 +124,29 @@ test("o enchimento entre as seções aparece como uma linha de `times`", async (
 test("sem programa montado não há divisória nenhuma", async () => {
   await mount({ machine: null, instructions: [] });
   expect(container.textContent).not.toContain(".data");
+});
+
+test("cada linha traz o deslocamento a partir do início da imagem", async () => {
+  // O endereço absoluto muda com a base; o deslocamento não. É ele que se
+  // anota num exercício, e é ele que a pilha mostra no endereço de retorno.
+  await mount();
+  const at = (address) => lines().find((text) => text.includes(address));
+  expect(at("7F200100")).toContain("<code+0x0>");
+  expect(at("7F200101")).toContain("<code+0x1>");
+  expect(at("7F201100")).toContain("<code+0x1000>");
+});
+
+test("a coluna do deslocamento cabe no maior da listagem", async () => {
+  // Fixa, ela truncaria a `.data` de um programa grande; solta, desalinharia
+  // os bytes de uma linha para a outra.
+  await mount();
+  const column = [...container.querySelectorAll("span")]
+    .find((node) => node.textContent === "<code+0x0>");
+  // "<code+0x" + "1000" + ">" = 13 caracteres.
+  expect(column.style.width).toBe("13ch");
+});
+
+test("sem programa montado não há deslocamento nenhum", async () => {
+  await mount({ machine: null, instructions: [] });
+  expect(container.textContent).not.toContain("<code+");
 });
