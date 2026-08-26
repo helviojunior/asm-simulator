@@ -285,7 +285,10 @@ export function codeReference(machine, value) {
   // imediato, e ai o nome so existe se alguem o tiver dito.
   const immediate = (from.operands || []).find((operand) => operand.type === "imm");
   const target = immediate ? BigInt(immediate.value) : null;
-  const name = callNameOverride(machine.osId, machine.archId, callKey(target, from.address));
+  // O rotulo do fonte responde o "from ???" do x64dbg sem ninguem digitar nada.
+  const name =
+    callNameOverride(machine.osId, machine.archId, callKey(target, from.address)) ||
+    machine.labelAt(target);
 
   return {
     address,
@@ -416,7 +419,11 @@ export function callInvocation(machine, { count = 4, convention } = {}) {
   const target = immediate ? BigInt(immediate.value) : null;
 
   const key = callKey(target, insn.address);
-  const name = callNameOverride(machine.osId, machine.archId, key);
+  // O nome dito pelo aluno ganha do rotulo: ele pode ter reconhecido que
+  // aquele `Function1` e, na verdade, um stub de `NtWriteFile`.
+  const manual = callNameOverride(machine.osId, machine.archId, key);
+  const label = manual ? null : machine.labelAt(target);
+  const name = manual || label;
   const prototype = name ? prototypeByName(machine.osId, machine.archId, name) : null;
 
   const { convention: spec, args } = callArguments(machine, {
@@ -431,6 +438,9 @@ export function callInvocation(machine, { count = 4, convention } = {}) {
     target,
     key,
     name,
+    // De onde saiu o nome: dito pelo aluno, ou lido do fonte. Um rotulo e
+    // fato; um nome digitado e leitura de quem esta lendo o codigo.
+    origin: manual ? "manual" : label ? "label" : null,
     prototype,
     known: Boolean(prototype),
     args: args.map((arg, index) => {

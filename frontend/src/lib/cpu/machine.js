@@ -62,6 +62,9 @@ export class Machine {
 
     this.instructions = [];
     this.byAddress = new Map();
+    // Rotulos do fonte por endereco (ver `lib/asm/labels`). Vazio num binario
+    // importado, que nao tem fonte de onde tira-los.
+    this.labels = new Map();
     this.codeEnd = this.codeBase;
     // Vazias ate a carga, mas SEMPRE presentes: quem lê `dataBase` antes de
     // montar recebe um endereco valido, nao `undefined`.
@@ -132,6 +135,22 @@ export class Machine {
       list.push({ name: ".data", start: this.codeEnd, end: this.codeEnd });
     }
     this.sections = list;
+  }
+
+  /**
+   * Nomes que o fonte da a cada endereco.
+   *
+   * Vem de fora porque o montador nao devolve tabela de simbolos: quem cruza
+   * os rotulos do fonte com o mapa de linhas e o `lib/asm/labels`.
+   */
+  setLabels(labels) {
+    this.labels = labels instanceof Map ? labels : new Map(labels || []);
+  }
+
+  /** Rotulo declarado exatamente neste endereco, ou null. */
+  labelAt(address) {
+    if (address === null || address === undefined) return null;
+    return this.labels.get(BigInt(address).toString()) || null;
   }
 
   section(name) {

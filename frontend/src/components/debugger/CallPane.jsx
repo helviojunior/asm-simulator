@@ -76,7 +76,12 @@ export default function CallPane({ machine, count, convention, onConventionChang
             syscall: e o mesmo gesto para a outra forma de chamar. */}
         <div className="flex items-baseline gap-2 whitespace-pre border-b border-[#3c3c3c] px-2 pb-1">
           <span className="w-6 shrink-0 text-[#6b6b6b]">→</span>
-          <span className="w-[14ch] shrink-0 text-[#d4d4d4]">
+          {/* Largura pelo tamanho do endereco, mais folga: fixa em 14ch, um
+              endereco de 64 bits (16 digitos) transbordava por cima do nome. */}
+          <span
+            style={{ width: `${digits + 3}ch` }}
+            className="shrink-0 text-[#d4d4d4]"
+          >
             {call.target !== null
               ? hex(call.target, digits)
               : t("sim.callIndirect", "indirect")}
@@ -87,7 +92,7 @@ export default function CallPane({ machine, count, convention, onConventionChang
             // Sem filtro: num `call` tanto o stub `Nt*` quanto a funcao de
             // modo usuario sao alvos legitimos.
             name={call.name}
-            origin={call.name ? "manual" : null}
+            origin={call.origin}
             emptyLabel={t("sim.callNameUnknown", "unnamed")}
             editTitle={t("sim.callNameEdit", "Click to name this function")}
             onChange={(chosen) => {

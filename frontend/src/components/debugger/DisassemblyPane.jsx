@@ -59,6 +59,14 @@ export default function DisassemblyPane({
 
   const digits = machine?.arch.bits === 64 ? 16 : 8;
 
+  // Onde cada secao comeca, para a listagem dizer quando uma acaba e a outra
+  // comeca. Sem a marca, a passagem de `.text` para `.data` e so mais uma
+  // linha de `db` no meio de outras — some justamente a fronteira que a aula
+  // esta ensinando.
+  const sectionAt = new Map(
+    (machine?.sections || []).map((item) => [item.start.toString(), item.name])
+  );
+
   return (
     <section className="flex h-full flex-col overflow-hidden bg-[#1e1e1e]">
       <header className="flex shrink-0 items-center gap-2 border-b border-[#3c3c3c] px-3 py-1.5">
@@ -93,10 +101,12 @@ export default function DisassemblyPane({
           const address = BigInt(insn.address);
           const isCurrent = currentAddress !== null && address === currentAddress;
           const hasBreakpoint = breakpoints.has(address.toString());
+          const section = sectionAt.get(address.toString());
 
           return (
+            <React.Fragment key={insn.address}>
+            {section && <SectionRule name={section} />}
             <div
-              key={insn.address}
               ref={isCurrent ? currentRef : null}
               className={cn(
                 "flex items-baseline gap-3 whitespace-pre px-1",
@@ -147,9 +157,33 @@ export default function DisassemblyPane({
                   : insn.op_str}
               </span>
             </div>
+            </React.Fragment>
           );
         })}
       </div>
     </section>
+  );
+}
+
+/**
+ * Divisoria de secao: uma linha suave com o nome ao lado.
+ *
+ * Discreta de proposito — ela separa, nao compete com o codigo. A cor e a
+ * mesma que o dump usa para cada regiao, entao `.data` e verde-agua nos dois
+ * lugares e a associacao se faz sozinha.
+ */
+function SectionRule({ name }) {
+  return (
+    <div className="flex select-none items-center gap-2 px-1 pb-0.5 pt-2">
+      <span
+        className={cn(
+          "shrink-0 text-[10px] uppercase tracking-wider",
+          name === ".data" ? "text-[#4ec9b0]" : "text-[#569cd6]"
+        )}
+      >
+        {name}
+      </span>
+      <span className="h-px flex-1 bg-[#3c3c3c]" />
+    </div>
   );
 }

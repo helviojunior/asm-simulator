@@ -11,6 +11,7 @@ import { ARCH } from "lib/cpu/registers";
 import { OS, OS_OPTIONS, detectOs, osIcon } from "lib/cpu/os";
 import { defaultConvention, syscallGate } from "lib/cpu/inspect";
 import { findArchMismatch } from "lib/asm/archCheck";
+import { labelMap } from "lib/asm/labels";
 import { fromParams, updateNode } from "lib/library";
 import { hex, parseAddress } from "lib/cpu/format";
 import Toolbar from "components/debugger/Toolbar";
@@ -590,6 +591,9 @@ export default function Simulator() {
       const bytes = decodeBase64(data.data);
       const next = new Machine({ arch, os: target, codeBase: base, stackTop: top });
       next.load({ bytes, instructions: data.instructions, sections: data.sections });
+      // O montador nao devolve tabela de simbolos; os nomes estao no fonte que
+      // acabou de ser montado, e o mapa de linhas diz onde cada um caiu.
+      next.setLabels(labelMap(source, data.line_map, base));
 
       machineRef.current = next;
         showSource();
