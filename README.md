@@ -1,123 +1,197 @@
 # ASMSimulator
 
-Assembly Simulador **full-stack** (Django REST + React) servido como aplicação
-**100% pública**: sem login, sem conta de usuário, sem permissionamento. Traz
-internacionalização (EN/PT-BR), identidade visual configurável e uma stack
-Docker (backend + nginx) que sobe com um comando.
+Um simulador de Assembly **para aula**: escreva x86 ou x86-64, monte, e execute
+uma instrução por vez vendo registradores, flags, pilha e memória mudarem a cada
+passo — com o passo para trás disponível quando algo não fez sentido.
 
-> As convenções obrigatórias do projeto estão em [`CLAUDE.md`](./CLAUDE.md).
-> Toda variável, valor padrão e identificador de código é escrito em **inglês**.
+![O simulador em uso](images/asm-simulator.gif)
 
-## Stack
+## O que isto é
 
-| Camada    | Tecnologia                                             |
-|-----------|--------------------------------------------------------|
-| Backend   | Django 5.2 + Django REST Framework, uWSGI              |
-| Frontend  | React 19 (CRA/craco), TailwindCSS, react-router        |
-| Banco     | SQLite (WAL), em volume gerenciado pelo Docker         |
-| Proxy     | nginx (nginx-extras), **HTTP puro** — sem TLS          |
-| Acesso    | Público — sem autenticação (ver abaixo)                |
+Um simulador **acadêmico**. Ele não executa Assembly: as instruções são
+interpretadas por um modelo de CPU escrito em JavaScript, para que se veja o
+estado mudando passo a passo. O montador (`nasm`) e o desmontador (Capstone)
+rodam no backend e só transformam texto em bytes e bytes em instruções — em
+nenhum ponto o código do aluno roda de verdade.
 
-Estrutura:
+A leitura de tela é a de um debugger, porque é essa a leitura que se quer
+ensinar: desmontagem à esquerda, registradores e pilha à direita, o código-fonte
+embaixo, e o painel de operandos dizendo, **antes** de executar, quais endereços
+a instrução toca e que valor vai ficar em cada um.
 
-```
-backend/    core/ (settings, wsgi/asgi) + asm_simulator/ (app: models, views, middleware)
-frontend/   src/ (pages, components/ui, contexts, i18n, lib)
-nginx/      Dockerfile + nginx.conf + entrypoint (rota do admin, real_ip)
-docker-compose.yml       # produção (backend + nginx)
-docker-compose.dev.yml   # desenvolvimento (backend + frontend hot-reload)
-.env.example             # template do .env ÚNICO (nunca versione o .env real)
-```
+## O que isto não é
 
-## Principais pontos
+Não é um validador de código, um emulador nem um ambiente de execução. Apenas
+parte do conjunto de instruções é coberta, chamadas de sistema não são
+executadas de verdade, e um programa que funciona aqui pode se comportar de
+outro jeito numa máquina real — e vice-versa. **Nunca tome um resultado deste
+simulador como prova de que um programa está correto.**
 
-### 1. Acesso público — não existe autenticação
-- Nenhuma tela, rota ou endpoint pede credencial: sem login, MFA, SSO, token ou
-  sessão de usuário final.
-- O DRF roda com `AllowAny` e sem authentication classes; o frontend não tem
-  `AuthContext` nem armazenamento de token.
-
-### 2. Django admin com login automático
-- O `/admin/` é a única área com noção de usuário e entra **sempre autenticado**
-  como `ADMIN_USERNAME` (padrão `admin`), criado sob demanda como superusuário
-  **sem senha utilizável** — ver
-  `asm_simulator/middleware.py:AdminAutoLoginMiddleware`.
-- `/admin/login/` redireciona para o índice do admin: não há tela de credencial.
-- **Atenção:** quem alcança a URL do admin tem acesso total ao banco. Para
-  restringir, mude `ADMIN_URL` para um caminho não óbvio e limite o acesso no
-  nginx.
-
-### 3. Internacionalização (EN + PT-BR)
-- **EN é o padrão e o fallback** de toda tradução.
-- Frontend: `useI18n()` (`t`/`tf`) + catálogos em `src/i18n/locales.js`; o
-  idioma inicial vem do navegador.
-- Backend: `asm_simulator/i18n.py` (`translate`, `tr`); o idioma da resposta vem
-  do `Accept-Language`.
-
-### 4. Identidade visual
-- Favicon e logo servidos de `media.sec4us.com.br`, com cache-busting
-  `?ts=<BUILD_TS>` em todo objeto estático (a cada build).
-- Marca configurável por env (`BRAND_*` / `REACT_APP_BRAND_*`).
-
-### 5. UI/UX (convenções)
-- Confirmações/alertas via **modais próprios** (nunca diálogos nativos do browser).
-- Telas e formulários ocupam **100%** da largura.
-- Detalhe de objeto abre em **janela/rota própria**, não em modal.
-
-### 6. Infra / nginx — HTTP puro
-- O nginx serve **somente HTTP** na porta 80 do container (publicável via
-  `HTTP_PORT`). Não há `listen 443`, certificado nem HSTS.
-- Precisando de HTTPS, coloque um proxy/CDN na frente terminando o TLS: o
-  backend confia em `X-Forwarded-Proto`/`X-Forwarded-Host`, então os links
-  absolutos saem como https mesmo recebendo HTTP neste hop.
-- `USE_REAL_IP` + `real_ip` (`set_real_ip_from`, header `SC-Connecting-IP`).
-
-### 7. Configuração
-- **Um único `.env` na raiz**, consumido pelos compose e pelo backend. Nunca
-  versione o `.env` — só o `.env.example`.
-- `DEBUG=False` por padrão.
+O simulador é honesto sobre isso na própria interface: uma syscall sem
+simulação avisa que foi pulada, e uma que ele reproduz avisa que o valor de
+retorno é convenção dele, não resultado de kernel nenhum.
 
 ## Como rodar
 
-Pré-requisitos: Docker + Docker Compose.
+Pré-requisitos: **Docker** e **Docker Compose**. Nada mais — nem Python, nem
+Node, nem `nasm` na máquina.
 
 ```bash
-cp .env.example .env          # ajuste BRAND_*, ADMIN_URL, portas, etc.
-docker compose build
-docker compose up -d
+cp .env.example .env      # obrigatório: o compose lê este arquivo
+docker compose up -d --build
 ```
 
-- App: `http://localhost` (ou a `HTTP_PORT` configurada).
-- Admin: `http://localhost/admin/` — abre já autenticado, sem pedir senha.
-- O primeiro boot cria o `db.sqlite3` e a `SECRET_KEY` no volume de dados e roda
-  as migrations.
+Abra **`http://localhost`**.
 
-Desenvolvimento (frontend com hot-reload em `:3000`, backend em `:8000`):
+O `.env` copiado já sobe funcionando; mexa nele só para mudar a porta
+(`HTTP_PORT`), o caminho do admin (`ADMIN_URL`) ou a marca. Sem o arquivo, o
+`docker compose` recusa a subir — ele é declarado como `env_file` e não é
+versionado.
+
+O primeiro boot cria o banco SQLite e a `SECRET_KEY` no volume de dados e roda
+as migrations sozinho. Depois disso:
+
+```bash
+docker compose logs -f backend   # acompanhar o log (sai tudo no stdout)
+docker compose down              # parar, preservando a biblioteca de programas
+docker compose down -v           # parar e APAGAR os dados
+```
+
+O ambiente roda **offline**: fonte, ícones e imagens estão embarcados na
+imagem, e nada é buscado na rede em tempo de execução.
+
+### Depois de mudar o código
+
+O frontend é compilado dentro da imagem do nginx, então uma alteração em
+`frontend/` só aparece depois de reconstruir:
+
+```bash
+docker compose up -d --build
+```
+
+### Desenvolvimento
+
+Sobe o React com hot-reload e o Django com auto-reload:
 
 ```bash
 docker compose -f docker-compose.dev.yml up
 ```
 
-## Banco e volumes
+- App: `http://localhost:3000`
+- API: `http://localhost:8000`
 
-- **SQLite** em `<DATA_DIR>/db.sqlite3` (`/app/data/db.sqlite3` no container),
-  com `journal_mode=WAL` e `timeout=20` para suportar os workers do uwsgi.
-  `SQLITE_PATH` sobrescreve o caminho.
-- Persistência em **volume gerenciado pelo Docker**, sem bind-mount:
-  `asm_simulator_data` (banco + segredos). No compose de desenvolvimento,
-  `asm_simulator_data_dev`.
+Não há Node nem Python no host: para rodar testes ou lint, use um container
+descartável na mesma imagem do build.
 
 ```bash
-docker volume ls | grep asm_simulator          # listar
-docker compose down -v                          # apagar dados junto
+docker run --rm -v "$PWD/frontend":/app -w /app -e CI=true node:20-alpine \
+  ./node_modules/.bin/craco test          # frontend
+
+docker run --rm --entrypoint python -e PYTHONPATH=/app -v "$PWD/backend":/app \
+  -w /app asm_simulator-backend manage.py test asm_simulator   # backend
 ```
 
-- O app ainda não tem modelos próprios. Ao criá-los, gere e versione as
-  migrations normalmente (`0001_initial.py`, `0002_...`); o entrypoint roda
-  `makemigrations` + `migrate` no boot.
+## O que dá para fazer
 
-## Endpoints
+- **Montar e executar** x86 (32 bits) e x86-64, com alvo Linux, Windows ou
+  macOS — o alvo decide a tabela de syscalls, e o mesmo número em `EAX` resolve
+  para funções diferentes em cada um.
+- **Passo a passo** com os atalhos do x64dbg: `F7` entra, `F8` passa por cima,
+  `F9` monta, `Ctrl+F7` desfaz o passo, `Ctrl+F2` reinicia.
+- **Ver a memória** no painel de dump: seleção por clique ou arrasto, cópia dos
+  bytes em hexadecimal, `\x..` ou `db 0x..` — as formas em que um trecho volta
+  para dentro de um programa. Clique direito em qualquer valor de registrador,
+  pilha ou argumento leva o dump até ele.
+- **Ler um ponteiro como estrutura**: um `RCX` que vale `0x7FF7…` vira um
+  `OBJECT_ATTRIBUTES` com os campos abertos, seguindo a cadeia de ponteiros.
+- **Nomear a função de um `call`**, com auto-completar sobre o catálogo de
+  protótipos; rótulos escritos no próprio fonte já entram nomeados sozinhos.
+- **Importar um binário cru** e recebê-lo como `.asm` editável, ou importar uma
+  `ntdll.dll` para resolver os SSN de um alvo Windows.
+- **Guardar programas** numa biblioteca de pastas e arquivos, exportável e
+  importável como um bundle.
 
-A API pública ainda não expõe rotas de domínio — o backend serve hoje apenas o
-`/admin/` e os redirects de favicon. Novas rotas entram em
-`asm_simulator/urls.py`.
+Toda a interface existe em **inglês e português**, com o inglês como padrão e
+fallback; o idioma inicial vem do navegador.
+
+## Stack
+
+| Camada    | Tecnologia                                              |
+|-----------|---------------------------------------------------------|
+| Backend   | Django 5.2 + DRF, uWSGI — `nasm` (montar) e Capstone (desmontar) |
+| Frontend  | React 19 (CRA/craco), TailwindCSS — e o interpretador de CPU |
+| Banco     | SQLite (WAL), em volume gerenciado pelo Docker          |
+| Proxy     | nginx, **HTTP puro** — sem TLS                          |
+| Acesso    | Público — sem autenticação                              |
+
+```
+backend/    core/ (settings, wsgi) + asm_simulator/ (views, services, prototypes)
+              services/assembler.py     texto NASM  -> bytes (+ mapa de linhas e seções)
+              services/disassembler.py  bytes       -> instruções (Capstone)
+frontend/   src/lib/cpu/    o interpretador: registradores, flags, memória, syscalls
+            src/components/debugger/   os painéis (desmontagem, pilha, dump, …)
+nginx/      Dockerfile (compila o frontend) + nginx.conf
+docker-compose.yml       produção (backend + nginx)
+docker-compose.dev.yml   desenvolvimento (hot-reload)
+.env.example             template do .env ÚNICO — nunca versione o .env real
+```
+
+> As convenções obrigatórias do projeto estão em [`CLAUDE.md`](./CLAUDE.md).
+> Todo identificador de código é escrito em **inglês**.
+
+## Acesso, admin e segurança
+
+O sistema é **100% público**: nenhuma tela, rota ou endpoint pede credencial —
+sem login, token ou sessão de usuário final. É um simulador que o aluno roda na
+própria máquina.
+
+O `/admin/` do Django existe como ferramenta de manutenção e entra **sempre
+autenticado**, sem senha. **Quem alcança a URL do admin tem acesso total de
+leitura e escrita ao banco.** Publique o serviço apenas onde isso for aceitável;
+para restringir, troque `ADMIN_URL` por um caminho não óbvio e limite o acesso
+no nginx.
+
+O nginx serve **somente HTTP**. Precisando de HTTPS, termine o TLS num
+proxy/CDN na frente: o backend confia em `X-Forwarded-Proto`/`X-Forwarded-Host`
+e os links absolutos saem como `https` mesmo recebendo HTTP neste hop. Se o
+domínio ou a porta vistos pelo navegador diferirem do que o Django recebe,
+defina `CSRF_TRUSTED_ORIGINS` no `.env`.
+
+## Configuração
+
+Existe **um único `.env`, na raiz**, consumido pelos compose e pelo backend.
+Nunca versione o `.env` — só o `.env.example`. O que mais se mexe:
+
+| Variável              | Padrão   | Para quê                                    |
+|-----------------------|----------|---------------------------------------------|
+| `HTTP_PORT`           | `80`     | Porta publicada pelo nginx                  |
+| `ADMIN_URL`           | `admin`  | Caminho do Django admin                     |
+| `LOG_LEVEL`           | `INFO`   | Log da aplicação (sai no stdout)            |
+| `DEBUG`               | `False`  | Ligar exige ação explícita                  |
+| `REACT_APP_BRAND_*`   | —        | Marca; **vazio = usa a arte local**         |
+
+## API
+
+O backend não executa nada: prepara programas e serve catálogos.
+
+| Rota                          | O que faz                                       |
+|-------------------------------|-------------------------------------------------|
+| `POST /api/program/assemble/` | Fonte NASM → bytes, instruções, mapa de linhas e seções |
+| `POST /api/program/disassemble/` | Bytes → instruções (usada também na remontagem de código automodificável) |
+| `POST /api/program/import/`   | Binário cru → `.asm` editável, com análise de plausibilidade |
+| `GET  /api/prototypes/`       | Protótipos de syscalls e funções                |
+| `GET  /api/types/`            | Layout de structs, para ler um ponteiro         |
+| `/api/ntdll/`                 | `ntdll.dll` importada → SSN por nome (GET/POST/DELETE) |
+| `/api/library/…`              | Biblioteca de programas: CRUD, export e import  |
+
+## Banco e volumes
+
+**SQLite** em `<DATA_DIR>/db.sqlite3` (`/app/data/db.sqlite3` no container), com
+`journal_mode=WAL` e `timeout=20` para suportar os workers do uwsgi;
+`SQLITE_PATH` sobrescreve o caminho. A persistência fica em **volume gerenciado
+pelo Docker**, sem bind-mount: `asm_simulator_data` em produção,
+`asm_simulator_data_dev` em desenvolvimento.
+
+```bash
+docker volume ls | grep asm_simulator
+```
