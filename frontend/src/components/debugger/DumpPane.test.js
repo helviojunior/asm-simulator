@@ -24,10 +24,11 @@ let container;
 let root;
 let copied;
 
-function build() {
+function build(sections) {
   const machine = new Machine({ arch: "x86", codeBase: CODE_BASE, stackTop: STACK_TOP });
   machine.load({
     bytes: BYTES,
+    sections,
     instructions: [
       { address: CODE_BASE.toString(), size: 8, text: "nop", mnemonic: "nop",
         bytes: "90", groups: [], operands: [] },
@@ -36,14 +37,14 @@ function build() {
   return machine;
 }
 
-async function mount(props = {}) {
+async function mount({ sections, ...props } = {}) {
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
   await act(async () => {
     root.render(
       <I18nProvider>
-        <DumpPane machine={build()} {...props} />
+        <DumpPane machine={build(sections)} {...props} />
       </I18nProvider>
     );
   });
@@ -223,4 +224,57 @@ test("sem programa montado, o painel diz o que falta", async () => {
     root.render(<I18nProvider><DumpPane machine={null} /></I18nProvider>);
   });
   expect(container.textContent).toContain("Assemble a program");
+});
+
+describe("atalhos de navegação", () => {
+  const shortcut = (label) =>
+    [...container.querySelectorAll("button")].find((node) => node.textContent === label);
+
+  // 4 bytes de código e 4 de dados, dentro da mesma imagem contígua.
+  const SPLIT = [
+    { name: ".text", start: 0, end: 4 },
+    { name: ".data", start: 4, end: 8 },
+  ];
+
+  test("há um botão para cada região", async () => {
+    await mount({ sections: SPLIT });
+    ["EIP", "ESP", ".text", ".data"].forEach((label) => {
+      expect(shortcut(label)).toBeTruthy();
+    });
+  });
+
+  test("o nome da seção não é escrito em maiúscula", async () => {
+    // `.DATA` não existe em fonte nenhum: é `.data`.
+    await mount({ sections: SPLIT });
+    expect(shortcut(".data").className).not.toContain("uppercase");
+  });
+
+  test(".data leva ao primeiro byte de dados e o seleciona", async () => {
+    await mount({ sections: SPLIT });
+    await act(async () => { shortcut(".data").click(); });
+
+    expect(footer()).toContain("7F200104");
+    expect(footer()).toContain(".data+0x0");
+  });
+
+  test(".text leva ao início do código", async () => {
+    await mount({ sections: SPLIT });
+    await act(async () => { shortcut(".data").click(); });
+    await act(async () => { shortcut(".text").click(); });
+
+    expect(footer()).toContain("7F200100");
+    expect(footer()).toContain(".text+0x0");
+  });
+
+  test("sem `.data` declarada o botão continua lá, marcado como vazio", async () => {
+    // Levar ao ponto onde ela começaria é a resposta certa para "onde ficam
+    // os meus dados?" num programa que ainda não declarou nenhum.
+    await mount({ sections: [{ name: ".text", start: 0, end: 8 }] });
+    const button = shortcut(".data");
+    expect(button).toBeTruthy();
+    expect(button.getAttribute("title")).toContain("empty");
+
+    await act(async () => { button.click(); });
+    expect(footer()).toContain("7F200108");
+  });
 });

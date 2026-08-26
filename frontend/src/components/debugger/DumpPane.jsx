@@ -304,15 +304,39 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
     focusAddress(parsed);
   };
 
+  // Atalhos de navegacao. A cor liga cada botao ao que ele mostra: as mesmas
+  // dos rotulos de regiao no rodape, para "fui parar na `.data`" ser a mesma
+  // informacao nos dois lugares.
   const shortcuts = machine
     ? [
-        { key: "ip", label: machine.arch.instructionPointer.toUpperCase(), address: machine.cpu.ip },
-        { key: "sp", label: machine.arch.stackPointer.toUpperCase(), address: machine.cpu.sp },
-        { key: "text", label: ".text", address: machine.textBase },
-        // Sempre oferecida, ainda que a `.data` esteja vazia: o atalho leva ao
-        // ponto onde ela comecaria, que e a resposta certa para "onde ficam os
-        // meus dados?" num programa que ainda nao declarou nenhum.
-        { key: "data", label: ".data", address: machine.dataBase },
+        {
+          key: "ip",
+          label: machine.arch.instructionPointer.toUpperCase(),
+          address: machine.cpu.ip,
+          color: "text-[#c586c0] hover:text-[#dda0dd]",
+        },
+        {
+          key: "sp",
+          label: machine.arch.stackPointer.toUpperCase(),
+          address: machine.cpu.sp,
+          color: "text-[#c586c0] hover:text-[#dda0dd]",
+        },
+        {
+          key: "text",
+          label: ".text",
+          address: machine.textBase,
+          color: "text-[#569cd6] hover:text-[#9cdcfe]",
+        },
+        {
+          // Sempre oferecida, ainda que a `.data` esteja vazia: o atalho leva
+          // ao ponto onde ela comecaria, que e a resposta certa para "onde
+          // ficam os meus dados?" num programa que ainda nao declarou nenhum.
+          key: "data",
+          label: ".data",
+          address: machine.dataBase,
+          color: "text-[#4ec9b0] hover:text-[#7fdbca]",
+          empty: machine.dataEnd === machine.dataBase,
+        },
       ]
     : [];
 
@@ -359,7 +383,20 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
             key={item.key}
             type="button"
             onClick={() => focusAddress(item.address)}
-            className="rounded bg-[#3c3c3c] px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-[#c586c0] transition-colors hover:bg-[#4a4a4a] hover:text-[#dda0dd]"
+            // Sem `uppercase`: `.text` e `.data` sao nomes de secao, e `.DATA`
+            // nao existe em fonte nenhum. Os registradores ja vem em maiuscula
+            // do proprio rotulo.
+            title={`${hex(item.address, digits)}${
+              item.empty ? ` — ${t("dump.emptySection", "empty")}` : ""
+            }`}
+            className={cn(
+              "rounded bg-[#3c3c3c] px-1.5 py-0.5 font-mono text-[10px] tracking-wider transition-colors hover:bg-[#4a4a4a]",
+              item.color,
+              // Secao vazia continua clicavel — leva ao ponto onde ela
+              // comecaria —, mas dizer que nao ha nada la evita a leitura de
+              // que o dump falhou ao abrir.
+              item.empty && "opacity-50"
+            )}
           >
             {item.label}
           </button>
