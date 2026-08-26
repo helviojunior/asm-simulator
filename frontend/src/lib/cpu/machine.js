@@ -87,9 +87,20 @@ export class Machine {
   // ------------------------------------------------------------------
 
   load({ bytes, instructions, sections }) {
-    this.memory.writeBytes(this.codeBase, bytes);
     this.codeEnd = this.codeBase + BigInt(bytes.length);
     this.setSections(sections, bytes.length);
+
+    // Escrita secao a secao, e nao a imagem inteira de uma vez: o vao entre o
+    // fim do `.text` e a `.data` — que existe para a `.data` cair numa
+    // fronteira de pagina — nao e byte de programa nenhum. Deixando-o SEM
+    // escrever, a memoria esparsa continua sem registro ali e o dump o mostra
+    // esmaecido, que e a leitura correta: nao ha nada la.
+    this.sections.forEach((item) => {
+      const start = Number(item.start - this.codeBase);
+      const end = Number(item.end - this.codeBase);
+      if (end > start) this.memory.writeBytes(item.start, bytes.slice(start, end));
+    });
+
     this.setInstructions(instructions);
     this.reset();
   }

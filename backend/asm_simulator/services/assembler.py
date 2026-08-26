@@ -92,6 +92,20 @@ ALLOWED_SECTIONS = ('.text', '.data')
 # formato `bin`.
 DEFAULT_SECTION = '.text'
 
+# Onde a `.data` mora.
+#
+# Num programa de verdade ela fica noutra PAGINA — outro mapeamento, outra
+# permissao —, e o endereco dela termina em tres zeros. Colada ao fim do
+# codigo, como o `nasm -f bin` a deixaria (alinhada em 4 bytes), a fronteira
+# entre codigo e dado vira um detalhe invisivel: o aluno olha o dump e nao tem
+# como dizer onde uma acaba e a outra comeca.
+#
+# A folga minima existe pelo mesmo motivo. Sem ela, um `.text` que termina em
+# 0x…FF0 poria a `.data` 16 bytes adiante, na pagina seguinte mas colada — o
+# endereco seria redondo e a separacao continuaria imperceptivel.
+DATA_ALIGN = 0x1000
+DATA_MIN_GAP = 500
+
 # `section .data`, `[section .text]`, `segment .text align=16`.
 _SECTION_DIRECTIVE = re.compile(
     r'^\s*\[?\s*(?:section|segment)\s+(?P<name>[^\s\],;]+)',
@@ -222,6 +236,15 @@ def _check_sections(source, lang=None):
     return mapping
 
 
+def _align_up(value, alignment):
+    return -(-value // alignment) * alignment
+
+
+def _data_address(origin, text_end):
+    """Endereco em que a `.data` comeca: fronteira de pagina apos a folga."""
+    return _align_up(origin + text_end + DATA_MIN_GAP, DATA_ALIGN)
+
+
 def _parse_map(text):
     """Base e tamanho de cada secao, lidos do map do nasm.
 
@@ -230,7 +253,8 @@ def _parse_map(text):
     recomecam do zero. Sem isto, o primeiro byte de `.text` e o primeiro de
     `.data` sao ambos "offset 0" e um sobrescreve o outro no mapa de linhas.
 
-    Devolve ``{nome: (offset na imagem, tamanho)}``; vazio se o map nao veio.
+    Devolve ``(origem, {nome: (offset na imagem, tamanho)})``; ``(None, {})``
+    se o map nao veio.
     """
     origin = None
     sections = {}
@@ -255,7 +279,7 @@ def _parse_map(text):
             try:
                 origin = int(stripped, 16)
             except ValueError:
-                return {}
+                return None, {}
             continue
 
         if block == 'summary':
@@ -266,18 +290,21 @@ def _parse_map(text):
                 )
 
     if origin is None:
-        return {}
+        return None, {}
     # O offset na imagem e o que interessa: o simulador carrega o binario em
     # `codeBase`, que pode nem ser o `org` (o aluno pode ter escrito o dele).
-    return {name: (start - origin, length) for name, (start, length) in sections.items()}
+    return origin, {
+        name: (start - origin, length) for name, (start, length) in sections.items()
+    }
 
 
-def _section_layout(bases, size):
+def _section_layout(bases, size, origin=None):
     """Secoes da imagem, em offsets, com a `.data` sempre presente.
 
     A pseudo-secao existe porque o simulador SEMPRE tem uma regiao de dados,
     ainda que vazia: assim nenhum painel precisa tratar "programa sem `.data`"
-    como um caso a parte, e o aluno ve onde ela comecaria.
+    como um caso a parte, e o aluno ve onde ela comecaria — na MESMA fronteira
+    de pagina em que ela cairia se existisse, e nao colada ao fim do codigo.
     """
     layout = []
     for name in ALLOWED_SECTIONS:
@@ -287,9 +314,13 @@ def _section_layout(bases, size):
 
     if not any(item['name'] == '.text' for item in layout):
         layout.insert(0, {'name': '.text', 'start': 0, 'end': size})
+
     if not any(item['name'] == '.data' for item in layout):
-        # Vazia e logo depois da imagem: e onde ela cairia se existisse.
-        layout.append({'name': '.data', 'start': size, 'end': size})
+        text_end = next(item['end'] for item in layout if item['name'] == '.text')
+        # Sem origem (map ilegivel) nao ha fronteira a calcular: fica logo
+        # depois da imagem, que e o comportamento de sempre.
+        start = size if origin is None else _data_address(origin, text_end) - origin
+        layout.append({'name': '.data', 'start': start, 'end': start})
 
     return layout
 
@@ -394,7 +425,7 @@ def _merge(spans):
     return [tuple(span) for span in merged]
 
 
-def _preamble(arch, base_address, source, map_file):
+def _preamble(arch, base_address, source, map_file, data_at=None):
     """Directives injetadas quando o fonte nao as traz.
 
     `bits` define o modo de montagem e `org` a base — sem `org`, o nasm monta
@@ -403,6 +434,12 @@ def _preamble(arch, base_address, source, map_file):
 
     O `map` e sempre nosso: e a unica forma de saber onde cada secao caiu na
     imagem final (ver `_parse_map`).
+
+    `data_at` posiciona a `.data`. Quem faz a conta e o proprio nasm, e nao o
+    simulador: e ele que resolve `lea rcx, [rel msg]`, e mover a secao depois
+    de montada deixaria o deslocamento apontando para o lugar antigo. Declarar
+    o atributo aqui e voltar para `.text` na linha seguinte: sem isso, o codigo
+    escrito antes da primeira directive do aluno cairia dentro da `.data`.
     """
     lines = []
     if not _HAS_BITS.search(source):
@@ -410,7 +447,68 @@ def _preamble(arch, base_address, source, map_file):
     if not _HAS_ORG.search(source):
         lines.append(f'org 0x{base_address:X}')
     lines.append(f'[map sections {map_file}]')
+    if data_at is not None:
+        lines.append(f'section .data start=0x{data_at:X}')
+        lines.append('section .text')
     return lines
+
+
+# Uma passada do montador, ja com o stderr interpretado.
+NasmOutcome = namedtuple('NasmOutcome', 'data listing mapping warnings')
+
+
+def _run_nasm(tmp, src_file, out_file, lst_file, map_file, line_offset):
+    """Chama o nasm uma vez e devolve o que ele produziu.
+
+    `line_offset` desconta as directives que injetamos antes do fonte, para o
+    erro apontar a linha que o aluno realmente escreveu.
+
+    Levanta ``AssemblyError`` com as mensagens do proprio nasm quando ele
+    recusa o fonte.
+    """
+    try:
+        completed = subprocess.run(
+            [
+                'nasm',
+                '-f', 'bin',
+                # Includes limitados ao diretorio temporario.
+                '-i', f'{tmp}/',
+                # Listing: a fonte do mapa offset -> linha do fonte.
+                '-l', str(lst_file),
+                '-o', str(out_file),
+                str(src_file),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=NASM_TIMEOUT_SECONDS,
+            cwd=tmp,
+            check=False,
+        )
+    except FileNotFoundError:
+        log.exception('nasm is not installed in this image.')
+        raise AssemblyError('The assembler (nasm) is not available on the server.')
+    except subprocess.TimeoutExpired:
+        raise AssemblyError(f'Assembling timed out after {NASM_TIMEOUT_SECONDS}s.')
+
+    messages = _parse_nasm_output(completed.stderr, str(src_file))
+    for item in messages:
+        if item['line'] is not None:
+            item['line'] = max(1, item['line'] - line_offset)
+
+    errors = [m for m in messages if m['level'] in ('error', 'fatal')]
+    if completed.returncode != 0 or errors:
+        raise AssemblyError('Assembly failed.', messages=errors or messages)
+
+    if not out_file.exists():
+        raise AssemblyError('Assembly produced no output.', messages=messages)
+
+    read = lambda path: path.read_text(encoding='utf-8', errors='replace') if path.exists() else ''
+    return NasmOutcome(
+        out_file.read_bytes(),
+        read(lst_file),
+        read(map_file),
+        [m for m in messages if m['level'] == 'warning'],
+    )
 
 
 def assemble(source, arch='x86', base_address=0, lang=None):
@@ -440,12 +538,6 @@ def assemble(source, arch='x86', base_address=0, lang=None):
     section_of_line = _check_sections(source, lang)
 
     map_name = 'source.map'
-    preamble = _preamble(arch, base_address, source or '', map_name)
-    # As directives entram ANTES do fonte, entao a numeracao de linha do nasm
-    # fica deslocada; descontamos o offset para o erro apontar a linha que o
-    # aluno realmente escreveu.
-    line_offset = len(preamble)
-    full_source = '\n'.join(preamble + [source or '', ''])
 
     with tempfile.TemporaryDirectory(prefix='asmsim-') as tmp:
         tmp_path = Path(tmp)
@@ -453,56 +545,47 @@ def assemble(source, arch='x86', base_address=0, lang=None):
         out_file = tmp_path / 'source.bin'
         lst_file = tmp_path / 'source.lst'
         map_file = tmp_path / map_name
-        src_file.write_text(full_source, encoding='utf-8')
 
-        try:
-            completed = subprocess.run(
-                [
-                    'nasm',
-                    '-f', 'bin',
-                    # Includes limitados ao diretorio temporario.
-                    '-i', f'{tmp}/',
-                    # Listing: a fonte do mapa offset -> linha do fonte.
-                    '-l', str(lst_file),
-                    '-o', str(out_file),
-                    str(src_file),
-                ],
-                capture_output=True,
-                text=True,
-                timeout=NASM_TIMEOUT_SECONDS,
-                cwd=tmp,
-                check=False,
-            )
-        except FileNotFoundError:
-            log.exception('nasm is not installed in this image.')
-            raise AssemblyError('The assembler (nasm) is not available on the server.')
-        except subprocess.TimeoutExpired:
-            raise AssemblyError(
-                f'Assembling timed out after {NASM_TIMEOUT_SECONDS}s.'
-            )
+        def run(data_at):
+            """Uma passada do nasm. Devolve `(bytes, listing, map, avisos)`."""
+            preamble = _preamble(arch, base_address, source or '', map_name, data_at)
+            # As directives entram ANTES do fonte, entao a numeracao de linha
+            # do nasm fica deslocada; descontamos o offset para o erro apontar
+            # a linha que o aluno realmente escreveu.
+            offset = len(preamble)
+            src_file.write_text('\n'.join(preamble + [source or '', '']), encoding='utf-8')
+            return _run_nasm(tmp, src_file, out_file, lst_file, map_file, offset), offset
 
-        messages = _parse_nasm_output(completed.stderr, str(src_file))
-        for item in messages:
-            if item['line'] is not None:
-                item['line'] = max(1, item['line'] - line_offset)
+        # Primeira passada: descobrir o tamanho do `.text`. So com ele em maos
+        # se sabe em que pagina a `.data` cabe.
+        #
+        # Ate tres passadas porque a segunda pode mudar o tamanho do `.text`
+        # (um endereco maior nao cabe mais num imediato curto) e ai a fronteira
+        # muda de lugar junto. Converge na segunda em qualquer programa real; o
+        # teto existe para o caso patologico nao virar laco infinito.
+        placement = None
+        for attempt in range(3):
+            outcome, line_offset = run(placement)
+            origin, bases = _parse_map(outcome.mapping)
+            text, data_section = bases.get('.text'), bases.get('.data')
+            if origin is None or not text or not data_section:
+                break
+            wanted = _data_address(origin, text[0] + text[1])
+            if origin + data_section[0] == wanted:
+                break
+            placement = wanted
+        else:
+            log.warning('Section .data placement did not settle after %d passes.', attempt + 1)
 
-        errors = [m for m in messages if m['level'] in ('error', 'fatal')]
-        warnings = [m for m in messages if m['level'] == 'warning']
-
-        if completed.returncode != 0 or errors:
-            raise AssemblyError('Assembly failed.', messages=errors or messages)
-
-        if not out_file.exists():
-            raise AssemblyError('Assembly produced no output.', messages=messages)
-
-        data = out_file.read_bytes()
-        listing = lst_file.read_text(encoding='utf-8', errors='replace') if lst_file.exists() else ''
-        mapping = map_file.read_text(encoding='utf-8', errors='replace') if map_file.exists() else ''
+        data = outcome.data
+        listing = outcome.listing
+        mapping = outcome.mapping
+        warnings = outcome.warnings
 
         # Sem map legivel, a leitura antiga (uma secao so) continua valendo —
         # e exatamente o que um fonte sem `section` produz.
-        bases = _parse_map(mapping)
-        sections = _section_layout(bases, len(data))
+        origin, bases = _parse_map(mapping)
+        sections = _section_layout(bases, len(data), origin)
 
         def base_for_line(line):
             name = section_of_line.get(line, DEFAULT_SECTION)

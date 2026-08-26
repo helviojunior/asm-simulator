@@ -32,6 +32,15 @@ MAX_INSTRUCTIONS = 20000
 # e cabe na coluna sem truncar.
 DATA_CHUNK = 16
 
+# A partir de quantos bytes iguais seguidos uma faixa de dados vira UMA linha
+# `times N db 0xVV` em vez de N/16 linhas de `db`.
+#
+# O vao entre `.text` e `.data` tem alguns milhares de bytes zerados; listado
+# byte a byte, seriam centenas de linhas de `db 0x00` entre o codigo e os
+# dados — a listagem inteira viraria rolagem. `times` e como o proprio NASM
+# escreveria aquilo, entao a linha continua sendo fonte valido.
+FILL_MIN = 32
+
 
 class DisassemblyError(Exception):
     pass
@@ -121,6 +130,68 @@ def _segments(size, data_ranges):
     return segments
 
 
+def _fill_run(payload, start, end, line_map):
+    """Ate onde vai a repeticao do byte em `start`, ou None se for curta.
+
+    A corrida para no primeiro offset que tem linha PROPRIA no fonte: dois
+    `db 0` em linhas diferentes sao duas declaracoes, e funde-las apagaria a
+    ligacao de cada byte com a linha que o escreveu.
+    """
+    byte = payload[start]
+    cursor = start + 1
+    while cursor < end and payload[cursor] == byte and cursor not in line_map:
+        cursor += 1
+    return cursor if cursor - start >= FILL_MIN else None
+
+
+def _emit_data(instructions, payload, start, end, line_map, base_address):
+    """Linhas de dados de uma faixa: `times` para o enchimento, `db` para o resto."""
+    offset = start
+    while offset < end:
+        if len(instructions) >= MAX_INSTRUCTIONS:
+            return
+
+        run_end = _fill_run(payload, offset, end, line_map)
+        if run_end:
+            instructions.append(_fill_entry(
+                len(instructions), payload[offset], run_end - offset,
+                base_address + offset, line_map, base_address))
+            offset = run_end
+            continue
+
+        # Uma linha por bloco de DATA_CHUNK bytes: `db "/bin/sh", 0x01` cabe
+        # numa linha so, e um buffer grande nao vira centenas delas. O bloco
+        # para antes da proxima corrida longa, senao ela comecaria no meio.
+        limit = min(offset + DATA_CHUNK, end)
+        chunk = payload[offset:limit]
+        instructions.append(_data_entry(
+            len(instructions), chunk, base_address + offset, line_map, base_address))
+        offset = limit
+
+
+def _fill_entry(index, byte, count, address, line_map, base_address):
+    """Uma corrida de bytes iguais, escrita como o NASM a escreveria."""
+    op_str = f'{count} db 0x{byte:02X}'
+    return {
+        'index': index,
+        'address': str(address),
+        'size': count,
+        # O byte repetido, e nao os `count` bytes: a coluna de bytes da
+        # listagem tem largura de uma instrucao, e `count` pode ser milhares.
+        'bytes': f'{byte:02X}',
+        'mnemonic': 'times',
+        'op_str': op_str,
+        'text': f'times {op_str}',
+        'data': True,
+        # Distingue "enchimento" de "dado declarado": a interface mostra a
+        # contagem em vez de tentar ler aquilo como texto.
+        'fill': True,
+        'line': line_map.get(address - base_address),
+        'operands': [],
+        'groups': [],
+    }
+
+
 def _data_entry(index, chunk, address, line_map, base_address):
     """Uma linha de dados: os bytes crus, sem tentativa de decodificacao."""
     op_str = ', '.join(f'0x{b:02X}' for b in chunk)
@@ -133,6 +204,7 @@ def _data_entry(index, chunk, address, line_map, base_address):
         'op_str': op_str,
         'text': f'db {op_str}',
         'data': True,
+        'fill': False,
         'line': line_map.get(address - base_address),
         'operands': [],
         'groups': [],
@@ -180,14 +252,7 @@ def disassemble(data, arch='x86', base_address=0, line_map=None, data_ranges=Non
             break
 
         if is_data_segment:
-            # Uma linha por bloco de DATA_CHUNK bytes: `db "/bin/sh", 0x01` cabe
-            # numa linha so, e um buffer grande nao vira centenas delas.
-            for offset in range(start, end, DATA_CHUNK):
-                if len(instructions) >= MAX_INSTRUCTIONS:
-                    break
-                chunk = payload[offset:min(offset + DATA_CHUNK, end)]
-                instructions.append(_data_entry(
-                    len(instructions), chunk, base_address + offset, line_map, base_address))
+            _emit_data(instructions, payload, start, end, line_map, base_address)
             continue
 
         instructions.extend(_decode(
@@ -229,6 +294,9 @@ def _decode(md, payload, address, line_map, base_address, index):
             # A UI pinta a linha de outro jeito e o interpretador se recusa a
             # "executar" dados, com uma mensagem que explica o que houve.
             'data': is_data,
+            # Byte que o Capstone nao decodificou nunca e enchimento: veio de
+            # dentro do codigo, e nao do vao entre as secoes.
+            'fill': False,
             # Linha do fonte que gerou estes bytes; None quando nao ha
             # correspondencia exata (binario bruto, ou byte de preambulo).
             'line': line_map.get(insn.address - base_address),

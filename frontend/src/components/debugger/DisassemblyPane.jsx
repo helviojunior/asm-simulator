@@ -124,15 +124,27 @@ export default function DisassemblyPane({
               <span
                 className={cn(
                   "shrink-0 w-[7ch]",
-                  insn.data ? "text-[#ce9178]" : mnemonicColor(insn.mnemonic)
+                  // Enchimento nao e dado declarado nem instrucao: e o vao
+                  // entre as secoes, e le-lo apagado é a leitura certa.
+                  insn.fill ? "text-[#5a5a5a]" : insn.data ? "text-[#ce9178]" : mnemonicColor(insn.mnemonic)
                 )}
               >
                 {insn.mnemonic}
               </span>
               {/* Dados embutidos no codigo (o `db "..."` do JMP-CALL-POP)
-                  aparecem como texto legivel, nao como bytes soltos. */}
-              <span className={insn.data ? "text-[#ce9178]" : "text-[#d4d4d4]"}>
-                {insn.data ? `"${dataPreview(insn.bytes)}"` : insn.op_str}
+                  aparecem como texto legivel, nao como bytes soltos. Ler o
+                  enchimento como texto daria uma linha de `\x00` repetido: o
+                  que se quer saber dele e QUANTOS bytes sao. */}
+              <span
+                className={
+                  insn.fill ? "text-[#5a5a5a]" : insn.data ? "text-[#ce9178]" : "text-[#d4d4d4]"
+                }
+              >
+                {insn.fill
+                  ? insn.op_str
+                  : insn.data
+                  ? `"${dataPreview(insn.bytes)}"`
+                  : insn.op_str}
               </span>
             </div>
           );

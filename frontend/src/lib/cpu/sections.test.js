@@ -154,3 +154,56 @@ describe("acesso RIP-relativo à `.data`", () => {
     expect(pointerString(machine, value)).toBe("Oi\\n");
   });
 });
+
+describe("o vão entre o código e os dados", () => {
+  // Como o montador entrega: `.data` numa fronteira de página, longe do
+  // `.text`, com o vão zerado no meio da imagem.
+  const GAP_SECTIONS = [
+    { name: ".text", start: 0, end: 8 },
+    { name: ".data", start: 0x1000, end: 0x1004 },
+  ];
+
+  function withGap() {
+    const bytes = new Uint8Array(0x1004);
+    bytes.set([0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0xc3], 0);
+    bytes.set([0x4f, 0x69, 0x0a, 0x00], 0x1000);
+
+    const machine = new Machine({ arch: "x86", codeBase: CODE_BASE, stackTop: STACK_TOP });
+    machine.load({ bytes, sections: GAP_SECTIONS, instructions: [] });
+    return machine;
+  }
+
+  test("os bytes de cada seção vão para o endereço certo", () => {
+    const machine = withGap();
+    expect(machine.memory.readByte(CODE_BASE)).toBe(0x90);
+    expect(machine.memory.readByte(machine.dataBase)).toBe(0x4f);
+  });
+
+  test("o vão fica SEM ser escrito, e o dump o mostra apagado", () => {
+    // A memória é esparsa: byte nunca escrito lê zero e `isDefined` é falso.
+    // É o que distingue "está zerado" de "não há nada aqui".
+    const machine = withGap();
+    expect(machine.memory.isDefined(CODE_BASE + 8n)).toBe(false);
+    expect(machine.memory.isDefined(machine.dataBase - 1n)).toBe(false);
+    expect(machine.memory.readByte(CODE_BASE + 8n)).toBe(0);
+  });
+
+  test("o vão não é código nem dado", () => {
+    const machine = withGap();
+    const inGap = CODE_BASE + 0x800n;
+    expect(machine.isDataAddress(inGap)).toBe(false);
+    // Continua dentro da imagem — é por isso que `isExecutableAddress` existe.
+    expect(machine.isCodeAddress(inGap)).toBe(true);
+    expect(machine.isExecutableAddress(inGap)).toBe(true);
+  });
+
+  test("a imagem relida para re-desmontar volta idêntica", () => {
+    // O vão lê zero da memória esparsa, que é o que o montador escreveu lá.
+    const machine = withGap();
+    const image = machine.codeBytes();
+    expect(image.length).toBe(0x1004);
+    expect(image[0]).toBe(0x90);
+    expect(image[0x800]).toBe(0);
+    expect(image[0x1000]).toBe(0x4f);
+  });
+});

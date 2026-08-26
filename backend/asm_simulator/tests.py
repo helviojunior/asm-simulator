@@ -410,12 +410,69 @@ class SectionTests(TransactionTestCase):
     # -- a pseudo-secao -----------------------------------------------------
 
     def test_data_exists_even_when_the_source_has_none(self):
-        # Vazia, logo depois da imagem: e onde ela comecaria. Assim nenhum
-        # painel precisa tratar "programa sem .data" como caso a parte.
+        # Vazia, mas na MESMA fronteira em que cairia se existisse. Assim
+        # nenhum painel precisa tratar "programa sem .data" como caso a parte,
+        # e o endereco que o atalho do dump mostra e o de sempre.
         built = self.build('[BITS 64]\n nop\n nop\n')
         data = self.section(built, '.data')
-        self.assertEqual(data['start'], len(built.data))
         self.assertEqual(data['start'], data['end'])
+        self.assertEqual((self.BASE + data['start']) % 0x1000, 0)
+        self.assertGreaterEqual(data['start'] - len(built.data), 500)
+
+    # -- onde a `.data` cai -------------------------------------------------
+
+    def test_data_starts_on_a_page_boundary(self):
+        # Num programa de verdade a `.data` fica noutra pagina, e o endereco
+        # dela termina em tres zeros. Colada ao fim do codigo, a fronteira
+        # entre codigo e dado seria invisivel no dump.
+        built = self.build()
+        self.assertEqual((self.BASE + self.section(built, '.data')['start']) % 0x1000, 0)
+
+    def test_there_is_room_between_the_code_and_the_data(self):
+        built = self.build()
+        text, data = self.section(built, '.text'), self.section(built, '.data')
+        self.assertGreaterEqual(data['start'] - text['end'], 500)
+
+    def test_a_text_that_fills_the_page_pushes_the_data_to_the_next(self):
+        # Sem a folga minima, um `.text` que termina perto do fim da pagina
+        # poria a `.data` a poucos bytes dele — endereco redondo e separacao
+        # imperceptivel, que e o que a folga existe para impedir.
+        filler = '[BITS 64]\nsection .text\n times 4000 nop\n' \
+                 'section .data\n k db 1\n'
+        built = self.build(filler)
+        text, data = self.section(built, '.text'), self.section(built, '.data')
+        self.assertGreaterEqual(data['start'] - text['end'], 500)
+        self.assertEqual((self.BASE + data['start']) % 0x1000, 0)
+        self.assertEqual(data['start'], 0x2000)
+
+    def test_the_gap_is_a_single_line_in_the_disassembly(self):
+        # Milhares de bytes zerados listados de 16 em 16 seriam centenas de
+        # linhas entre o codigo e os dados. `times` e como o NASM escreveria.
+        built = self.build()
+        instructions = disassemble(built.data, arch='x86_64', base_address=self.BASE,
+                                   line_map=built.line_map, data_ranges=built.data_ranges)
+        text, data = self.section(built, '.text'), self.section(built, '.data')
+        gap = [i for i in instructions
+               if self.BASE + text['end'] <= int(i['address']) < self.BASE + data['start']]
+        self.assertEqual(len(gap), 1)
+        self.assertTrue(gap[0]['fill'])
+        self.assertEqual(gap[0]['size'], data['start'] - text['end'])
+        self.assertEqual(gap[0]['text'], f"times {gap[0]['size']} db 0x00")
+
+    def test_declared_data_is_never_collapsed_into_a_fill(self):
+        # A corrida de bytes iguais para na proxima linha do fonte: dois `db 0`
+        # em linhas diferentes sao duas declaracoes.
+        built = self.build(
+            '[BITS 64]\nsection .text\n nop\n'
+            'section .data\n a times 40 db 0\n b times 40 db 0\n'
+        )
+        instructions = disassemble(built.data, arch='x86_64', base_address=self.BASE,
+                                   line_map=built.line_map, data_ranges=built.data_ranges)
+        data = self.section(built, '.data')
+        fills = [i for i in instructions
+                 if i.get('fill') and int(i['address']) >= self.BASE + data['start']]
+        self.assertEqual(len(fills), 2)
+        self.assertEqual([i['size'] for i in fills], [40, 40])
 
     # -- o layout -----------------------------------------------------------
 
