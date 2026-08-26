@@ -602,6 +602,26 @@ function buildMenuItems(t, range, copySelection) {
   ];
 }
 
+/**
+ * Como pintar um byte — a mesma regra nas duas colunas.
+ *
+ * A caixa vermelha do que MUDOU no ultimo passo e a mesma dos registradores:
+ * e a leitura que responde "o que essa instrucao fez?" sem comparar telas de
+ * memoria a olho. Vale no hexadecimal e no ASCII, porque um `mov byte [rdi],
+ * 'A'` muda os dois e marcar so um deles esconderia metade do efeito.
+ *
+ * Selecao e alteracao nao competem: o FUNDO diz o que esta selecionado e a COR
+ * DO TEXTO continua dizendo o que mudou. Deixar a selecao apagar a marca faria
+ * o byte sumir do vermelho justamente quando alguem foi olha-lo de perto.
+ */
+function cellTone(cell, fallback) {
+  if (cell.selected) {
+    return cn("bg-[#264f78]", cell.changed ? "font-bold text-[#ff6b6b]" : "text-white");
+  }
+  if (cell.changed) return "rounded-sm bg-[#5a1d1d] font-bold text-[#ff6b6b]";
+  return fallback;
+}
+
 /** Uma linha do dump: endereco, bytes e a leitura ASCII dos mesmos bytes. */
 function Row({ row, width, digits, machine, range, changedSet, onSelect, onDragStart, isDragging, onMenu }) {
   const cells = Array.from(row.bytes, (byte, index) => {
@@ -612,8 +632,6 @@ function Row({ row, width, digits, machine, range, changedSet, onSelect, onDragS
       key: address.toString(),
       selected: Boolean(range && address >= range.from && address <= range.to),
       changed: changedSet.has(address.toString()),
-      // Byte que ninguem escreveu: a memoria e esparsa e le zero por padrao.
-      // Esmaecer distingue "esta zerado" de "nunca foi tocado".
       defined: machine.memory.isDefined(address),
     };
   });
@@ -660,13 +678,10 @@ function Row({ row, width, digits, machine, range, changedSet, onSelect, onDragS
               {...handlers(cell.address)}
               className={cn(
                 "inline-block w-[2ch] cursor-text text-center tabular-nums",
-                cell.selected
-                  ? "bg-[#264f78] text-white"
-                  : cell.changed
-                  ? "bg-[#5a1d1d] font-bold text-[#ff6b6b]"
-                  : cell.defined
-                  ? "text-[#d4d4d4]"
-                  : "text-[#4a4a4a]"
+                // Byte que ninguem escreveu: a memoria e esparsa e le zero por
+                // padrao. Esmaecer distingue "esta zerado" de "nunca foi
+                // tocado" — e o vao entre `.text` e `.data` e todo assim.
+                cellTone(cell, cell.defined ? "text-[#d4d4d4]" : "text-[#4a4a4a]")
               )}
             >
               {hex(BigInt(cell.byte), 2)}
@@ -688,7 +703,7 @@ function Row({ row, width, digits, machine, range, changedSet, onSelect, onDragS
               // inteira desce. A largura fixa ja basta para alinhar.
               className={cn(
                 "inline-block w-[1ch] cursor-text text-center",
-                cell.selected ? "bg-[#264f78] text-white" : ASCII_COLOR[ascii.kind]
+                cellTone(cell, ASCII_COLOR[ascii.kind])
               )}
             >
               {ascii.char}

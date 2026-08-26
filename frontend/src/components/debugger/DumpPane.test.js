@@ -48,6 +48,7 @@ async function mount({ sections, ...props } = {}) {
       </I18nProvider>
     );
   });
+  await settle();
 }
 
 beforeEach(() => {
@@ -91,6 +92,18 @@ const cell = (address) =>
   [...container.querySelectorAll(`[data-address="${BigInt(address).toString()}"]`)][0];
 
 const grid = () => container.querySelector("[role=grid]");
+
+/**
+ * Deixa o painel reagir à rolagem que ele mesmo acabou de fazer.
+ *
+ * Só as linhas visíveis viram DOM, e quem diz quais são é o evento `scroll`.
+ * jsdom não o dispara ao atribuir `scrollTop` — num navegador ele vem sozinho.
+ */
+const settle = async () => {
+  await act(async () => {
+    grid().dispatchEvent(new Event("scroll", { bubbles: false }));
+  });
+};
 const footer = () => container.querySelector("footer").textContent;
 
 const fire = async (node, type, init = {}) => {
@@ -309,15 +322,25 @@ describe("posicionamento ao seguir um endereço", () => {
 
   test("a linha fica no topo da área visível", async () => {
     await mount({ target: { address: ODD, nonce: 1 } });
-    const grid = container.querySelector("[role=grid]");
 
-    // A rolagem é medida em linhas de 18px a partir do começo da grade. Com o
-    // endereço no topo, o que rolou é exatamente o que está acima dele:
-    // a grade começa em 7F2000B6 e 7F200106 é a sexta linha (0x50 / 16 = 5).
-    const gridStart = BigInt(`0x${rowAddresses()[0]}`);
-    expect(grid.scrollTop).toBe(Number((ODD - gridStart) / 16n) * 18);
-    // Sanidade: rolagem de verdade, não o topo por acaso.
-    expect(grid.scrollTop).toBeGreaterThan(0);
+    // A rolagem é medida em linhas de 18px a partir do começo da grade, e o
+    // começo sai da conta da faixa: ela abre em 7F2000C0 (0x40 antes do
+    // código, alinhado a 32) e a fase de 6 bytes a puxa para 7F2000B6. De lá
+    // até 7F200106 são 0x50 / 16 = 5 linhas.
+    expect(container.querySelector("[role=grid]").scrollTop).toBe(5 * 18);
+  });
+
+  test("uma linha adiante rola exatamente uma linha a mais", async () => {
+    // Dito sem depender da conta acima: o que importa é que a rolagem
+    // acompanha a grade, linha a linha.
+    await mount({ target: { address: ODD, nonce: 1 } });
+    const before = container.querySelector("[role=grid]").scrollTop;
+
+    await act(async () => { root.unmount(); });
+    container.remove();
+    await mount({ target: { address: ODD + 16n, nonce: 1 } });
+
+    expect(container.querySelector("[role=grid]").scrollTop).toBe(before + 18);
   });
 
   test("trocar a largura da linha mantém o endereço no começo", async () => {
@@ -328,5 +351,80 @@ describe("posicionamento ao seguir um endereço", () => {
       select.dispatchEvent(new Event("change", { bubbles: true }));
     });
     expect(rowAddresses()).toContain("7F200106");
+  });
+});
+
+describe("bytes alterados no último passo", () => {
+  const CODE = 0x7f200100n;
+  const TOP = 0x00804000n;
+
+  /** A máquina depois de um `push`: quatro bytes novos no topo da pilha. */
+  function afterPush() {
+    const machine = new Machine({ arch: "x86", codeBase: CODE, stackTop: TOP });
+    machine.load({
+      // 68 00 22 00 22 = push 0x22002200
+      bytes: [0x68, 0x00, 0x22, 0x00, 0x22],
+      instructions: [
+        { address: CODE.toString(), size: 5, text: "push 0x22002200", mnemonic: "push",
+          groups: [], line: 1, operands: [{ type: "imm", value: "570434048", size: 4 }] },
+      ],
+    });
+    const step = machine.step();
+    return { machine, changed: step.changes.memory };
+  }
+
+  async function render({ machine, changed }, target) {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <I18nProvider>
+          <DumpPane machine={machine} changed={changed} target={{ address: target, nonce: 1 }} />
+        </I18nProvider>
+      );
+    });
+    await act(async () => {
+      container.querySelector("[role=grid]").dispatchEvent(new Event("scroll"));
+    });
+  }
+
+  const cellsAt = (address) =>
+    [...container.querySelectorAll(`[data-address="${BigInt(address).toString()}"]`)];
+
+  test("o byte escrito ganha a caixa vermelha, no hexadecimal e no ASCII", async () => {
+    const state = afterPush();
+    const written = state.machine.cpu.sp;
+    // O passo tem de ter escrito alguma coisa — senão o teste não prova nada.
+    expect(state.changed.length).toBe(4);
+
+    // Abre a mesma linha, mas ancorado 8 bytes antes: assim o byte escrito
+    // aparece SEM estar selecionado, e a marca fica sozinha na tela.
+    await render(state, written - 8n);
+    const cells = cellsAt(written);
+    expect(cells).toHaveLength(2);
+    cells.forEach((cell) => {
+      expect(cell.className).toContain("bg-[#5a1d1d]");
+      expect(cell.className).toContain("text-[#ff6b6b]");
+    });
+  });
+
+  test("o byte de trás, que ninguém tocou, continua sem marca", async () => {
+    const state = afterPush();
+    await render(state, state.machine.cpu.sp);
+    const cell = cellsAt(state.machine.cpu.sp - 1n)[0];
+    expect(cell.className).not.toContain("bg-[#5a1d1d]");
+  });
+
+  test("selecionar o byte alterado não apaga a marca", async () => {
+    // O fundo diz o que está selecionado; a cor do texto continua dizendo o
+    // que mudou.
+    const state = afterPush();
+    const written = state.machine.cpu.sp;
+    await render(state, written);
+
+    const cell = cellsAt(written)[0];
+    expect(cell.className).toContain("bg-[#264f78]");
+    expect(cell.className).toContain("text-[#ff6b6b]");
   });
 });
