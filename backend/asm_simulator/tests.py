@@ -1,5 +1,6 @@
 """Testes da biblioteca: metadata por arquivo, fonte em disco e bundle."""
 
+import base64
 import io
 import json
 import tarfile
@@ -10,7 +11,7 @@ from django.test import TransactionTestCase
 
 from asm_simulator.models import LibraryNode
 from asm_simulator.services import library_storage
-from asm_simulator.services.assembler import assemble
+from asm_simulator.services.assembler import AssemblyError, assemble
 from asm_simulator.services.disassembler import analyze, disassemble
 
 JSON = 'application/json'
@@ -251,7 +252,8 @@ class DataDirectiveTests(TransactionTestCase):
     """
 
     def build(self, source, arch='x86_64'):
-        data, _warnings, line_map, ranges = assemble(source, arch=arch, base_address=0x400000)
+        built = assemble(source, arch=arch, base_address=0x400000)
+        data, line_map, ranges = built.data, built.line_map, built.data_ranges
         return disassemble(data, arch=arch, base_address=0x400000,
                            line_map=line_map, data_ranges=ranges), ranges
 
@@ -322,6 +324,234 @@ class DataDirectiveTests(TransactionTestCase):
         self.assertEqual([i['mnemonic'] for i in instructions], ['xor', 'syscall'])
 
 
+class SectionTests(TransactionTestCase):
+    """Só existem `.text` e `.data` — e `.data` existe sempre.
+
+    O simulador nao tem carregador: o binario e uma imagem contigua escrita em
+    `codeBase`, com a pilha ao lado. `.bss` nao seria reservada nem zerada, e
+    `.rodata` nao teria protecao de escrita; aceitar essas secoes ensinaria uma
+    semantica que nao existe aqui.
+    """
+
+    BASE = 0x7FF700001000
+
+    # O exemplo canonico: `.data` declarada ANTES de `.text`, com um tipo de
+    # dado por tamanho, e o codigo alcancando a string por RIP-relativo.
+    SOURCE = (
+        '[BITS 64]\n'
+        '\n'
+        'section .data\n'
+        '    msg     db      "Hello, World!", 0Ah\n'
+        '    age     db      25\n'
+        '    count   dw      1000\n'
+        '    id_num  dd      12345678\n'
+        '    large   dq      123456789012345\n'
+        '\n'
+        'global _start\n'
+        'section .text\n'
+        '\n'
+        '_start:\n'
+        '    push rbp\n'
+        '    mov rbp, rsp\n'
+        '    lea rcx, [rel msg]\n'
+        '    call Function1\n'
+        '    pop rbp\n'
+        '    ret\n'
+        '\n'
+        'Function1:\n'
+        '    nop\n'
+        '    nop\n'
+        '    ret\n'
+    )
+
+    def build(self, source=None, arch='x86_64'):
+        return assemble(source or self.SOURCE, arch=arch, base_address=self.BASE)
+
+    def section(self, built, name):
+        return next(item for item in built.sections if item['name'] == name)
+
+    # -- o que e recusado ---------------------------------------------------
+
+    def test_bss_is_refused_pointing_at_the_line(self):
+        with self.assertRaises(AssemblyError) as ctx:
+            assemble('[BITS 64]\nsection .bss\n    buf resb 64\n',
+                     arch='x86_64', base_address=self.BASE)
+        messages = ctx.exception.messages
+        self.assertEqual([m['line'] for m in messages], [2])
+        self.assertIn('.bss', messages[0]['message'])
+
+    def test_rodata_is_refused(self):
+        with self.assertRaises(AssemblyError):
+            assemble('[BITS 64]\nsection .rodata\n k db 1\n',
+                     arch='x86_64', base_address=self.BASE)
+
+    def test_every_rejected_section_is_reported_at_once(self):
+        # Corrigir uma por vez, com uma nova montagem a cada, seria trabalho
+        # que o montador ja poderia ter poupado.
+        with self.assertRaises(AssemblyError) as ctx:
+            assemble('[BITS 64]\nsection .bss\n b resb 1\nsection .rodata\n k db 1\n',
+                     arch='x86_64', base_address=self.BASE)
+        self.assertEqual([m['line'] for m in ctx.exception.messages], [2, 4])
+
+    def test_bracketed_and_segment_forms_are_caught_too(self):
+        for source in ('[BITS 64]\n[section .bss]\n b resb 1\n',
+                       '[BITS 64]\nsegment .rodata\n k db 1\n'):
+            with self.assertRaises(AssemblyError):
+                assemble(source, arch='x86_64', base_address=self.BASE)
+
+    def test_a_commented_out_section_is_not_a_section(self):
+        built = self.build('[BITS 64]\n; section .bss\n nop\n')
+        self.assertEqual(len(built.data), 1)
+
+    def test_text_and_data_are_accepted(self):
+        built = self.build()
+        self.assertEqual([item['name'] for item in built.sections], ['.text', '.data'])
+
+    # -- a pseudo-secao -----------------------------------------------------
+
+    def test_data_exists_even_when_the_source_has_none(self):
+        # Vazia, logo depois da imagem: e onde ela comecaria. Assim nenhum
+        # painel precisa tratar "programa sem .data" como caso a parte.
+        built = self.build('[BITS 64]\n nop\n nop\n')
+        data = self.section(built, '.data')
+        self.assertEqual(data['start'], len(built.data))
+        self.assertEqual(data['start'], data['end'])
+
+    # -- o layout -----------------------------------------------------------
+
+    def test_text_comes_first_and_data_after_it(self):
+        built = self.build()
+        text, data = self.section(built, '.text'), self.section(built, '.data')
+        self.assertEqual(text['start'], 0)
+        self.assertLessEqual(text['end'], data['start'])
+        self.assertEqual(data['end'], len(built.data))
+
+    def test_data_bytes_are_the_declared_ones(self):
+        built = self.build()
+        data = self.section(built, '.data')
+        blob = built.data[data['start']:data['end']]
+        self.assertTrue(blob.startswith(b'Hello, World!\n'))
+        # 25 num byte, 1000 numa word, e o resto em little-endian.
+        self.assertEqual(blob[14], 25)
+        self.assertEqual(int.from_bytes(blob[15:17], 'little'), 1000)
+        self.assertEqual(int.from_bytes(blob[17:21], 'little'), 12345678)
+        self.assertEqual(int.from_bytes(blob[21:29], 'little'), 123456789012345)
+
+    def test_rip_relative_reference_lands_on_the_data_section(self):
+        # `lea rcx, [rel msg]` so aponta para o lugar certo se `.data` estiver
+        # onde o montador disse que esta — e a prova de que o layout bate.
+        built = self.build()
+        instructions = disassemble(built.data, arch='x86_64', base_address=self.BASE,
+                                   line_map=built.line_map, data_ranges=built.data_ranges)
+        lea = next(i for i in instructions if i['mnemonic'] == 'lea')
+        target = int(lea['address']) + int(lea['size']) + int(lea['operands'][1]['disp'])
+        self.assertEqual(target, self.BASE + self.section(built, '.data')['start'])
+
+    # -- o que o resto do sistema le ---------------------------------------
+
+    def test_the_line_map_does_not_confuse_the_two_sections(self):
+        # O listing do nasm conta o offset a partir do inicio de CADA secao,
+        # entao o primeiro byte de `.text` e o primeiro de `.data` sao ambos
+        # "offset 0". Sem a base de cada secao, um apagava o outro.
+        built = self.build()
+        first_code_line = self.SOURCE.splitlines().index('    push rbp') + 1
+        self.assertEqual(built.line_map[0], first_code_line)
+
+        data = self.section(built, '.data')
+        msg_line = self.SOURCE.splitlines().index(
+            '    msg     db      "Hello, World!", 0Ah') + 1
+        self.assertEqual(built.line_map[data['start']], msg_line)
+
+    def test_the_whole_data_section_is_marked_as_data(self):
+        built = self.build()
+        data = self.section(built, '.data')
+        covered = any(start <= data['start'] and end >= data['end']
+                      for start, end in built.data_ranges)
+        self.assertTrue(covered, built.data_ranges)
+
+    def test_padding_between_the_sections_is_not_decoded_as_code(self):
+        # O nasm alinha `.data` em 4 bytes; os bytes de enchimento nao sao
+        # instrucao, e desmontados virariam um `add [rax], al` sem fonte.
+        built = self.build()
+        text, data = self.section(built, '.text'), self.section(built, '.data')
+        if text['end'] == data['start']:
+            self.skipTest('sem enchimento neste programa')
+        self.assertTrue(any(start <= text['end'] and end >= data['start']
+                            for start, end in built.data_ranges))
+
+    def test_data_is_not_disassembled_as_instructions(self):
+        built = self.build()
+        instructions = disassemble(built.data, arch='x86_64', base_address=self.BASE,
+                                   line_map=built.line_map, data_ranges=built.data_ranges)
+        start = self.BASE + self.section(built, '.data')['start']
+        inside = [i for i in instructions if int(i['address']) >= start]
+        self.assertTrue(inside)
+        self.assertTrue(all(i['data'] for i in inside))
+
+    def test_the_endpoint_reports_the_sections(self):
+        response = self.client.post(
+            '/api/program/assemble/',
+            {'source': self.SOURCE, 'arch': 'x86_64', 'base_address': str(self.BASE)},
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([s['name'] for s in response.json()['sections']],
+                         ['.text', '.data'])
+
+    def test_the_endpoint_reports_a_refused_section_on_its_line(self):
+        response = self.client.post(
+            '/api/program/assemble/',
+            {'source': '[BITS 64]\nsection .bss\n b resb 1\n', 'arch': 'x86_64'},
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['messages'][0]['line'], 2)
+
+    def test_a_rip_relative_access_keeps_its_source_line(self):
+        # O nasm lista o deslocamento ainda nao resolvido entre parenteses
+        # (`488D0D(00000000)`). Sem aceitar essa forma, a linha do listing era
+        # descartada — e justamente a instrucao que le a variavel ficava sem
+        # linha no editor.
+        built = self.build()
+        lea_line = self.SOURCE.splitlines().index('    lea rcx, [rel msg]') + 1
+        self.assertIn(lea_line, built.line_map.values())
+
+    def test_the_alignment_padding_is_a_range_of_its_own(self):
+        # A desmontagem quebra dados em linhas de 16 bytes a partir do inicio
+        # de CADA faixa. Fundido com a `.data`, o enchimento deslocaria a
+        # primeira variavel para o meio da primeira linha do dump.
+        built = self.build()
+        text, data = self.section(built, '.text'), self.section(built, '.data')
+        self.assertLess(text['end'], data['start'], 'este programa nao tem enchimento')
+        self.assertIn((text['end'], data['start']), built.data_ranges)
+        self.assertIn((data['start'], data['end']), built.data_ranges)
+
+    def test_the_first_data_row_starts_on_the_first_variable(self):
+        built = self.build()
+        instructions = disassemble(built.data, arch='x86_64', base_address=self.BASE,
+                                   line_map=built.line_map, data_ranges=built.data_ranges)
+        data = self.section(built, '.data')
+        first = next(i for i in instructions
+                     if i['data'] and int(i['address']) == self.BASE + data['start'])
+        self.assertTrue(first['bytes'].startswith('48 65 6C 6C 6F'))  # "Hello"
+        msg_line = self.SOURCE.splitlines().index(
+            '    msg     db      "Hello, World!", 0Ah') + 1
+        self.assertEqual(first['line'], msg_line)
+
+    def test_an_imported_binary_still_has_the_two_sections(self):
+        # Um shellcode nao tem secao nenhuma: e codigo do primeiro ao ultimo
+        # byte, e a `.data` existe vazia so para a regiao nunca faltar.
+        response = self.client.post(
+            '/api/program/disassemble/',
+            {'data': base64.b64encode(b'\x90\x90\xc3').decode(), 'arch': 'x86_64'},
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 200)
+        sections = response.json()['sections']
+        self.assertEqual([s['name'] for s in sections], ['.text', '.data'])
+        self.assertEqual(sections[1]['start'], sections[1]['end'])
+
+
 class BinaryAnalysisTests(TransactionTestCase):
     """Um binario vindo de fora pode nao ser codigo de maquina.
 
@@ -336,9 +566,9 @@ class BinaryAnalysisTests(TransactionTestCase):
 
     def test_real_machine_code_passes(self):
         # Codigo montado de verdade: nada a apontar.
-        data, _w, _lm, _r = assemble(
+        data = assemble(
             '[BITS 64]\n xor rax, rax\n mov al, 60\n xor rdi, rdi\n syscall\n',
-            arch='x86_64', base_address=0x400000)
+            arch='x86_64', base_address=0x400000).data
         report = self.analyze(data)
         self.assertEqual(report['verdict'], 'ok', report)
         self.assertEqual(report['reasons'], [])
@@ -385,7 +615,7 @@ class BinaryImportTests(TransactionTestCase):
             '    call step2\n'
             '    db "/bin/sh", 0x01\n'
         )
-        data, _w, _lm, _r = assemble(source, arch='x86_64', base_address=0x400000)
+        data = assemble(source, arch='x86_64', base_address=0x400000).data
         return data
 
     def upload(self, data, name='shellcode.bin', **extra):
@@ -415,7 +645,7 @@ class BinaryImportTests(TransactionTestCase):
         original = self.shellcode()
         source = self.upload(original).json()['source']
 
-        rebuilt, _w, _lm, _r = assemble(source, arch='x86_64', base_address=0x400000)
+        rebuilt = assemble(source, arch='x86_64', base_address=0x400000).data
         self.assertEqual(rebuilt, original)
 
     def test_size_limit_is_enforced_by_the_server(self):
@@ -643,8 +873,8 @@ class AddressWidthTests(TransactionTestCase):
 
     def test_capstone_really_disagrees_with_itself(self):
         # A prova do problema que a validacao existe para impedir.
-        data, _w, _lm, _r = assemble('[BITS 32]\n jmp short fim\nfim:\n nop\n',
-                                     arch='x86', base_address=self.BASE64)
+        data = assemble('[BITS 32]\n jmp short fim\nfim:\n nop\n',
+                        arch='x86', base_address=self.BASE64).data
         insn = disassemble(data, arch='x86', base_address=self.BASE64)[0]
         target = int(insn['operands'][0]['value'])
 

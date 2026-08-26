@@ -23,6 +23,11 @@ CATALOGS = {
 
         'program.emptySource': 'Source code is empty.',
         'program.emptyBinary': 'Binary is empty.',
+        'program.sectionNotAllowed': (
+            'Section "{name}" is not supported. This simulator only has '
+            '{allowed}: there is no loader here, so any other section would '
+            'just be appended to the end of the image.'
+        ),
 
         'library.nameRequired': 'Name is required.',
         'library.nameTooLong': 'Name is too long.',
@@ -60,6 +65,11 @@ CATALOGS = {
 
         'program.emptySource': 'O código-fonte está vazio.',
         'program.emptyBinary': 'O binário está vazio.',
+        'program.sectionNotAllowed': (
+            'A seção "{name}" não é suportada. Este simulador só tem '
+            '{allowed}: não há carregador aqui, então qualquer outra seção '
+            'seria apenas concatenada no fim da imagem.'
+        ),
 
         'library.nameRequired': 'O nome é obrigatório.',
         'library.nameTooLong': 'O nome é longo demais.',

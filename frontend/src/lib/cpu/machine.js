@@ -63,6 +63,12 @@ export class Machine {
     this.instructions = [];
     this.byAddress = new Map();
     this.codeEnd = this.codeBase;
+    // Vazias ate a carga, mas SEMPRE presentes: quem lê `dataBase` antes de
+    // montar recebe um endereco valido, nao `undefined`.
+    this.sections = [
+      { name: ".text", start: this.codeBase, end: this.codeBase },
+      { name: ".data", start: this.codeBase, end: this.codeBase },
+    ];
 
     this.history = [];
     this.halted = null;
@@ -80,11 +86,72 @@ export class Machine {
   // Carga do programa
   // ------------------------------------------------------------------
 
-  load({ bytes, instructions }) {
+  load({ bytes, instructions, sections }) {
     this.memory.writeBytes(this.codeBase, bytes);
     this.codeEnd = this.codeBase + BigInt(bytes.length);
+    this.setSections(sections, bytes.length);
     this.setInstructions(instructions);
     this.reset();
+  }
+
+  /**
+   * Onde `.text` e `.data` cairam na imagem carregada.
+   *
+   * O montador so aceita essas duas secoes, e a `.data` EXISTE SEMPRE — vazia,
+   * logo depois da imagem, quando o programa nao declara uma. Assim nenhum
+   * painel precisa tratar "programa sem .data" como caso a parte, e o aluno ve
+   * onde ela comecaria. Um binario importado, que nao tem secao nenhuma, cai
+   * no mesmo formato: codigo do primeiro ao ultimo byte.
+   *
+   * As duas moram DENTRO da imagem: o `nasm -f bin` concatena as secoes, e e
+   * dessa contiguidade que um `lea rcx, [rel msg]` depende para acertar o
+   * alvo. Separa-las em enderecos distintos quebraria o RIP-relativo.
+   */
+  setSections(sections, size) {
+    const list = (sections || []).map((item) => ({
+      name: item.name,
+      start: this.codeBase + BigInt(item.start),
+      end: this.codeBase + BigInt(item.end),
+    }));
+
+    if (!list.some((item) => item.name === ".text")) {
+      list.unshift({ name: ".text", start: this.codeBase, end: this.codeBase + BigInt(size) });
+    }
+    if (!list.some((item) => item.name === ".data")) {
+      list.push({ name: ".data", start: this.codeEnd, end: this.codeEnd });
+    }
+    this.sections = list;
+  }
+
+  section(name) {
+    return (this.sections || []).find((item) => item.name === name) || null;
+  }
+
+  get textBase() {
+    return this.section(".text")?.start ?? this.codeBase;
+  }
+
+  get textEnd() {
+    return this.section(".text")?.end ?? this.codeEnd;
+  }
+
+  get dataBase() {
+    return this.section(".data")?.start ?? this.codeEnd;
+  }
+
+  get dataEnd() {
+    return this.section(".data")?.end ?? this.codeEnd;
+  }
+
+  /**
+   * True se `address` cai na regiao de dados.
+   *
+   * Uma `.data` vazia nunca casa (`start === end`), que e o comportamento
+   * correto: nao ha byte de dado nenhum para apontar.
+   */
+  isDataAddress(address) {
+    const value = BigInt(address);
+    return value >= this.dataBase && value < this.dataEnd;
   }
 
   /**
@@ -108,10 +175,23 @@ export class Machine {
     return this.memory.readBytes(this.codeBase, Number(this.codeEnd - this.codeBase));
   }
 
-  /** True se `address` cai dentro da regiao de codigo carregada. */
+  /** True se `address` cai dentro da IMAGEM carregada (codigo e dados). */
   isCodeAddress(address) {
     const value = BigInt(address);
     return value >= this.codeBase && value < this.codeEnd;
+  }
+
+  /**
+   * True se `address` e codigo EXECUTAVEL — dentro da imagem e fora da
+   * `.data`.
+   *
+   * A distincao importa em dois lugares: escrever num `db` da `.data` e uso
+   * normal do programa e nao pode ser lido como codigo automodificavel, e um
+   * ponteiro para a `.data` na pilha e um ponteiro para dado, nao um endereco
+   * de retorno.
+   */
+  isExecutableAddress(address) {
+    return this.isCodeAddress(address) && !this.isDataAddress(address);
   }
 
   reset() {
@@ -149,7 +229,10 @@ export class Machine {
 
     // Escrita dentro do proprio codigo: a desmontagem em tela ficou defasada.
     // Quem observa `codeDirty` decide quando refazer — aqui so sinalizamos.
-    if (this.isCodeAddress(base) || this.isCodeAddress(base + BigInt(size - 1))) {
+    // A `.data` fica de fora: escrever numa variavel declarada com `db` e o
+    // uso normal dela, e remontar a listagem a cada `mov [rel age], 1` seria
+    // uma ida ao servidor por passo sem nada mudar na tela.
+    if (this.isExecutableAddress(base) || this.isExecutableAddress(base + BigInt(size - 1))) {
       this.codeDirty = true;
     }
   }
@@ -465,7 +548,7 @@ export class Machine {
     });
     entry.journal.memory.forEach((previous, address) => {
       this.memory.writeByte(address, previous);
-      if (this.isCodeAddress(address)) this.codeDirty = true;
+      if (this.isExecutableAddress(address)) this.codeDirty = true;
     });
 
     // A saida do programa tambem volta: um `write` desfeito nao pode deixar

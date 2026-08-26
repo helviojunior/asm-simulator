@@ -13,7 +13,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from asm_simulator.i18n import tr
+from asm_simulator.i18n import language_for_request, tr
 from asm_simulator.services.assembler import (
     AssemblyError, MAX_OUTPUT_BYTES, assemble,
 )
@@ -114,8 +114,8 @@ class AssembleView(APIView):
             )
 
         try:
-            data, warnings, line_map, data_ranges = assemble(
-                source, arch=arch, base_address=base_address)
+            built = assemble(source, arch=arch, base_address=base_address,
+                             lang=language_for_request(request))
         except AssemblyError as exc:
             return Response(
                 {'detail': exc.message, 'messages': exc.messages},
@@ -124,8 +124,9 @@ class AssembleView(APIView):
 
         try:
             return Response(_payload(
-                data, arch, base_address,
-                warnings=warnings, line_map=line_map, data_ranges=data_ranges,
+                built.data, arch, base_address,
+                warnings=built.warnings, line_map=built.line_map,
+                data_ranges=built.data_ranges, sections=built.sections,
             ))
         except DisassemblyError as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
@@ -255,8 +256,20 @@ class ImportBinaryView(APIView):
         })
 
 
+def _default_sections(size):
+    """Secoes de um binario que nao passou pelo nosso montador.
+
+    Um shellcode importado nao tem secao nenhuma: e codigo do primeiro ao
+    ultimo byte, e a `.data` existe vazia so para a regiao nunca faltar.
+    """
+    return [
+        {'name': '.text', 'start': 0, 'end': size},
+        {'name': '.data', 'start': size, 'end': size},
+    ]
+
+
 def _payload(data, arch, base_address, warnings=None, line_map=None,
-             data_ranges=None, with_analysis=False):
+             data_ranges=None, sections=None, with_analysis=False):
     """Corpo da resposta. Propaga DisassemblyError para a view tratar."""
     instructions = disassemble(
         data, arch=arch, base_address=base_address,
@@ -273,6 +286,10 @@ def _payload(data, arch, base_address, warnings=None, line_map=None,
         # re-desmontagem de codigo automodificavel precisa reaplica-las, senao
         # a string embutida volta a ser lida como instrucao.
         'data_ranges': [[start, end] for start, end in (data_ranges or [])],
+        # Onde `.text` e `.data` cairam na imagem, em offsets. O simulador
+        # sempre recebe uma `.data` — vazia, quando o fonte nao declara uma —
+        # para nenhum painel precisar tratar a ausencia como caso a parte.
+        'sections': sections if sections is not None else _default_sections(len(data)),
         # String decimal: um base_address de 64 bits nao cabe em Number no JS.
         'base_address': str(base_address),
         'size': len(data),

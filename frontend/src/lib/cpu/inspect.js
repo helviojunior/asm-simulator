@@ -20,9 +20,14 @@ import { prototypeByName, syscallNameByNumber } from "lib/prototypes";
 const STRING_SCAN = 24;
 const MIN_STRING_LENGTH = 3;
 
-/** Descreve a regiao de memoria de um endereco: codigo, pilha ou nada. */
+/** Descreve a regiao de memoria de um endereco: codigo, dados, pilha ou nada. */
 export function describeRegion(machine, address) {
   const value = BigInt(address);
+  // `.data` ANTES de `code`: a regiao de dados mora dentro da imagem
+  // carregada, e a ordem inversa chamaria de codigo o que e uma string.
+  if (machine.isDataAddress(value)) {
+    return { region: "data", offset: value - machine.dataBase };
+  }
   if (value >= machine.codeBase && value < machine.codeEnd) {
     return { region: "code", offset: value - machine.codeBase };
   }
@@ -66,6 +71,7 @@ export function annotateValue(machine, value, { asPointer = true } = {}) {
   if (asPointer) {
     const { region, offset } = describeRegion(machine, numeric);
     if (region === "code") notes.push(`code+0x${offset.toString(16).toUpperCase()}`);
+    if (region === "data") notes.push(`data+0x${offset.toString(16).toUpperCase()}`);
     // Offset negativo existe: e um endereco ACIMA do ponteiro inicial, dentro
     // da folga. O sinal precisa aparecer, senao "stack-0xFFFF..." confundiria.
     if (region === "stack") {
@@ -259,7 +265,9 @@ export function codeReference(machine, value) {
   } catch {
     return null;
   }
-  if (!machine.isCodeAddress(address)) return null;
+  // `.data` fora: um ponteiro para uma string declarada com `db` esta dentro
+  // da imagem, mas nao e endereco de codigo nenhum.
+  if (!machine.isExecutableAddress(address)) return null;
 
   const at = machine.byAddress?.get(address.toString()) || null;
   const from = (machine.instructions || []).find(

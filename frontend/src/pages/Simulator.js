@@ -589,7 +589,7 @@ export default function Simulator() {
       const data = response.data;
       const bytes = decodeBase64(data.data);
       const next = new Machine({ arch, os: target, codeBase: base, stackTop: top });
-      next.load({ bytes, instructions: data.instructions });
+      next.load({ bytes, instructions: data.instructions, sections: data.sections });
 
       machineRef.current = next;
         showSource();

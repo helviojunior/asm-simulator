@@ -4,6 +4,7 @@ import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 import { asciiCell, hex, parseAddress } from "lib/cpu/format";
 import { COPY_FORMATS, dumpWindow, formatBytes, selectionValue } from "lib/cpu/dump";
+import { describeRegion } from "lib/cpu/inspect";
 import { copyText } from "lib/clipboard";
 import { ContextMenu, useContextMenu } from "components/ui/contextMenu";
 
@@ -307,7 +308,11 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
     ? [
         { key: "ip", label: machine.arch.instructionPointer.toUpperCase(), address: machine.cpu.ip },
         { key: "sp", label: machine.arch.stackPointer.toUpperCase(), address: machine.cpu.sp },
-        { key: "code", label: t("dump.code", "Code"), address: machine.codeBase },
+        { key: "text", label: ".text", address: machine.textBase },
+        // Sempre oferecida, ainda que a `.data` esteja vazia: o atalho leva ao
+        // ponto onde ela comecaria, que e a resposta certa para "onde ficam os
+        // meus dados?" num programa que ainda nao declarou nenhum.
+        { key: "data", label: ".data", address: machine.dataBase },
       ]
     : [];
 
@@ -439,6 +444,7 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
       <footer className="flex shrink-0 items-center gap-3 overflow-hidden whitespace-pre border-t border-[#3c3c3c] px-2 py-1 font-mono text-[11px]">
         {range ? (
           <>
+            <RegionLabel machine={machine} address={range.from} />
             <span className="shrink-0 text-[#858585]">
               {hex(range.from, digits)}
               {range.to !== range.from && `…${hex(range.to, digits)}`}
@@ -608,6 +614,33 @@ function Row({ row, width, digits, machine, range, changedSet, onSelect, onDragS
         })}
       </span>
     </div>
+  );
+}
+
+/**
+ * Em que regiao o byte selecionado esta.
+ *
+ * Endereco solto nao diz nada; `.data+0x0` diz que aquilo e a primeira
+ * variavel declarada, e `stack` diz que e memoria que o programa empilhou.
+ */
+function RegionLabel({ machine, address }) {
+  const { t } = useI18n();
+  const { region, offset } = describeRegion(machine, address);
+  if (!region) return null;
+
+  // `.text` e `.data` sao nomes de secao — nao se traduzem. A pilha nao tem
+  // nome de secao, e ai vale a palavra.
+  const name =
+    region === "code" ? ".text" : region === "data" ? ".data" : t("dump.regionStack", "stack");
+  return (
+    <span
+      className={cn(
+        "shrink-0",
+        region === "data" ? "text-[#4ec9b0]" : region === "stack" ? "text-[#c586c0]" : "text-[#569cd6]"
+      )}
+    >
+      {name}+0x{(offset < 0n ? -offset : offset).toString(16).toUpperCase()}
+    </span>
   );
 }
 

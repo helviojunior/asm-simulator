@@ -9,7 +9,10 @@ import logging
 import re
 import subprocess
 import tempfile
+from collections import namedtuple
 from pathlib import Path
+
+from asm_simulator.i18n import translate
 
 log = logging.getLogger(__name__)
 
@@ -32,14 +35,19 @@ MAX_OUTPUT_BYTES = 1024 * 1024
 # Linhas sem codigo gerado (rotulo, comentario, directive) nao trazem offset, e
 # sequencias longas continuam em linhas seguintes repetindo o mesmo numero — as
 # duas coisas o padrao abaixo acomoda.
-# O sufixo cobre as duas continuacoes que o nasm escreve: `-` quando a
-# sequencia segue na proxima linha, e `<rep 4h>` quando os bytes vem de um
-# `times` (com espaco dentro, dai o `[^>]*`). Sem aceitar essa segunda forma, a
-# linha inteira era descartada — e com ela o mapa de linhas e a marcacao de
-# dados daquele trecho.
+# O sufixo cobre as tres continuacoes que o nasm escreve:
+#
+#   `-`            a sequencia segue na proxima linha
+#   `<rep 4h>`     os bytes vem de um `times` (com espaco dentro, dai o `[^>]*`)
+#   `(00000000)`   deslocamento resolvido depois, como no `lea rcx, [rel msg]`
+#
+# Sem aceitar cada uma delas, a linha inteira era descartada — e com ela o mapa
+# de linhas e a marcacao de dados daquele trecho. A terceira forma e o caso de
+# TODO acesso RIP-relativo a `.data`: sem ela, justamente a instrucao que le a
+# variavel ficava sem linha no editor.
 _LISTING_LINE = re.compile(
     r'^\s*(?P<line>\d+)\s+(?P<offset>[0-9A-Fa-f]{8})\s+'
-    r'(?P<bytes>[0-9A-Fa-f]+)(?:-|<[^>]*>)?(?:\s|$)'
+    r'(?P<bytes>[0-9A-Fa-f]+)(?:-|<[^>]*>|\([0-9A-Fa-f]*\))*(?:\s|$)'
 )
 
 # Directives que RESERVAM OU EMITEM DADOS, e nao instrucoes.
@@ -69,6 +77,50 @@ _HAS_BITS = re.compile(r'^\s*\[?\s*bits\s+(16|32|64)\b', re.IGNORECASE | re.MULT
 _HAS_ORG = re.compile(r'^\s*\[?\s*org\s+', re.IGNORECASE | re.MULTILINE)
 
 BITS_FOR_ARCH = {'x86': 32, 'x86_64': 64}
+
+# As UNICAS secoes aceitas.
+#
+# O simulador nao tem carregador: o `nasm -f bin` produz UMA imagem contigua,
+# que e escrita inteira em `codeBase`, e ao lado dela existe so a pilha. Uma
+# `section .bss` nao seria reservada nem zerada em tempo de carga, e uma
+# `.rodata` nao teria protecao de escrita — os bytes apenas seriam concatenados
+# no fim da imagem. Aceitar essas secoes ensinaria uma semantica que o
+# simulador nao tem; recusa-las e a leitura honesta.
+ALLOWED_SECTIONS = ('.text', '.data')
+
+# Secao vigente antes de qualquer directive: e o que o proprio nasm assume no
+# formato `bin`.
+DEFAULT_SECTION = '.text'
+
+# `section .data`, `[section .text]`, `segment .text align=16`.
+_SECTION_DIRECTIVE = re.compile(
+    r'^\s*\[?\s*(?:section|segment)\s+(?P<name>[^\s\],;]+)',
+    re.IGNORECASE,
+)
+
+# Linha da tabela-resumo do map do nasm:
+#
+#     Vstart            Start             Stop              Length    Class     Name
+#         7FF700001000      7FF700001000      7FF700001024  00000024  progbits  .text
+#
+# A largura das colunas de endereco acompanha o `org` (8 digitos num programa
+# de 32 bits, 16 num de 64), entao o padrao nao pode fixa-la.
+_MAP_SECTION_ROW = re.compile(
+    r'^\s*(?P<vstart>[0-9A-Fa-f]+)\s+(?P<start>[0-9A-Fa-f]+)\s+(?P<stop>[0-9A-Fa-f]+)\s+'
+    r'(?P<length>[0-9A-Fa-f]+)\s+\S+\s+(?P<name>\.\S+)\s*$'
+)
+
+_MAP_ORIGIN_HEADER = re.compile(r'^--+\s*Program origin\b', re.IGNORECASE)
+_MAP_SUMMARY_HEADER = re.compile(r'^--+\s*Sections \(summary\)', re.IGNORECASE)
+_MAP_ANY_HEADER = re.compile(r'^--+\s*\S')
+
+
+# O que `assemble()` devolve. Um namedtuple, e nao uma tupla solta: sao cinco
+# campos, e `data, _w, _lm, _r, _s = assemble(...)` diz menos a cada um que se
+# acrescenta.
+AssemblyResult = namedtuple(
+    'AssemblyResult', 'data warnings line_map data_ranges sections'
+)
 
 
 class AssemblyError(Exception):
@@ -118,7 +170,131 @@ def _data_lines(source):
     return lines
 
 
-def _parse_listing(text, line_offset):
+def _sections_by_line(source):
+    """Em que secao cada linha do fonte esta, e as secoes recusadas.
+
+    Devolve ``(mapa linha -> secao, [(linha, nome)] recusadas)``. Antes da
+    primeira directive vale ``.text``, como o proprio nasm assume no formato
+    `bin`. Uma secao recusada NAO troca a secao vigente: o fonte vai ser
+    rejeitado de qualquer forma, e mudar para ela so bagunçaria o mapa.
+    """
+    mapping = {}
+    rejected = []
+    current = DEFAULT_SECTION
+
+    for index, raw in enumerate((source or '').splitlines(), start=1):
+        code = raw.split(';', 1)[0]
+        match = _SECTION_DIRECTIVE.match(code)
+        if match:
+            name = match.group('name').lower()
+            if name in ALLOWED_SECTIONS:
+                current = name
+            else:
+                rejected.append((index, match.group('name')))
+        mapping[index] = current
+
+    return mapping, rejected
+
+
+def _check_sections(source, lang=None):
+    """Recusa o fonte que declare uma secao fora de ``ALLOWED_SECTIONS``.
+
+    A checagem acontece ANTES de chamar o nasm: ele montaria `.bss` e
+    `.rodata` sem reclamar, e o aluno so descobriria a diferenca ao ver os
+    bytes num lugar que nao esperava.
+    """
+    mapping, rejected = _sections_by_line(source)
+    if rejected:
+        allowed = ', '.join(ALLOWED_SECTIONS)
+        raise AssemblyError(
+            translate('program.sectionNotAllowed', lang,
+                      default='Only the {allowed} sections are supported.',
+                      name=rejected[0][1], allowed=allowed),
+            messages=[{
+                'line': line,
+                'level': 'error',
+                'message': translate(
+                    'program.sectionNotAllowed', lang,
+                    default='Only the {allowed} sections are supported.',
+                    name=name, allowed=allowed),
+            } for line, name in rejected],
+        )
+    return mapping
+
+
+def _parse_map(text):
+    """Base e tamanho de cada secao, lidos do map do nasm.
+
+    E o montador dizendo onde cada secao caiu na imagem — informacao que o
+    listing NAO tem, porque ali os offsets sao relativos a cada secao e
+    recomecam do zero. Sem isto, o primeiro byte de `.text` e o primeiro de
+    `.data` sao ambos "offset 0" e um sobrescreve o outro no mapa de linhas.
+
+    Devolve ``{nome: (offset na imagem, tamanho)}``; vazio se o map nao veio.
+    """
+    origin = None
+    sections = {}
+    block = None
+
+    for raw in (text or '').splitlines():
+        if _MAP_ORIGIN_HEADER.match(raw):
+            block = 'origin'
+            continue
+        if _MAP_SUMMARY_HEADER.match(raw):
+            block = 'summary'
+            continue
+        if _MAP_ANY_HEADER.match(raw):
+            block = None
+            continue
+
+        stripped = raw.strip()
+        if not stripped:
+            continue
+
+        if block == 'origin' and origin is None:
+            try:
+                origin = int(stripped, 16)
+            except ValueError:
+                return {}
+            continue
+
+        if block == 'summary':
+            match = _MAP_SECTION_ROW.match(raw)
+            if match:
+                sections[match.group('name').lower()] = (
+                    int(match.group('start'), 16), int(match.group('length'), 16)
+                )
+
+    if origin is None:
+        return {}
+    # O offset na imagem e o que interessa: o simulador carrega o binario em
+    # `codeBase`, que pode nem ser o `org` (o aluno pode ter escrito o dele).
+    return {name: (start - origin, length) for name, (start, length) in sections.items()}
+
+
+def _section_layout(bases, size):
+    """Secoes da imagem, em offsets, com a `.data` sempre presente.
+
+    A pseudo-secao existe porque o simulador SEMPRE tem uma regiao de dados,
+    ainda que vazia: assim nenhum painel precisa tratar "programa sem `.data`"
+    como um caso a parte, e o aluno ve onde ela comecaria.
+    """
+    layout = []
+    for name in ALLOWED_SECTIONS:
+        if name in bases:
+            start, length = bases[name]
+            layout.append({'name': name, 'start': start, 'end': start + length})
+
+    if not any(item['name'] == '.text' for item in layout):
+        layout.insert(0, {'name': '.text', 'start': 0, 'end': size})
+    if not any(item['name'] == '.data' for item in layout):
+        # Vazia e logo depois da imagem: e onde ela cairia se existisse.
+        layout.append({'name': '.data', 'start': size, 'end': size})
+
+    return layout
+
+
+def _parse_listing(text, line_offset, base_for_line=None):
     """Linhas do listing como ``[(offset, linha do fonte)]``, em ordem.
 
     E o proprio montador dizendo de onde veio cada byte: nao ha heuristica de
@@ -126,7 +302,8 @@ def _parse_listing(text, line_offset):
     corretos de graca.
 
     ``line_offset`` desconta as directives que injetamos antes do fonte, para
-    o numero bater com o que o aluno ve no editor.
+    o numero bater com o que o aluno ve no editor. ``base_for_line`` traduz o
+    offset relativo a secao para o offset na imagem.
     """
     rows = {}
     for raw in (text or '').splitlines():
@@ -137,7 +314,11 @@ def _parse_listing(text, line_offset):
         if line < 1:
             # Byte gerado pelo preambulo, nao por codigo do aluno.
             continue
+        # O listing conta o offset a partir do inicio da SECAO; a base leva
+        # ao offset na imagem, que e como o resto do sistema indexa.
         offset = int(match.group('offset'), 16)
+        if base_for_line:
+            offset += base_for_line(line)
         # Nao sobrescrever: a primeira linha que gerou aquele offset e a certa.
         rows.setdefault(offset, line)
     return sorted(rows.items())
@@ -161,6 +342,43 @@ def _data_ranges(rows, data_lines, size):
     return _merge(spans)
 
 
+def _data_layout(spans, sections):
+    """Faixas de dados finais, ja com a `.data` e o enchimento entre secoes.
+
+    Tres coisas entram aqui, e cada uma vira uma faixa SEPARADA:
+
+    1. O que a deteccao por directive achou dentro do `.text` — o `db` embutido
+       no meio do codigo, do idioma JMP-CALL-POP.
+    2. O enchimento de alinhamento entre as secoes. O nasm alinha `.data` em 4
+       bytes, e esses bytes nao sao instrucao: desmontados, virariam um
+       `add [rax], al` que o aluno procuraria no fonte sem achar.
+    3. A `.data` inteira, comece ela por `db` ou nao.
+
+    Separadas de proposito: a desmontagem quebra os dados em linhas de 16 bytes
+    a partir do inicio de CADA faixa. Fundidas, a primeira linha da `.data`
+    comecaria nos bytes de enchimento e a primeira variavel apareceria
+    deslocada — que e exatamente o que ninguem consegue conferir num dump.
+    """
+    data = next((item for item in sections if item['name'] == '.data'), None)
+    if not data or data['end'] <= data['start']:
+        return spans
+
+    text_end = next((item['end'] for item in sections if item['name'] == '.text'), 0)
+    if text_end <= 0 or text_end > data['start']:
+        text_end = data['start']
+
+    # O que veio de directive fica confinado ao `.text`: o que esta na `.data`
+    # entra pela faixa da propria secao, e sobrepor as duas faria a desmontagem
+    # emitir os mesmos bytes duas vezes.
+    ranges = [(start, min(end, text_end)) for start, end in spans if start < text_end]
+    ranges = [(start, end) for start, end in ranges if start < end]
+
+    if text_end < data['start']:
+        ranges.append((text_end, data['start']))
+    ranges.append((data['start'], data['end']))
+    return sorted(ranges)
+
+
 def _merge(spans):
     """Funde intervalos que se tocam, para o desmontador ver um bloco so.
 
@@ -176,31 +394,37 @@ def _merge(spans):
     return [tuple(span) for span in merged]
 
 
-def _preamble(arch, base_address, source):
+def _preamble(arch, base_address, source, map_file):
     """Directives injetadas quando o fonte nao as traz.
 
     `bits` define o modo de montagem e `org` a base — sem `org`, o nasm monta
     como se o codigo comecasse em 0 e todo endereco absoluto sai errado em
     relacao ao endereco em que o simulador carrega o binario.
+
+    O `map` e sempre nosso: e a unica forma de saber onde cada secao caiu na
+    imagem final (ver `_parse_map`).
     """
     lines = []
     if not _HAS_BITS.search(source):
         lines.append(f'bits {BITS_FOR_ARCH[arch]}')
     if not _HAS_ORG.search(source):
         lines.append(f'org 0x{base_address:X}')
+    lines.append(f'[map sections {map_file}]')
     return lines
 
 
-def assemble(source, arch='x86', base_address=0):
+def assemble(source, arch='x86', base_address=0, lang=None):
     """Monta ``source`` (sintaxe NASM).
 
-    Devolve ``(bytes, warnings, line_map, data_ranges)``. ``line_map`` associa o
-    offset de cada byte gerado a linha do fonte que o originou — e o que permite
-    a interface destacar, a cada passo, a linha correspondente no editor.
-    ``data_ranges`` marca o que veio de `db`/`resb`/`incbin`, para o desmontador
-    nao tentar ler texto como instrucao.
+    Devolve um ``AssemblyResult``. ``line_map`` associa o offset de cada byte
+    gerado a linha do fonte que o originou — e o que permite a interface
+    destacar, a cada passo, a linha correspondente no editor. ``data_ranges``
+    marca o que veio de `db`/`resb`/`incbin` e o conteudo de `.data`, para o
+    desmontador nao tentar ler texto como instrucao. ``sections`` diz onde
+    `.text` e `.data` cairam na imagem.
 
-    Levanta ``AssemblyError`` quando o nasm recusa o fonte.
+    Levanta ``AssemblyError`` quando o nasm recusa o fonte — ou quando ele
+    declara uma secao que o simulador nao tem como representar.
     """
     if arch not in BITS_FOR_ARCH:
         raise AssemblyError(f'Unsupported architecture: {arch!r}')
@@ -211,7 +435,12 @@ def assemble(source, arch='x86', base_address=0):
             f'Source is too large ({len(encoded)} bytes; limit is {MAX_SOURCE_BYTES}).'
         )
 
-    preamble = _preamble(arch, base_address, source or '')
+    # Antes do nasm: ele montaria `.bss` sem reclamar, e o aluno so notaria a
+    # diferenca ao procurar os bytes num lugar que nao os tem.
+    section_of_line = _check_sections(source, lang)
+
+    map_name = 'source.map'
+    preamble = _preamble(arch, base_address, source or '', map_name)
     # As directives entram ANTES do fonte, entao a numeracao de linha do nasm
     # fica deslocada; descontamos o offset para o erro apontar a linha que o
     # aluno realmente escreveu.
@@ -223,6 +452,7 @@ def assemble(source, arch='x86', base_address=0):
         src_file = tmp_path / 'source.asm'
         out_file = tmp_path / 'source.bin'
         lst_file = tmp_path / 'source.lst'
+        map_file = tmp_path / map_name
         src_file.write_text(full_source, encoding='utf-8')
 
         try:
@@ -267,13 +497,27 @@ def assemble(source, arch='x86', base_address=0):
 
         data = out_file.read_bytes()
         listing = lst_file.read_text(encoding='utf-8', errors='replace') if lst_file.exists() else ''
-        rows = _parse_listing(listing, line_offset)
+        mapping = map_file.read_text(encoding='utf-8', errors='replace') if map_file.exists() else ''
+
+        # Sem map legivel, a leitura antiga (uma secao so) continua valendo —
+        # e exatamente o que um fonte sem `section` produz.
+        bases = _parse_map(mapping)
+        sections = _section_layout(bases, len(data))
+
+        def base_for_line(line):
+            name = section_of_line.get(line, DEFAULT_SECTION)
+            return bases.get(name, (0, 0))[0]
+
+        rows = _parse_listing(listing, line_offset, base_for_line)
         line_map = dict(rows)
-        data_ranges = _data_ranges(rows, _data_lines(source), len(data))
+
+        data_ranges = _data_layout(
+            _merge(_data_ranges(rows, _data_lines(source), len(data))), sections
+        )
 
     if len(data) > MAX_OUTPUT_BYTES:
         raise AssemblyError(
             f'Assembled binary is too large ({len(data)} bytes; limit is {MAX_OUTPUT_BYTES}).'
         )
 
-    return data, warnings, line_map, data_ranges
+    return AssemblyResult(data, warnings, line_map, data_ranges, sections)

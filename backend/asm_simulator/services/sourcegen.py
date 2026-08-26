@@ -207,8 +207,7 @@ def build_source(data, instructions, arch='x86', base_address=0, origin=None):
             origin=origin, size=len(data), forced_data=forced,
         )
         try:
-            rebuilt, _warnings, _line_map, _ranges = assemble(
-                text, arch=arch, base_address=base_address)
+            rebuilt = assemble(text, arch=arch, base_address=base_address).data
         except AssemblyError as exc:
             broken = {
                 line_of[m['line']]
