@@ -9,6 +9,10 @@ const FONT_SIZE = 12;
 const LINE_HEIGHT = 18;
 const GUTTER_WIDTH = 52;
 const PADDING_TOP = 8;
+// Indentacao em espacos, como o Sublime com `translate_tabs_to_spaces`: a
+// tecla Tab nunca insere `\t` no arquivo.
+const TAB_SIZE = 4;
+const INDENT = " ".repeat(TAB_SIZE);
 
 /**
  * Editor de codigo-fonte NASM com coloracao e realce da linha em execucao.
@@ -35,6 +39,11 @@ export default function SourcePane({
   const textareaRef = useRef(null);
   const highlightRef = useRef(null);
   const gutterRef = useRef(null);
+
+  // Selecao a restaurar quando a edicao NAO passa pelo `execCommand` (jsdom,
+  // navegador antigo): ali o valor volta pelo React, e mexer no cursor antes
+  // do re-render seria desfeito por ele.
+  const pendingSelection = useRef(null);
 
   const lines = useMemo(() => source.split("\n"), [source]);
   const tokenized = useMemo(() => lines.map(tokenizeLine), [lines]);
@@ -66,12 +75,132 @@ export default function SourcePane({
     }
   }, [currentLine, syncScroll]);
 
+  useEffect(() => {
+    const selection = pendingSelection.current;
+    if (!selection || !textareaRef.current) return;
+    pendingSelection.current = null;
+    textareaRef.current.setSelectionRange(selection[0], selection[1]);
+  }, [source]);
+
+  /**
+   * Substitui o trecho `[start, end)` preservando o historico de undo.
+   *
+   * `execCommand("insertText")` e a unica forma de escrever num textarea sem
+   * zerar a pilha de Ctrl+Z do navegador — e, por disparar um evento `input`,
+   * o React continua recebendo o `onChange`. Onde ele nao existe, cai no
+   * caminho controlado e o cursor e reposicionado depois do re-render.
+   */
+  const replaceRange = useCallback(
+    (start, end, text, selectionStart, selectionEnd) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      textarea.focus();
+      textarea.setSelectionRange(start, end);
+
+      let inserted = false;
+      if (typeof document.execCommand === "function") {
+        try {
+          inserted = document.execCommand("insertText", false, text);
+        } catch (error) {
+          inserted = false;
+        }
+      }
+
+      if (inserted) {
+        textarea.setSelectionRange(selectionStart, selectionEnd);
+        return;
+      }
+
+      const value = textarea.value;
+      pendingSelection.current = [selectionStart, selectionEnd];
+      onChange(value.slice(0, start) + text + value.slice(end));
+    },
+    [onChange]
+  );
+
+  /**
+   * Tab indenta, Shift+Tab desindenta — o comportamento do Sublime.
+   *
+   * Sem isso o Tab tira o foco do editor, que e o default do navegador. Com
+   * cursor solto, completa ate a proxima parada de 4 colunas (2 espacos de
+   * recuo viram 4, nao 6). Com varias linhas selecionadas, desloca o bloco
+   * inteiro e mantem a selecao sobre ele.
+   */
+  const handleKeyDown = useCallback(
+    (event) => {
+      if (event.key !== "Tab" || event.ctrlKey || event.metaKey || event.altKey) return;
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      event.preventDefault();
+
+      const value = textarea.value;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const multiline = value.slice(start, end).includes("\n");
+
+      // Caso simples: nada selecionado (ou selecao numa linha so) e Tab —
+      // vira espacos ate a proxima parada.
+      if (!event.shiftKey && !multiline) {
+        const column = start - (value.lastIndexOf("\n", start - 1) + 1);
+        const spaces = " ".repeat(TAB_SIZE - (column % TAB_SIZE));
+        replaceRange(start, end, spaces, start + spaces.length, start + spaces.length);
+        return;
+      }
+
+      // Bloco: da primeira a ultima linha tocada pela selecao. Uma selecao que
+      // termina exatamente no inicio de uma linha nao inclui essa linha.
+      const blockStart = value.lastIndexOf("\n", start - 1) + 1;
+      const lastLineProbe = end > start && value[end - 1] === "\n" ? end - 1 : end;
+      const newline = value.indexOf("\n", lastLineProbe);
+      const blockEnd = newline === -1 ? value.length : newline;
+
+      let firstDelta = 0;
+      let totalDelta = 0;
+      const block = value
+        .slice(blockStart, blockEnd)
+        .split("\n")
+        .map((line, index) => {
+          let result = line;
+          let delta = 0;
+          if (event.shiftKey) {
+            // Um `\t` herdado de arquivo antigo tambem sai, inteiro.
+            const leading = /^(\t| {1,4})/.exec(line);
+            if (leading) {
+              result = line.slice(leading[0].length);
+              delta = -leading[0].length;
+            }
+          } else if (line.trim() !== "") {
+            // Linha em branco nao ganha recuo — viraria espaco solto.
+            result = INDENT + line;
+            delta = INDENT.length;
+          }
+          if (index === 0) firstDelta = delta;
+          totalDelta += delta;
+          return result;
+        })
+        .join("\n");
+
+      if (totalDelta === 0) return;
+
+      replaceRange(
+        blockStart,
+        blockEnd,
+        block,
+        Math.max(blockStart, start + firstDelta),
+        Math.max(blockStart, end + totalDelta)
+      );
+    },
+    [replaceRange]
+  );
+
   const metrics = {
     fontSize: `${FONT_SIZE}px`,
     lineHeight: `${LINE_HEIGHT}px`,
     paddingTop: `${PADDING_TOP}px`,
     paddingBottom: `${PADDING_TOP}px`,
-    tabSize: 4,
+    tabSize: TAB_SIZE,
   };
 
   return (
@@ -160,6 +289,7 @@ export default function SourcePane({
           ref={textareaRef}
           value={source}
           onChange={(event) => onChange(event.target.value)}
+          onKeyDown={handleKeyDown}
           onScroll={syncScroll}
           disabled={disabled}
           spellCheck={false}
