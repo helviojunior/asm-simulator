@@ -10,7 +10,7 @@ import { HALT } from "lib/cpu/halt";
 import { ARCH } from "lib/cpu/registers";
 import { OS, OS_OPTIONS, detectOs, osIcon } from "lib/cpu/os";
 import { defaultConvention, syscallGate } from "lib/cpu/inspect";
-import { findArchMismatch } from "lib/asm/archCheck";
+import { archForNewSource, findArchMismatch } from "lib/asm/archCheck";
 import { labelMap } from "lib/asm/labels";
 import { fromParams, updateNode } from "lib/library";
 import { hex, parseAddress } from "lib/cpu/format";
@@ -177,6 +177,28 @@ export default function Simulator() {
     setArch(value);
     setCodeBase(DEFAULT_LAYOUT[value].codeBase);
     setStackTop(DEFAULT_LAYOUT[value].stackTop);
+  };
+
+  /**
+   * Texto novo no editor — e a unica porta por onde a arquitetura muda
+   * sozinha.
+   *
+   * Quando `archForNewSource` reconhece a arquitetura do texto colado, o combo
+   * a acompanha — e com ela o layout tipico daquela arquitetura, como numa
+   * troca a mao. O aviso na barra de status existe porque a troca e do
+   * sistema: silenciosa, o usuario so notaria pelo endereco-base diferente.
+   */
+  const handleSourceChange = (next) => {
+    const target = archForNewSource(source, next, arch);
+    if (target) {
+      handleArchChange(target);
+      notify(tf(
+        "sim.archDetected",
+        { arch: ARCH[target].label },
+        "Architecture switched to {arch} — detected in the pasted code."
+      ));
+    }
+    setSource(next);
   };
 
   // Parametros de execucao em vigor. Vao para a biblioteca no salvamento: sao
@@ -795,6 +817,43 @@ export default function Simulator() {
   );
 
   /**
+   * Avisa que se passou por um `int3` — e que ele foi SIMULADO.
+   *
+   * A execucao NAO parou: sem depurador anexado nao ha a quem entregar a
+   * interrupcao, e parar aqui seria o simulador reagindo a uma armadilha posta
+   * para outra ferramenta. Precisa ser dito porque o silencio esconderia o
+   * byte: um `int3` no meio de um shellcode e quase sempre resto de
+   * depuracao, e num alvo de verdade ele derrubaria o processo.
+   */
+  const announceBreakpoint = useCallback(
+    ({ address, text }) => {
+      toast({
+        // A chave e o endereco: o mesmo `int3` dentro de um laco reinicia o
+        // aviso que ja esta na tela em vez de empilhar copias.
+        key: `breakpoint:${address?.toString()}`,
+        variant: "info",
+        title: t("sim.breakpointTitle", "This breakpoint was simulated"),
+        description: (
+          <>
+            <span className="font-mono">{text}</span> —{" "}
+            {t(
+              "sim.breakpointHint",
+              "There is no debugger attached here, so there was nobody to hand the interrupt to."
+            )}{" "}
+            <span className="text-white/70">
+              {t(
+                "sim.breakpointEffect",
+                "Execution continued at the next instruction. On a real target this byte would trap — and, with no debugger, take the process down."
+              )}
+            </span>
+          </>
+        ),
+      });
+    },
+    [t, toast]
+  );
+
+  /**
    * Avisa que uma chamada de sistema nao tem simulacao.
    *
    * A execucao NAO parou: a chamada passou direto. Precisa ser dito porque o
@@ -854,13 +913,15 @@ export default function Simulator() {
       if (result && result.externalCall) announceExternalCall(result.externalCall);
       if (result && result.unsimulated) announceUnsimulated(result.unsimulated);
       if (result && result.simulated) announceSimulated(result.simulated);
+      if (result && result.breakpoint) announceBreakpoint(result.breakpoint);
       if (!wasHalted && current.halted) announceHalt(current.halted);
       // O destaque da linha atual so serve se o fonte estiver a vista — e o
       // fonte a vista e, por construcao, o do programa em execucao: abrir
       // outro arquivo descarta o programa montado.
       showSource();
     },
-    [announceExternalCall, announceHalt, announceSimulated, announceUnsimulated, dismissAll,
+    [announceBreakpoint, announceExternalCall, announceHalt, announceSimulated,
+     announceUnsimulated, dismissAll,
      refresh, refreshDisassembly, showSource]
   );
 
@@ -1147,7 +1208,7 @@ export default function Simulator() {
           <div style={{ height: paneSizes.source }} className="shrink-0 overflow-hidden">
             <EditorPane
               source={source}
-              onSourceChange={setSource}
+              onSourceChange={handleSourceChange}
               params={params}
               onOpenFile={handleOpenFile}
               dirty={dirty}

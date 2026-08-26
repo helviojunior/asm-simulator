@@ -98,6 +98,31 @@ test("so a flag que atrapalha e marcada; a que ja esta certa fica como esta", as
   expect(container.textContent).toContain("ZF\u22600");
 });
 
+test("com duas marcadas, o operador diz se e preciso mexer nas duas", async () => {
+  // `ja` quer CF=0 E ZF=0: com as duas erradas, arrumar uma so nao resolve.
+  const machine = build("ja");
+  machine.setFlag("CF", true);
+  machine.setFlag("ZF", true);
+  await mount(machine);
+  expect(container.textContent).toContain("CF\u22600&&ZF\u22600");
+});
+
+test("...ou em qualquer uma delas", async () => {
+  // `jge` quer SF=OF: com SF=1 e OF=0, virar qualquer uma das duas resolve.
+  const machine = build("jge");
+  machine.setFlag("SF", true);
+  await mount(machine);
+  expect(container.textContent).toContain("SF\u22600||OF\u22601");
+});
+
+test("com uma marcada so nao ha o que ligar", async () => {
+  const machine = build("ja");
+  machine.setFlag("ZF", true);
+  await mount(machine);
+  expect(container.textContent).not.toContain("&&");
+  expect(container.textContent).not.toContain("||");
+});
+
 test("as duas erradas sao marcadas, mesmo que virar uma so nao resolva", async () => {
   // `ja` com CF=1 e ZF=1: virar so uma continua sem saltar. Sem esta regra o
   // painel diria "nao sera dado" sem apontar nada.
@@ -124,6 +149,51 @@ test("mostra TODAS as flags da condicao, mesmo as que nao decidiram", async () =
   await mount(build("ja"));
   expect(container.textContent).toContain("CF=0");
   expect(container.textContent).toContain("ZF=0");
+});
+
+test("salto que SERA dado diz o que o esta segurando de pe", async () => {
+  // A pergunta simetrica de "o que falta?" e "por que ele vai acontecer?".
+  // `ja` com CF=0 e ZF=0 salta porque as DUAS estao assim: virar qualquer uma
+  // o desfaz, entao as duas sao necessarias.
+  await mount(build("ja"));
+  expect(container.textContent).toContain("JMP is taken");
+  expect(container.textContent).toContain("CF=0&&ZF=0");
+});
+
+test("num salto dado por OU, qualquer uma das flags bastaria", async () => {
+  // `jbe` salta com CF=1 OU ZF=1; com as duas ligadas, virar uma so nao o
+  // desfaz — e por isso elas aparecem como alternativas.
+  const machine = build("jbe");
+  machine.setFlag("CF", true);
+  machine.setFlag("ZF", true);
+  await mount(machine);
+  expect(container.textContent).toContain("CF=1||ZF=1");
+});
+
+test("flag que nao segura nada num salto dado fica sem marca", async () => {
+  // `jbe` com CF=1 e ZF=0: quem segura o salto e CF sozinha.
+  const machine = build("jbe");
+  machine.setFlag("CF", true);
+  await mount(machine);
+  expect(container.textContent).toContain("CF=1");
+  expect(container.textContent).toContain("ZF=0");
+  expect(container.textContent).not.toContain("||");
+  expect(container.textContent).not.toContain("&&");
+});
+
+test("as tres flags de uma condicao entram na conta", async () => {
+  // `jle` salta com ZF=1 OU SF!=OF. Com as tres zeradas nao salta, e mexer em
+  // qualquer uma das tres resolve.
+  await mount(build("jle"));
+  expect(container.textContent).toContain("ZF\u22601||SF\u22601||OF\u22601");
+});
+
+test("...e tambem quando e ele que segura o salto", async () => {
+  // `jg` quer ZF=0 E SF=OF: com as tres zeradas ele salta, e virar qualquer
+  // uma das tres o desfaz.
+  await mount(build("jg"));
+  expect(container.textContent).toContain("JMP is taken");
+  expect(container.textContent).toContain("ZF=0&&SF=0&&OF=0");
 });
 
 test("instrucao que nao e salto nao ganha veredito", async () => {

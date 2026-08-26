@@ -343,8 +343,8 @@ const HANDLERS = {
   int: (m, [vector]) => {
     const number = m.readOperand(vector);
     // `int 3` (CD 03) e o mesmo breakpoint do `int3` (CC), so que na forma de
-    // dois bytes. Os dois caem no mesmo lugar: nada a fazer.
-    if (number === 3n) return undefined;
+    // dois bytes. Os dois caem no mesmo lugar.
+    if (number === 3n) return breakpoint(m);
     if (number !== 0x80n) {
       return {
         halt: { reason: HALT.SYSCALL, message: `int 0x${number.toString(16)}` },
@@ -354,6 +354,17 @@ const HANDLERS = {
   },
   syscall: (m) => m.syscall("syscall"),
   sysenter: (m) => m.syscall("sysenter"),
+
+  /**
+   * Breakpoint de software.
+   *
+   * Sem depurador anexado nao ha a quem entregar a interrupcao, e parar aqui
+   * seria o simulador reagindo a uma armadilha posta para OUTRA ferramenta.
+   * A execucao segue — mas com aviso: um `int3` no meio de um shellcode e
+   * quase sempre resto de depuracao, e passar batido esconderia justamente o
+   * byte que, num alvo de verdade, derrubaria o processo.
+   */
+  int3: (m) => breakpoint(m),
 
   // --- Instrucoes sem efeito observavel aqui ------------------------------
   //
@@ -379,10 +390,6 @@ const HANDLERS = {
     // Flag de interrupcao: nao existe neste modelo, e em user mode as duas sao
     // privilegiadas de qualquer forma.
     "cli", "sti",
-    // Breakpoint de software. Sem depurador anexado nao ha para quem entregar
-    // a interrupcao, e parar aqui seria o simulador reagindo a uma armadilha
-    // posta para OUTRA ferramenta.
-    "int3",
     // Direcao das instrucoes de string. Nenhuma instrucao deste simulador le o
     // DF — nao ha `movsb`/`stosb` —, entao mexer nele so acenderia uma flag que
     // ninguem consulta. O par inteiro fica de fora, para nao ficar meio
@@ -433,6 +440,17 @@ function shift(machine, [dst, countOperand], mode) {
   cpu.setFlag("CF", carry);
   cpu.updateResultFlags(result, size);
   machine.writeOperand(dst, result);
+}
+
+/** O aviso de que se passou por um breakpoint de software. */
+function breakpoint(machine) {
+  const insn = machine.currentInstruction;
+  return {
+    breakpoint: {
+      address: machine.cpu.ip,
+      text: (insn && insn.text) || "int3",
+    },
+  };
 }
 
 /** Retorna o handler de um mnemonico, incluindo as familias condicionais. */

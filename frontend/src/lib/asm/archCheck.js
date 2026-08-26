@@ -80,6 +80,26 @@ export function detectArch(source) {
 }
 
 /**
+ * A arquitetura que um texto NOVO pede ao chegar no editor, ou null.
+ *
+ * A condicao e estreita de proposito: so vale com o editor VAZIO recebendo um
+ * bloco de texto — o gesto de colar um programa que veio de outro lugar, com o
+ * combo ainda na arquitetura do programa anterior. Havendo codigo escrito, a
+ * escolha e do usuario e nao se mexe nela: ali a divergencia vira o aviso da
+ * montagem (`findArchMismatch`), que mostra a evidencia e deixa a decisao com
+ * quem esta lendo.
+ *
+ * Digitar nao dispara: so o PRIMEIRO caractere chega com o editor vazio, e um
+ * caractere nao carrega marca de arquitetura nenhuma.
+ */
+export function archForNewSource(previous, next, current) {
+  if (String(previous || "").trim()) return null;
+  if (!String(next || "").trim()) return null;
+  const { target } = detectArch(next);
+  return target && target !== current ? target : null;
+}
+
+/**
  * Compara o fonte com a arquitetura selecionada.
  *
  * Devolve null quando nao ha conflito. Havendo, so vem junto a evidencia DO

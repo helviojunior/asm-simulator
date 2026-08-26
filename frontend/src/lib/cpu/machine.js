@@ -444,6 +444,7 @@ export class Machine {
     let externalCall = null;
     let unsimulated = null;
     let simulated = null;
+    let breakpoint = null;
 
     try {
       const outcome = execute(this, insn);
@@ -459,6 +460,12 @@ export class Machine {
         // vem depois, e parar aqui a interromperia por algo que nem e o
         // assunto. `exit` e `execve` continuam parando: ali o PROGRAMA acabou.
         unsimulated = outcome.unsimulated;
+        this.cpu.ip = addressBefore + BigInt(insn.size);
+      } else if (outcome && outcome.breakpoint) {
+        // `int3` sem depurador anexado: nao ha a quem entregar a interrupcao,
+        // entao a execucao segue. O aviso sobe junto para a interface dizer
+        // que passamos por uma armadilha — e que ela foi SIMULADA.
+        breakpoint = outcome.breakpoint;
         this.cpu.ip = addressBefore + BigInt(insn.size);
       } else if (outcome && outcome.externalCall) {
         // Nao e parada: a execucao segue na proxima instrucao. O aviso sobe
@@ -509,6 +516,7 @@ export class Machine {
       externalCall,
       unsimulated,
       simulated,
+      breakpoint,
       changes: describeChanges(journal),
     };
   }

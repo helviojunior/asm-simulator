@@ -21,45 +21,62 @@ import { describeJump } from "./instructions";
 const STRING_SCAN = 24;
 const MIN_STRING_LENGTH = 3;
 
+/** Combinacoes de `size` nomes, sem repetir. Sao no maximo tres flags. */
+function combinations(names, size) {
+  if (size === 0) return [[]];
+  const out = [];
+  names.forEach((name, index) => {
+    combinations(names.slice(index + 1), size - 1).forEach((rest) => {
+      out.push([name, ...rest]);
+    });
+  });
+  return out;
+}
+
 /**
- * As flags que ESTAO IMPEDINDO o salto.
+ * Os MENORES conjuntos de flags que, virados, levam a condicao a `wanted`.
  *
- * Mostrar o valor atual de cada flag responde "como esta", mas a pergunta de
- * quem olha um salto que nao vai acontecer e outra: "o que precisaria mudar?".
- * Uma flag entra aqui quando:
+ * E daqui que sai tudo o que o painel mostra sobre um salto:
  *
- * 1. virando so ela o salto passa a ser dado — e o caso comum, e o `ZF` de um
- *    `ja` com ZF=1; ou
- * 2. nenhuma combinacao das outras salva a condicao enquanto ela estiver
- *    assim — `ja` com CF=1 E ZF=1 tem as duas erradas, e virar so uma nao
- *    resolveria nenhuma das duas.
+ * - salto que NAO sera dado (`wanted = true`): sao os conjuntos que o fariam
+ *   acontecer — o que precisa mudar;
+ * - salto que SERA dado (`wanted = false`): sao os que o desfariam — o que
+ *   esta segurando o salto de pe.
  *
- * A segunda regra e o que impede o painel de dizer "nao sera dado" sem apontar
- * nada. E as duas juntas dao a leitura certa numa condicao com OU: `jbe` com
- * CF=0 e ZF=0 marca as duas, porque qualquer uma delas destrava.
- *
- * Salto que SERA dado nao tem flag impedindo — a lista sai vazia.
+ * Por tamanho crescente: o primeiro tamanho que der resultado e o minimo, e
+ * conjuntos maiores so acrescentariam flags que nao precisavam entrar. Com no
+ * maximo tres flags por condicao, varrer os subconjuntos e trivial — e evita
+ * uma tabela de casos especiais que envelheceria mal.
  */
-function blockingFlags(test, names, current) {
-  if (test(current)) return new Set();
+function minimalSets(test, names, current, wanted) {
+  for (let size = 1; size <= names.length; size += 1) {
+    const found = combinations(names, size).filter((set) => {
+      const flipped = { ...current };
+      set.forEach((name) => { flipped[name] = !flipped[name]; });
+      return Boolean(test(flipped)) === wanted;
+    });
+    if (found.length) return found;
+  }
+  return [];
+}
 
-  // No maximo tres flags por condicao: da para varrer todas as combinacoes.
-  const combos = (list) =>
-    list.reduce(
-      (acc, name) => acc.flatMap((item) => [
-        { ...item, [name]: false },
-        { ...item, [name]: true },
-      ]),
-      [{ ...current }]
-    );
-
-  return new Set(
-    names.filter((name) => {
-      if (test({ ...current, [name]: !current[name] })) return true;
-      const others = names.filter((other) => other !== name);
-      return !combos(others).some((flags) => test({ ...flags, [name]: current[name] }));
-    })
-  );
+/**
+ * Como as flags marcadas se combinam: `&&`, `||`, ou nada.
+ *
+ * O operador sai INVERTIDO entre os dois casos, e e De Morgan em acao: se
+ * basta virar qualquer uma para o salto acontecer, elas sao alternativas
+ * (`||`); se basta virar qualquer uma para o salto DEIXAR de acontecer, entao
+ * todas sao necessarias (`&&`).
+ *
+ * `null` quando os conjuntos minimos discordam entre si — `jg` com ZF=1 e
+ * SF!=OF precisa de ZF mais UMA das outras duas, e nem "todas" nem "qualquer
+ * uma" descreveria isso. Dizer nada e melhor do que dizer errado; as flags
+ * marcadas continuam la.
+ */
+function joinOperator(sets, taken) {
+  if (sets.length > 1 && sets.every((set) => set.length === 1)) return taken ? "&&" : "||";
+  if (sets.length === 1 && sets[0].length > 1) return taken ? "||" : "&&";
+  return null;
 }
 
 /**
@@ -74,8 +91,12 @@ function blockingFlags(test, names, current) {
  * a vista o aluno so descobre depois de dar o passo — quando ja perdeu de
  * vista as flags que decidiram.
  *
- * Cada flag vem com `expected` e `blocking`: a que impede o salto e mostrada
- * com o valor que PRECISARIA ter, e nao com o que tem (ver `blockingFlags`).
+ * As flags vem marcadas nos DOIS casos: num salto que nao acontece, as que
+ * precisam mudar (com o valor que precisariam ter); num que acontece, as que o
+ * estao segurando de pe. `operator` diz como elas se combinam — `CF!=0 &&
+ * ZF!=0` cobra as duas, `SF!=0 || OF!=1` se contenta com uma. Sem ele, duas
+ * flags marcadas lado a lado nao dizem se e preciso mexer nas duas ou em
+ * qualquer uma.
  */
 export function inspectJump(machine) {
   const insn = machine?.currentInstruction;
@@ -85,18 +106,31 @@ export function inspectJump(machine) {
   if (!jump) return null;
 
   const current = machine.cpu.flags;
-  const blocking = blockingFlags(jump.test, jump.flags, current);
+  const taken = Boolean(jump.test(current));
+
+  // Nao sera dado -> o que precisaria MUDAR. Sera dado -> o que o esta
+  // segurando de pe. As duas leituras saem da mesma varredura.
+  const sets = minimalSets(jump.test, jump.flags, current, !taken);
+  const marked = new Set(sets.flat());
 
   return {
     conditional: jump.conditional,
-    taken: Boolean(jump.test(current)),
+    taken,
+    operator: marked.size > 1 ? joinOperator(sets, taken) : null,
     flags: jump.flags.map((name) => {
       const value = machine.cpu.getFlag(name);
-      const blocked = blocking.has(name);
-      // Impedindo: o painel mostra o valor que ela PRECISARIA ter, com `!=`
-      // dizendo que nao e o que ela tem. As outras aparecem como estao, que e
-      // justamente a razao de nao estarem no caminho.
-      return { name, value, blocking: blocked, expected: blocked ? !value : value };
+      // Marcada num salto que nao acontece: o painel mostra o valor que ela
+      // PRECISARIA ter, com `!=` dizendo que nao e o que ela tem. Nos demais
+      // casos vale o valor atual — inclusive nas que seguram um salto dado,
+      // que e a resposta para "por que ele vai acontecer?".
+      const mustChange = marked.has(name) && !taken;
+      return {
+        name,
+        value,
+        marked: marked.has(name),
+        mustChange,
+        expected: mustChange ? !value : value,
+      };
     }),
   };
 }

@@ -145,35 +145,48 @@ function JumpRow({ jump }) {
     ? t("sim.jumpTaken", "JMP is taken")
     : t("sim.jumpNotTaken", "JMP is not taken");
 
+  // A cor das flags marcadas segue o veredito: verde diz "e por isto que ele
+  // acontece", vermelho diz "e isto que o impede".
+  const tone = jump.taken ? "text-[#4ec9b0]" : "text-[#ff6b6b]";
+
   return (
     <div className="flex items-baseline gap-2 whitespace-pre px-2 hover:bg-[#2d2d2d]">
       <span className="w-4 shrink-0 text-center text-[#569cd6]">
         <ArrowRight size={11} className="inline" />
       </span>
-      <span
-        className={cn("shrink-0 font-bold", jump.taken ? "text-[#4ec9b0]" : "text-[#858585]")}
-      >
+      <span className={cn("shrink-0 font-bold", jump.taken ? tone : "text-[#858585]")}>
         {verdict}
       </span>
-      {jump.flags.map((flag) => (
-        // A que IMPEDE o salto sai em vermelho e com `!=`, mostrando o valor
-        // que ela precisaria ter: "ZF!=0" le-se "ZF teria de ser 0, e nao e".
-        // As outras aparecem como estao — e por estarem assim que nao atrapalham.
-        <span
-          key={flag.name}
-          className={cn("shrink-0", flag.blocking && "font-bold text-[#ff6b6b]")}
-        >
-          <span className={flag.blocking ? undefined : "text-[#c586c0]"}>{flag.name}</span>
-          <span className={flag.blocking ? undefined : "text-[#6b6b6b]"}>
-            {flag.blocking ? "\u2260" : "="}
+      {jump.flags.map((flag, index) => (
+        // Marcada num salto que NAO acontece: vermelho e `!=`, com o valor que
+        // ela precisaria ter — "ZF!=0" le-se "ZF teria de ser 0, e nao e".
+        // Marcada num salto que ACONTECE: a cor do veredito, e o valor atual —
+        // e a resposta para "por que ele vai acontecer?". As demais aparecem
+        // como estao, que e a razao de nao entrarem na conta.
+        <React.Fragment key={flag.name}>
+        {/* O operador entra ENTRE as marcadas: duas marcadas lado a lado nao
+            diriam se e preciso as duas ou qualquer uma. */}
+        {jump.operator && flag.marked && index > firstMarked(jump.flags) && (
+          <span className={cn("shrink-0", tone)}>{jump.operator}</span>
+        )}
+        <span className={cn("shrink-0", flag.marked && cn("font-bold", tone))}>
+          <span className={flag.marked ? undefined : "text-[#c586c0]"}>{flag.name}</span>
+          <span className={flag.marked ? undefined : "text-[#6b6b6b]"}>
+            {flag.mustChange ? "\u2260" : "="}
           </span>
-          <span className={flag.blocking ? undefined : "font-bold text-[#d4d4d4]"}>
+          <span className={flag.marked ? undefined : "font-bold text-[#d4d4d4]"}>
             {flag.expected ? 1 : 0}
           </span>
         </span>
+        </React.Fragment>
       ))}
     </div>
   );
+}
+
+/** Posicao da primeira flag marcada — a unica que nao leva operador antes. */
+function firstMarked(flags) {
+  return flags.findIndex((flag) => flag.marked);
 }
 
 /**

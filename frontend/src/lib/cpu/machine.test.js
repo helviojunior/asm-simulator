@@ -418,7 +418,7 @@ describe("instrucoes sem efeito", () => {
   // real, nao teria acontecido.
   const BENIGN = [
     "pause", "lfence", "sfence", "mfence", "endbr64", "endbr32",
-    "fnop", "fwait", "cli", "sti", "prefetcht0", "int3", "cld", "std",
+    "fnop", "fwait", "cli", "sti", "prefetcht0", "cld", "std",
   ];
 
   it.each(BENIGN)("%s avanca sem parar a execucao", (mnemonic) => {
@@ -452,6 +452,51 @@ describe("instrucoes sem efeito", () => {
   });
 });
 
+describe("breakpoint de software", () => {
+  // Sem depurador anexado nao ha a quem entregar a interrupcao, e parar aqui
+  // seria o simulador reagindo a uma armadilha posta para OUTRA ferramenta. Mas
+  // o silencio esconderia o byte: um `int3` no meio de um shellcode e quase
+  // sempre resto de depuracao, e num alvo de verdade derrubaria o processo.
+  it("int3 nao para a execucao, e avisa que foi simulado", () => {
+    const m = build([
+      { mnemonic: "int3", size: 1, text: "int3" },
+      { mnemonic: "nop", size: 1 },
+    ]);
+    const result = m.step();
+
+    expect(m.halted).toBeNull();
+    expect(m.cpu.ip).toBe(CODE_BASE + 1n);
+    expect(result.breakpoint.text).toBe("int3");
+    expect(result.breakpoint.address).toBe(CODE_BASE);
+  });
+
+  it("int 3 na forma de dois bytes cai no mesmo lugar", () => {
+    const m = build([{
+      mnemonic: "int", size: 2, text: "int 3",
+      operands: [{ type: "imm", value: "3", size: 1 }],
+    }]);
+    const result = m.step();
+
+    expect(m.halted).toBeNull();
+    expect(result.breakpoint.text).toBe("int 3");
+  });
+
+  it("e nao mexe em registrador, memoria nem flag", () => {
+    const m = build([{ mnemonic: "int3", size: 1, text: "int3" }]);
+    m.cpu.writeRegister("eax", 0x1234n);
+    const changes = m.step().changes;
+
+    expect(m.cpu.readRegister("eax")).toBe(0x1234n);
+    expect(changes.memory).toEqual([]);
+    expect(changes.flags).toEqual([]);
+  });
+
+  it("instrucao comum nao vem com aviso de breakpoint", () => {
+    const m = build([{ mnemonic: "nop", size: 1 }]);
+    expect(m.step().breakpoint).toBeNull();
+  });
+});
+
 describe("flags de controle", () => {
   // Ao contrario do DF, o CF E lido aqui — por `adc`, `sbb`, `jc`. Trata-las
   // como nop nao seria "sem efeito", seria dar resultado errado.
@@ -480,14 +525,6 @@ describe("flags de controle", () => {
     expect(m.cpu.getFlag("CF")).toBe(false);
   });
 
-  it("int 3 na forma de dois bytes tambem nao para", () => {
-    const m = build([{
-      mnemonic: "int", size: 2,
-      operands: [{ type: "imm", value: "3", size: 1 }],
-    }]);
-    m.step();
-    expect(m.halted).toBeNull();
-  });
 
   it("int 0x80 continua sendo porta de chamada de sistema", () => {
     // O `int` generico nao virou nop: so o vetor 3 e inofensivo. Com EAX=0 nao
