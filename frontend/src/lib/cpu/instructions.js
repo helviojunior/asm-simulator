@@ -72,7 +72,7 @@ function applyLogic(cpu, result, size) {
 // Condicoes (jcc / setcc / cmovcc)
 // ---------------------------------------------------------------------------
 
-const CONDITIONS = {
+export const CONDITIONS = {
   o: (f) => f.OF,
   no: (f) => !f.OF,
   b: (f) => f.CF, c: (f) => f.CF, nae: (f) => f.CF,
@@ -91,6 +91,58 @@ const CONDITIONS = {
   le: (f) => f.ZF || f.SF !== f.OF, ng: (f) => f.ZF || f.SF !== f.OF,
   g: (f) => !f.ZF && f.SF === f.OF, nle: (f) => !f.ZF && f.SF === f.OF,
 };
+
+/**
+ * As flags que cada condicao CONSULTA.
+ *
+ * A tabela acima diz o que a condicao decide; esta diz em cima de que ela
+ * decide — e o que a interface mostra ao lado de "o salto sera dado", para o
+ * aluno saber onde olhar quando a resposta o surpreender.
+ *
+ * Escrita a mao, e nao deduzida das funcoes, porque a lista importa mesmo
+ * quando a flag nao muda a resposta naquele instante: `jbe` olha CF e ZF, e
+ * dizer so "ZF" com CF=0 esconderia metade da regra. Um teste confere que
+ * cada lista bate com o que a funcao correspondente realmente le.
+ */
+export const CONDITION_FLAGS = {
+  o: ["OF"], no: ["OF"],
+  b: ["CF"], c: ["CF"], nae: ["CF"],
+  ae: ["CF"], nb: ["CF"], nc: ["CF"],
+  e: ["ZF"], z: ["ZF"],
+  ne: ["ZF"], nz: ["ZF"],
+  be: ["CF", "ZF"], na: ["CF", "ZF"],
+  a: ["CF", "ZF"], nbe: ["CF", "ZF"],
+  s: ["SF"],
+  ns: ["SF"],
+  p: ["PF"], pe: ["PF"],
+  np: ["PF"], po: ["PF"],
+  l: ["SF", "OF"], nge: ["SF", "OF"],
+  ge: ["SF", "OF"], nl: ["SF", "OF"],
+  le: ["ZF", "SF", "OF"], ng: ["ZF", "SF", "OF"],
+  g: ["ZF", "SF", "OF"], nle: ["ZF", "SF", "OF"],
+};
+
+/**
+ * Descreve um salto pelo mnemonico, ou null se nao for um.
+ *
+ * Devolve `{ conditional, flags, test }` — `test(flags)` responde se ele sera
+ * dado, lendo o MESMO objeto de flags que a execucao le. E o que permite a
+ * interface prever o desvio sem executar nada, e a previsao nunca discordar
+ * do que o F7 vai fazer: a regra e uma so, esta aqui.
+ *
+ * `jecxz` e `loop` ficam de fora de proposito: nao decidem por flag, e o
+ * interpretador ainda nao os executa.
+ */
+export function describeJump(mnemonic) {
+  const name = String(mnemonic || "").toLowerCase();
+  if (name === "jmp") return { conditional: false, flags: [], test: () => true };
+  if (!name.startsWith("j")) return null;
+
+  const suffix = name.slice(1);
+  const check = CONDITIONS[suffix];
+  if (!check) return null;
+  return { conditional: true, flags: CONDITION_FLAGS[suffix] || [], test: check };
+}
 
 function testCondition(cpu, suffix) {
   const check = CONDITIONS[suffix];

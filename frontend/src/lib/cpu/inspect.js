@@ -15,10 +15,91 @@ import { ntdllSummary, resolveSyscall } from "lib/ntdll";
 import { syscallNameOverride } from "./syscallNames";
 import { callKey, callNameOverride } from "./callNames";
 import { prototypeByName, syscallNameByNumber } from "lib/prototypes";
+import { describeJump } from "./instructions";
 
 // Quantos bytes olhar a frente ao tentar reconhecer uma string.
 const STRING_SCAN = 24;
 const MIN_STRING_LENGTH = 3;
+
+/**
+ * As flags que ESTAO IMPEDINDO o salto.
+ *
+ * Mostrar o valor atual de cada flag responde "como esta", mas a pergunta de
+ * quem olha um salto que nao vai acontecer e outra: "o que precisaria mudar?".
+ * Uma flag entra aqui quando:
+ *
+ * 1. virando so ela o salto passa a ser dado — e o caso comum, e o `ZF` de um
+ *    `ja` com ZF=1; ou
+ * 2. nenhuma combinacao das outras salva a condicao enquanto ela estiver
+ *    assim — `ja` com CF=1 E ZF=1 tem as duas erradas, e virar so uma nao
+ *    resolveria nenhuma das duas.
+ *
+ * A segunda regra e o que impede o painel de dizer "nao sera dado" sem apontar
+ * nada. E as duas juntas dao a leitura certa numa condicao com OU: `jbe` com
+ * CF=0 e ZF=0 marca as duas, porque qualquer uma delas destrava.
+ *
+ * Salto que SERA dado nao tem flag impedindo — a lista sai vazia.
+ */
+function blockingFlags(test, names, current) {
+  if (test(current)) return new Set();
+
+  // No maximo tres flags por condicao: da para varrer todas as combinacoes.
+  const combos = (list) =>
+    list.reduce(
+      (acc, name) => acc.flatMap((item) => [
+        { ...item, [name]: false },
+        { ...item, [name]: true },
+      ]),
+      [{ ...current }]
+    );
+
+  return new Set(
+    names.filter((name) => {
+      if (test({ ...current, [name]: !current[name] })) return true;
+      const others = names.filter((other) => other !== name);
+      return !combos(others).some((flags) => test({ ...flags, [name]: current[name] }));
+    })
+  );
+}
+
+/**
+ * O desvio que a instrucao atual vai (ou nao vai) tomar.
+ *
+ * Devolve `{ conditional, taken, flags: [{ name, value }] }`, ou null quando a
+ * instrucao nao e um salto. As flags sao lidas AGORA: mudar ZF a mao no painel
+ * muda esta resposta no mesmo render, e muda tambem o que o F7 faz — as duas
+ * coisas passam pela mesma funcao de condicao.
+ *
+ * "Vai saltar?" e a pergunta que `cmp` + `jne` deixa em aberto, e sem resposta
+ * a vista o aluno so descobre depois de dar o passo — quando ja perdeu de
+ * vista as flags que decidiram.
+ *
+ * Cada flag vem com `expected` e `blocking`: a que impede o salto e mostrada
+ * com o valor que PRECISARIA ter, e nao com o que tem (ver `blockingFlags`).
+ */
+export function inspectJump(machine) {
+  const insn = machine?.currentInstruction;
+  if (!insn || insn.data || machine.halted) return null;
+
+  const jump = describeJump(insn.mnemonic);
+  if (!jump) return null;
+
+  const current = machine.cpu.flags;
+  const blocking = blockingFlags(jump.test, jump.flags, current);
+
+  return {
+    conditional: jump.conditional,
+    taken: Boolean(jump.test(current)),
+    flags: jump.flags.map((name) => {
+      const value = machine.cpu.getFlag(name);
+      const blocked = blocking.has(name);
+      // Impedindo: o painel mostra o valor que ela PRECISARIA ter, com `!=`
+      // dizendo que nao e o que ela tem. As outras aparecem como estao, que e
+      // justamente a razao de nao estarem no caminho.
+      return { name, value, blocking: blocked, expected: blocked ? !value : value };
+    }),
+  };
+}
 
 /** Descreve a regiao de memoria de um endereco: codigo, dados, pilha ou nada. */
 export function describeRegion(machine, address) {

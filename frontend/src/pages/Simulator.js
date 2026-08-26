@@ -5,7 +5,7 @@ import brand from "lib/brand";
 import { useI18n, LANGUAGE_OPTIONS } from "i18n";
 import { useDialog } from "contexts/DialogContext";
 import { useToast } from "contexts/ToastContext";
-import { Machine } from "lib/cpu/machine";
+import { Machine, emptyChanges } from "lib/cpu/machine";
 import { HALT } from "lib/cpu/halt";
 import { ARCH } from "lib/cpu/registers";
 import { OS, OS_OPTIONS, detectOs, osIcon } from "lib/cpu/os";
@@ -23,7 +23,6 @@ import StackPane from "components/debugger/StackPane";
 import OperandsPane from "components/debugger/OperandsPane";
 import CallPane from "components/debugger/CallPane";
 import SyscallPane from "components/debugger/SyscallPane";
-import StructPane from "components/debugger/StructPane";
 import { loadTypeNames } from "lib/types";
 import Splitter from "components/debugger/Splitter";
 import AboutModal, { AboutButton } from "components/AboutModal";
@@ -48,7 +47,6 @@ const DEFAULT_PANE_SIZES = {
   stack: 260,
   callArgs: 150,
   syscall: 170,
-  struct: 200,
 };
 
 // Quantos indicadores listar no aviso de arquitetura divergente. A lista serve
@@ -126,7 +124,7 @@ export default function Simulator() {
   // aberta destacaria uma linha que ninguem esta vendo.
   const [focusSource, setFocusSource] = useState(0);
   const showSource = useCallback(() => setFocusSource((value) => value + 1), []);
-  const [changes, setChanges] = useState({ registers: [], flags: [], memory: [] });
+  const [changes, setChanges] = useState(emptyChanges());
   // Endereco que o dump deve mostrar, pedido por outro painel. O `nonce` faz
   // parte do valor de proposito: pedir DUAS vezes o mesmo endereco tem de
   // rolar as duas, e um estado que nao muda nao dispara efeito nenhum.
@@ -145,6 +143,7 @@ export default function Simulator() {
     setExploreTarget((current) => ({ register, nonce: (current?.nonce ?? 0) + 1 }));
   }, []);
   const closeExplore = useCallback(() => setExploreTarget(null), []);
+  const closeStruct = useCallback(() => setParsed(null), []);
 
   // A maquina e mutavel por natureza (e um modelo de CPU). Guardamos a
   // instancia numa ref e usamos `tick` apenas para pedir novo render — assim
@@ -156,6 +155,14 @@ export default function Simulator() {
   const refresh = useCallback(() => setTick((value) => value + 1), []);
 
   const machine = machineRef.current;
+
+  // Flag trocada a mao no painel. A maquina muda por MUTACAO, entao o render
+  // novo tem de ser pedido: e o mesmo `refresh` de depois de um passo.
+  const setFlag = useCallback((flag, value) => {
+    if (!machineRef.current) return;
+    machineRef.current.setFlag(flag, value);
+    refresh();
+  }, [refresh]);
 
   // A convencao segue o alvo. Trocar de sistema sem trocar a convencao deixaria
   // o painel lendo os argumentos nos registradores errados — em 64 bits, RDI/RSI
@@ -273,7 +280,7 @@ export default function Simulator() {
     setLineMap({});
     setDataRanges([]);
     setMessages([]);
-    setChanges({ registers: [], flags: [], memory: [] });
+    setChanges(emptyChanges());
     // Idem para os avisos: eles falavam de um programa que nao existe mais.
     dismissAll();
     refresh();
@@ -609,7 +616,7 @@ export default function Simulator() {
       setLineMap(data.line_map || {});
       setDataRanges(data.data_ranges || []);
       setMessages(data.warnings || []);
-      setChanges({ registers: [], flags: [], memory: [] });
+      setChanges(emptyChanges());
       refresh();
     } catch (error) {
       const payload = error.response?.data;
@@ -865,7 +872,7 @@ export default function Simulator() {
       runCommand((m) => {
         m.stepBack();
         // Voltar nao tem "o que mudou": o destaque some junto.
-        return { changes: { registers: [], flags: [], memory: [] } };
+        return { changes: emptyChanges() };
       }),
     [runCommand]
   );
@@ -873,7 +880,7 @@ export default function Simulator() {
     () =>
       runCommand((m) => {
         m.reset();
-        return { changes: { registers: [], flags: [], memory: [] } };
+        return { changes: emptyChanges() };
       }),
     [runCommand]
   );
@@ -1133,27 +1140,6 @@ export default function Simulator() {
             <OperandsPane machine={machine} tick={tick} onViewInDump={viewInDump} />
           </div>
 
-          {/* Ponteiro lido como estrutura. Fica na coluna da esquerda, dividindo
-              a altura com o editor: e leitura demorada, e a pilha ao lado
-              continua visivel para comparar endereco por endereco. */}
-          {parsed && (
-            <>
-              <Splitter
-                label={t("sim.resizeStruct", "Resize structure panel")}
-                onResize={(delta) => resizePane("struct", -delta, { min: 80, max: 900 })}
-              />
-              <div style={{ height: paneSizes.struct }} className="shrink-0 overflow-hidden">
-                <StructPane
-                  machine={machine}
-                  target={parsed}
-                  tick={tick}
-                  onClose={() => setParsed(null)}
-                  onViewInDump={viewInDump}
-                />
-              </div>
-            </>
-          )}
-
           <Splitter
             label={t("sim.resizeSource", "Resize source panel")}
             onResize={(delta) => resizePane("source", -delta, { min: 80, max: 1200 })}
@@ -1182,9 +1168,13 @@ export default function Simulator() {
               onOpenFileChange={setOpenFile}
               machine={machine}
               changedMemory={changes.memory}
+              changedRegisters={changes.registersBefore}
               dumpTarget={dumpTarget}
               exploreTarget={exploreTarget}
               onCloseExplore={closeExplore}
+              structTarget={parsed}
+              onCloseStruct={closeStruct}
+              onViewInDump={viewInDump}
               tick={tick}
             />
           </div>
@@ -1209,7 +1199,7 @@ export default function Simulator() {
               onExplore={exploreRegister}
             />
           </div>
-          <FlagsPane machine={machine} changed={changes.flags} />
+          <FlagsPane machine={machine} changed={changes.flags} onChange={setFlag} />
           {/* So aparece quando a instrucao atual e um `call`. */}
           {/* A divisoria so aparece com o painel: uma alca para redimensionar
               o que nao esta na tela seria um controle sem efeito. */}

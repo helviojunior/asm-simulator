@@ -16,6 +16,11 @@ import { useDumpMenu } from "components/debugger/useDumpMenu";
  *
  * Campo que aponta para outro tipo conhecido expande no lugar, seguindo o
  * ponteiro — e como se percorre uma cadeia de estruturas sem sair do painel.
+ *
+ * Vive numa aba ao lado do dump: e a MESMA memoria lida de outro jeito — o
+ * dump mostra os bytes, este painel mostra o objeto —, e uma leitura demorada
+ * que merece a altura inteira do painel de baixo em vez de dividi-la com o
+ * editor.
  */
 /**
  * Layout a usar para ler `address` — o do tipo pedido, ou o do tipo DERIVADO
@@ -80,7 +85,7 @@ export default function StructPane({ machine, target, onClose, tick, onViewInDum
   const nodes = layout ? parseStruct(machine, target.address, layout) : [];
 
   return (
-    <section className="flex h-full flex-col overflow-hidden border-t border-[#3c3c3c] bg-[#252526]">
+    <section className="flex h-full flex-col overflow-hidden bg-[#252526]">
       <header className="flex shrink-0 items-center gap-2 border-b border-[#3c3c3c] px-2 py-1.5">
         <Braces size={12} className="shrink-0 text-[#9cdcfe]" />
         <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-[#9cdcfe]">
@@ -93,14 +98,19 @@ export default function StructPane({ machine, target, onClose, tick, onViewInDum
           @ {hex(target.address, digits)}
           {layout && ` · ${layout.size} bytes`}
         </span>
-        <button
-          type="button"
-          onClick={onClose}
-          title={t("common.close", "Close")}
-          className="ml-auto shrink-0 rounded p-0.5 text-[#6b6b6b] hover:bg-[#3c3c3c] hover:text-[#d4d4d4]"
-        >
-          <X size={12} />
-        </button>
+        {/* So quando ha quem feche: dentro de uma aba quem fecha e a aba, e
+            dois botoes de fechar lado a lado seriam duas respostas para a
+            mesma pergunta. */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            title={t("common.close", "Close")}
+            className="ml-auto shrink-0 rounded p-0.5 text-[#6b6b6b] hover:bg-[#3c3c3c] hover:text-[#d4d4d4]"
+          >
+            <X size={12} />
+          </button>
+        )}
       </header>
 
       <div className="flex-1 overflow-auto py-1 font-mono text-[11px] leading-[1.6]">

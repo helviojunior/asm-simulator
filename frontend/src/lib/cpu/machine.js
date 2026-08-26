@@ -9,7 +9,7 @@
  * recurso que um debugger real nao tem e que numa aula muda a dinamica.
  */
 
-import { Cpu, toSigned, truncate } from "./cpu";
+import { Cpu, FLAGS, toSigned, truncate } from "./cpu";
 import { Memory } from "./memory";
 import { ARCH, canonicalName } from "./registers";
 import { execute } from "./instructions";
@@ -695,6 +695,25 @@ export class Machine {
     return performSyscall(this, { via });
   }
 
+  /**
+   * Troca uma flag a mao, fora da execucao.
+   *
+   * Existe porque metade do que se aprende sobre salto condicional e um
+   * experimento: ligar ZF e ver o `je` passar a saltar responde melhor do que
+   * qualquer explicacao. Sem isto, alcancar o outro ramo exigiria reescrever
+   * o `cmp` e montar de novo.
+   *
+   * Nao entra no diario de alteracoes: o diario existe para o "voltar passo"
+   * desfazer o que uma INSTRUCAO fez, e fora de um passo ele nem esta aberto
+   * (`cpu.journal` e null). Uma edicao manual e do usuario, e desfaze-la e
+   * outro clique — como no x64dbg.
+   */
+  setFlag(flag, value) {
+    if (!FLAGS.includes(flag)) throw new Error(`Unknown flag: ${flag}`);
+    this.cpu.setFlag(flag, Boolean(value));
+    return this.cpu.getFlag(flag);
+  }
+
   toggleBreakpoint(address) {
     const key = BigInt(address).toString();
     if (this.breakpoints.has(key)) this.breakpoints.delete(key);
@@ -703,8 +722,9 @@ export class Machine {
   }
 }
 
-function emptyChanges() {
-  return { registers: [], flags: [], memory: [] };
+/** O "nada mudou" — a mesma forma que `describeChanges` produz. */
+export function emptyChanges() {
+  return { registers: [], flags: [], memory: [], registersBefore: [] };
 }
 
 /** Converte o diario na lista do que a UI precisa destacar. */
@@ -714,5 +734,9 @@ function describeChanges(journal) {
     registers: Array.from(journal.registers.keys()),
     flags: Array.from(journal.flags.keys()),
     memory: Array.from(journal.memory.keys()),
+    // Os nomes dizem QUE registrador mudou; para saber QUE BYTES dele mudaram
+    // e preciso o valor antigo, e so o diario o tem. Pares `[canonico, antes]`
+    // — o explorador compara byte a byte com o valor atual.
+    registersBefore: Array.from(journal.registers.entries()),
   };
 }

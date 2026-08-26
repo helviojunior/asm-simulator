@@ -1,5 +1,6 @@
 /**
- * As abas do painel inferior esquerdo: biblioteca, codigo-fonte e dump.
+ * As abas do painel inferior esquerdo: biblioteca, codigo-fonte, dump — e as
+ * que so existem depois de pedidas (estrutura e explorador de registrador).
  *
  * A regra que importa aqui e a de FOCO. Dar um passo traz o codigo para a
  * frente quando quem esta na biblioteca nao veria a linha destacada — mas quem
@@ -133,4 +134,33 @@ test("erro de montagem ainda ganha do dump: o erro fica ancorado no fonte", asyn
 
   expect(container.textContent).toContain("boom");
   expect(container.querySelector("textarea")).toBeTruthy();
+});
+
+test("a estrutura pedida vira uma aba, e ela vem para a frente", async () => {
+  // Pedir a leitura noutro painel e um gesto deliberado: a aba tem de aparecer
+  // ja aberta, ou o pedido pareceria nao ter surtido efeito.
+  await render({ structTarget: { type: "UNICODE_STRING", address: 0x7f200100n } });
+
+  expect(tab("UNICODE_STRING")).toBeTruthy();
+  expect(container.querySelector("textarea")).toBeNull();
+});
+
+test("fechada a estrutura, a aba some e o painel volta ao codigo-fonte", async () => {
+  await render({ structTarget: { type: "UNICODE_STRING", address: 0x7f200100n } });
+  await render({ structTarget: null });
+
+  expect(tab("UNICODE_STRING")).toBeFalsy();
+  expect(container.querySelector("textarea")).toBeTruthy();
+});
+
+test("a aba do explorador nao atrapalha a da estrutura", async () => {
+  // As duas sao abas sob demanda e convivem: quem abriu as duas escolhe qual
+  // olhar, sem uma fechar a outra.
+  await render({
+    structTarget: { type: "UNICODE_STRING", address: 0x7f200100n },
+    exploreTarget: { register: "eax", nonce: 1 },
+  });
+
+  expect(tab("UNICODE_STRING")).toBeTruthy();
+  expect(tab("EAX")).toBeTruthy();
 });

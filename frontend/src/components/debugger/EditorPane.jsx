@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Binary, Code2, Library, MemoryStick, Save, X } from "lucide-react";
+import { Binary, Braces, Code2, Library, MemoryStick, Save, X } from "lucide-react";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 import SourcePane from "components/debugger/SourcePane";
 import LibraryPane from "components/debugger/LibraryPane";
 import DumpPane from "components/debugger/DumpPane";
 import RegisterExplorerPane from "components/debugger/RegisterExplorerPane";
+import StructPane from "components/debugger/StructPane";
 
 // Rotulo do atalho: no macOS o modificador e o Cmd.
 const SAVE_SHORTCUT =
@@ -35,7 +36,12 @@ export default function EditorPane({
   // de "ver no dump" vindo dos outros paineis.
   machine, changedMemory = [], dumpTarget = null, tick = 0,
   // Registrador a explorar bit a bit, pedido pelo painel de registradores.
-  exploreTarget = null, onCloseExplore,
+  // `changedRegisters` traz o valor ANTERIOR de cada registrador escrito no
+  // ultimo passo — e o que o explorador compara para marcar os bytes.
+  exploreTarget = null, onCloseExplore, changedRegisters = [],
+  // Ponteiro lido como estrutura, pedido nos paineis de argumentos e de
+  // syscall. `onViewInDump` serve ao menu de contexto dele.
+  structTarget = null, onCloseStruct, onViewInDump,
 }) {
   const { t } = useI18n();
   // A biblioteca abre primeiro: com o editor vazio, o caminho natural de quem
@@ -93,6 +99,13 @@ export default function EditorPane({
     if (!exploring) setTab((current) => (current === "explore" ? "source" : current));
   }, [exploring]);
 
+  // Estrutura pedida noutro painel. Sem nonce: cada pedido cria um alvo novo,
+  // e e a identidade dele que traz a aba a frente.
+  useEffect(() => {
+    if (structTarget) setTab("struct");
+    else setTab((current) => (current === "struct" ? "source" : current));
+  }, [structTarget]);
+
   return (
     <section className="flex h-full flex-col overflow-hidden bg-[#1e1e1e]">
       <div className="flex shrink-0 items-center border-b border-[#3c3c3c]">
@@ -114,9 +127,29 @@ export default function EditorPane({
           active={tab === "dump"}
           onClick={() => setTab("dump")}
         />
-        {/* A aba do explorador so existe depois de pedida, e a direita do
-            dump: e uma vista aberta sob demanda, nao uma parte fixa do
-            painel. Fechavel pelo mesmo motivo. */}
+        {/* Estrutura e explorador so existem depois de pedidos, a direita do
+            dump: sao vistas abertas sob demanda, nao partes fixas do painel.
+            Fechaveis pelo mesmo motivo. A estrutura vem primeiro por ler
+            MEMORIA, como o dump ao lado; o explorador e sobre registrador. */}
+        {structTarget && (
+          <div className="flex items-center">
+            <Tab
+              icon={Braces}
+              label={structTarget.type}
+              active={tab === "struct"}
+              onClick={() => setTab("struct")}
+            />
+            <button
+              type="button"
+              onClick={onCloseStruct}
+              title={t("sim.closeStruct", "Close structure")}
+              aria-label={t("sim.closeStruct", "Close structure")}
+              className="-ml-2 mr-1 rounded p-0.5 text-[#6b6b6b] transition-colors hover:bg-[#3c3c3c] hover:text-[#d4d4d4]"
+            >
+              <X size={11} />
+            </button>
+          </div>
+        )}
         {exploring && (
           <div className="flex items-center">
             <Tab
@@ -194,8 +227,20 @@ export default function EditorPane({
       </div>
 
       <div className="min-h-0 flex-1 overflow-hidden">
-        {tab === "explore" ? (
-          <RegisterExplorerPane machine={machine} register={exploring} tick={tick} />
+        {tab === "struct" ? (
+          <StructPane
+            machine={machine}
+            target={structTarget}
+            tick={tick}
+            onViewInDump={onViewInDump}
+          />
+        ) : tab === "explore" ? (
+          <RegisterExplorerPane
+            machine={machine}
+            register={exploring}
+            changed={changedRegisters}
+            tick={tick}
+          />
         ) : tab === "dump" ? (
           <DumpPane
             machine={machine}

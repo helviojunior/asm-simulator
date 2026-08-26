@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 import { hex } from "lib/cpu/format";
-import { annotateValue, inspectOperands } from "lib/cpu/inspect";
+import { annotateValue, inspectJump, inspectOperands } from "lib/cpu/inspect";
 import { displayName } from "lib/cpu/registers";
 import { ToastArea } from "components/ui/toast";
 import { useDumpMenu } from "components/debugger/useDumpMenu";
@@ -94,6 +94,10 @@ export default function OperandsPane({ machine, tick, onViewInDump }) {
       {/* Flags que a instrucao vai alterar. Em `cmp`/`test` elas sao o UNICO
           efeito — sem esta linha o painel pareceria dizer que nada acontece. */}
       <FlagRow writes={preview?.writes} />
+
+      {/* Salto: a conclusao vem depois dos operandos, porque e o que eles
+          decidem. */}
+      <JumpRow jump={halted ? null : inspectJump(machine)} />
       {dumpMenu}
     </Shell>
   );
@@ -116,6 +120,56 @@ function FlagRow({ writes }) {
           <span className="text-[#c586c0]">{flag.name}</span>
           <span className="text-[#6b6b6b]">{flag.previous ? 1 : 0}→</span>
           <span className="font-bold text-[#ff6b6b]">{flag.next ? 1 : 0}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * O desvio: sera dado ou nao, e em cima de que flags.
+ *
+ * A resposta e o unico efeito visivel de um `jcc` — ele nao escreve
+ * registrador nem memoria —, e sem ela o painel de um `jne` parece dizer que
+ * a instrucao nao faz nada. As flags vao ao lado com o valor que tem AGORA:
+ * e a leitura que liga o `cmp` anterior ao salto, e a que explica a resposta
+ * quando ela surpreende.
+ */
+function JumpRow({ jump }) {
+  const { t } = useI18n();
+  if (!jump) return null;
+
+  const verdict = !jump.conditional
+    ? t("sim.jumpUnconditional", "JMP is taken (unconditional)")
+    : jump.taken
+    ? t("sim.jumpTaken", "JMP is taken")
+    : t("sim.jumpNotTaken", "JMP is not taken");
+
+  return (
+    <div className="flex items-baseline gap-2 whitespace-pre px-2 hover:bg-[#2d2d2d]">
+      <span className="w-4 shrink-0 text-center text-[#569cd6]">
+        <ArrowRight size={11} className="inline" />
+      </span>
+      <span
+        className={cn("shrink-0 font-bold", jump.taken ? "text-[#4ec9b0]" : "text-[#858585]")}
+      >
+        {verdict}
+      </span>
+      {jump.flags.map((flag) => (
+        // A que IMPEDE o salto sai em vermelho e com `!=`, mostrando o valor
+        // que ela precisaria ter: "ZF!=0" le-se "ZF teria de ser 0, e nao e".
+        // As outras aparecem como estao — e por estarem assim que nao atrapalham.
+        <span
+          key={flag.name}
+          className={cn("shrink-0", flag.blocking && "font-bold text-[#ff6b6b]")}
+        >
+          <span className={flag.blocking ? undefined : "text-[#c586c0]"}>{flag.name}</span>
+          <span className={flag.blocking ? undefined : "text-[#6b6b6b]"}>
+            {flag.blocking ? "\u2260" : "="}
+          </span>
+          <span className={flag.blocking ? undefined : "font-bold text-[#d4d4d4]"}>
+            {flag.expected ? 1 : 0}
+          </span>
         </span>
       ))}
     </div>
