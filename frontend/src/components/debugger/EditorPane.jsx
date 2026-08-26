@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Code2, Library, MemoryStick, Save, X } from "lucide-react";
+import { Binary, Code2, Library, MemoryStick, Save, X } from "lucide-react";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 import SourcePane from "components/debugger/SourcePane";
 import LibraryPane from "components/debugger/LibraryPane";
 import DumpPane from "components/debugger/DumpPane";
+import RegisterExplorerPane from "components/debugger/RegisterExplorerPane";
 
 // Rotulo do atalho: no macOS o modificador e o Cmd.
 const SAVE_SHORTCUT =
@@ -33,6 +34,8 @@ export default function EditorPane({
   // Dump de memoria: a maquina, os bytes escritos no ultimo passo e o pedido
   // de "ver no dump" vindo dos outros paineis.
   machine, changedMemory = [], dumpTarget = null, tick = 0,
+  // Registrador a explorar bit a bit, pedido pelo painel de registradores.
+  exploreTarget = null, onCloseExplore,
 }) {
   const { t } = useI18n();
   // A biblioteca abre primeiro: com o editor vazio, o caminho natural de quem
@@ -76,6 +79,20 @@ export default function EditorPane({
     if (dumpNonce) setTab("dump");
   }, [dumpNonce]);
 
+  // "Explorar" pedido no menu do registrador: mesma logica do dump. O `nonce`
+  // faz explorar o MESMO registrador duas vezes trazer a aba de volta.
+  const exploreNonce = exploreTarget?.nonce ?? 0;
+  useEffect(() => {
+    if (exploreNonce) setTab("explore");
+  }, [exploreNonce]);
+
+  // Aba fechada com a aba aberta: sem isto o painel ficaria sem conteudo, ja
+  // que `tab` continuaria apontando para o que nao existe mais.
+  const exploring = exploreTarget?.register || null;
+  useEffect(() => {
+    if (!exploring) setTab((current) => (current === "explore" ? "source" : current));
+  }, [exploring]);
+
   return (
     <section className="flex h-full flex-col overflow-hidden bg-[#1e1e1e]">
       <div className="flex shrink-0 items-center border-b border-[#3c3c3c]">
@@ -97,6 +114,28 @@ export default function EditorPane({
           active={tab === "dump"}
           onClick={() => setTab("dump")}
         />
+        {/* A aba do explorador so existe depois de pedida, e a direita do
+            dump: e uma vista aberta sob demanda, nao uma parte fixa do
+            painel. Fechavel pelo mesmo motivo. */}
+        {exploring && (
+          <div className="flex items-center">
+            <Tab
+              icon={Binary}
+              label={`${t("explore.title", "Explore")} ${exploring.toUpperCase()}`}
+              active={tab === "explore"}
+              onClick={() => setTab("explore")}
+            />
+            <button
+              type="button"
+              onClick={onCloseExplore}
+              title={t("explore.close", "Close explorer")}
+              aria-label={t("explore.close", "Close explorer")}
+              className="-ml-2 mr-1 rounded p-0.5 text-[#6b6b6b] transition-colors hover:bg-[#3c3c3c] hover:text-[#d4d4d4]"
+            >
+              <X size={11} />
+            </button>
+          </div>
+        )}
 
         {/* O arquivo aberto vale nas duas abas: e o destino do "salvar". */}
         {openFile && (
@@ -155,7 +194,9 @@ export default function EditorPane({
       </div>
 
       <div className="min-h-0 flex-1 overflow-hidden">
-        {tab === "dump" ? (
+        {tab === "explore" ? (
+          <RegisterExplorerPane machine={machine} register={exploring} tick={tick} />
+        ) : tab === "dump" ? (
           <DumpPane
             machine={machine}
             changed={changedMemory}

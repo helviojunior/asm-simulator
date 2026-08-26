@@ -573,6 +573,68 @@ class SectionTests(TransactionTestCase):
         lea_line = self.SOURCE.splitlines().index('    lea rcx, [rel msg]') + 1
         self.assertIn(lea_line, built.line_map.values())
 
+    def test_in_64_bits_a_label_is_reached_relative_to_rip(self):
+        # O deslocamento absoluto cabe em 32 bits — e a base de um programa de
+        # 64 bits nao. `mov rdx, [mydata]` pedia 0x00007FF700002000, o nasm
+        # TRUNCAVA em silencio (sem erro, sem aviso) e a instrucao passava a
+        # ler 0x2000: um endereco onde nao ha nada. Codigo x86-64 de verdade
+        # enderereca dado em relacao ao RIP, e e o que o preambulo liga.
+        source = (
+            '[BITS 64]\n'
+            'section .data\n'
+            '    mydata dq 0x0807060504030201\n'
+            'section .text\n'
+            '    mov rdx, [mydata]\n'
+        )
+        built = self.build(source)
+        instructions = disassemble(built.data, arch='x86_64', base_address=self.BASE,
+                                   line_map=built.line_map, data_ranges=built.data_ranges)
+        mov = instructions[0]
+        memory = next(op for op in mov['operands'] if op['type'] == 'mem')
+        self.assertEqual(memory['base'], 'rip')
+
+        # E o endereco alcancado e a variavel, e nao os 32 bits de baixo dela.
+        target = int(mov['address']) + int(mov['size']) + int(memory['disp'])
+        self.assertEqual(target, self.BASE + self.section(built, '.data')['start'])
+
+    def test_the_source_may_ask_for_absolute_addressing(self):
+        # `default rel` e um padrao, nao uma imposicao: quem escreve `default
+        # abs` esta estudando justamente a forma absoluta.
+        source = (
+            '[BITS 64]\n'
+            'default abs\n'
+            'section .data\n'
+            '    mydata dq 0x0807060504030201\n'
+            'section .text\n'
+            '    mov rdx, [mydata]\n'
+        )
+        built = self.build(source)
+        instructions = disassemble(built.data, arch='x86_64', base_address=self.BASE,
+                                   line_map=built.line_map, data_ranges=built.data_ranges)
+        memory = next(op for op in instructions[0]['operands'] if op['type'] == 'mem')
+        self.assertIsNone(memory['base'])
+
+    def test_an_absolute_access_to_a_label_keeps_its_source_line(self):
+        # Em 32 bits o acesso a uma variavel e ABSOLUTO, e o nasm escreve o
+        # endereco do rotulo entre colchetes no MEIO dos bytes:
+        # `8B15[00000000]`, e `C705[04000000]0102-` quando ainda ha imediato
+        # depois. Aceitar essas marcas so no fim da coluna descartava a linha
+        # inteira — e a instrucao que le a variavel ficava sem marcacao no
+        # editor, que e a leitura que liga o fonte ao codigo montado.
+        source = (
+            '[BITS 32]\n'
+            'section .text\n'
+            '    mov edx, [mydata]\n'
+            '    mov [mydata2], dword 0x04030201\n'
+            '    nop\n'
+            'section .data\n'
+            '    mydata  dd 0x04030201\n'
+            '    mydata2 dd 0\n'
+        )
+        built = assemble(source, arch='x86', base_address=0x7F200100)
+        self.assertEqual(built.line_map[0], 3)
+        self.assertEqual(built.line_map[6], 4)
+
     def test_the_alignment_padding_is_a_range_of_its_own(self):
         # A desmontagem quebra dados em linhas de 16 bytes a partir do inicio
         # de CADA faixa. Fundido com a `.data`, o enchimento deslocaria a

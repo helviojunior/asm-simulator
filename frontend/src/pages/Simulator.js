@@ -138,6 +138,14 @@ export default function Simulator() {
     }));
   }, []);
 
+  // Registrador aberto bit a bit, pelo mesmo mecanismo do dump: o `nonce` faz
+  // pedir o MESMO registrador duas vezes trazer a aba de volta a frente.
+  const [exploreTarget, setExploreTarget] = useState(null);
+  const exploreRegister = useCallback((register) => {
+    setExploreTarget((current) => ({ register, nonce: (current?.nonce ?? 0) + 1 }));
+  }, []);
+  const closeExplore = useCallback(() => setExploreTarget(null), []);
+
   // A maquina e mutavel por natureza (e um modelo de CPU). Guardamos a
   // instancia numa ref e usamos `tick` apenas para pedir novo render — assim
   // nao clonamos o estado inteiro a cada passo.
@@ -1175,6 +1183,8 @@ export default function Simulator() {
               machine={machine}
               changedMemory={changes.memory}
               dumpTarget={dumpTarget}
+              exploreTarget={exploreTarget}
+              onCloseExplore={closeExplore}
               tick={tick}
             />
           </div>
@@ -1196,6 +1206,7 @@ export default function Simulator() {
               machine={machine}
               changed={changes.registers}
               onViewInDump={viewInDump}
+              onExplore={exploreRegister}
             />
           </div>
           <FlagsPane machine={machine} changed={changes.flags} />

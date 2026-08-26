@@ -9,9 +9,9 @@ import { cn } from "lib/utils";
  * Painel de registradores, no formato do x64dbg: nome, valor em hexadecimal
  * e — o que mais importa numa aula — o que mudou no ultimo passo destacado.
  */
-export default function RegistersPane({ machine, changed = [], onViewInDump }) {
+export default function RegistersPane({ machine, changed = [], onViewInDump, onExplore }) {
   const { t } = useI18n();
-  const { openDumpMenu, dumpMenu } = useDumpMenu(machine, onViewInDump);
+  const { openDumpMenu, dumpMenu } = useDumpMenu(machine, onViewInDump, onExplore);
   if (!machine) return null;
 
   const { arch, cpu } = machine;
@@ -62,7 +62,11 @@ function RegisterRow({ row, digits, onMenu }) {
     <div
       className="flex items-baseline gap-2 px-1"
       onContextMenu={(event) =>
-        onMenu?.(event, [{ label: row.name.toUpperCase(), address: row.value }])
+        onMenu?.(event, [
+          // O mesmo registrador nas duas leituras: para onde o valor APONTA
+          // (o dump) e o que o valor E (os bits). A segunda vale sempre.
+          { label: row.name.toUpperCase(), address: row.value, explore: row.name },
+        ])
       }
     >
       <span className="w-10 shrink-0 uppercase text-[#c586c0]">{row.name}</span>

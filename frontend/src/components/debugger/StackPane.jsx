@@ -133,7 +133,7 @@ export default function StackPane({ machine, changed = [], onViewInDump }) {
             </span>
             {showAscii && <AsciiDump bytes={row.bytes} />}
             {row.code ? (
-              <CodeLabel reference={row.code} digits={digits} />
+              <CodeLabel reference={row.code} />
             ) : (
               row.string && (
                 <span className="min-w-0 truncate text-[11px] text-[#ce9178]" title={row.string}>
@@ -154,11 +154,12 @@ export default function StackPane({ machine, changed = [], onViewInDump }) {
  * O que uma celula da pilha que aponta para o CODIGO esta guardando.
  *
  * Um endereco de retorno e o valor mais importante da pilha e o mais mudo: um
- * numero como qualquer outro. O rotulo diz de onde ele veio e para onde leva,
- * como o "return to … from …" do x64dbg — que e a leitura que faz o estouro
- * de buffer deixar de ser abstrato.
+ * numero como qualquer outro. O rotulo diz para onde ele leva, como o
+ * "return to …" do x64dbg — que e a leitura que faz o estouro de buffer
+ * deixar de ser abstrato. Quem chamou fica como "???": e o que o aluno tem
+ * de deduzir.
  */
-function CodeLabel({ reference, digits }) {
+function CodeLabel({ reference }) {
   const { t } = useI18n();
   const where = `code+0x${reference.offset.toString(16).toUpperCase()}`;
   const line = reference.instruction?.line;
@@ -173,18 +174,13 @@ function CodeLabel({ reference, digits }) {
     );
   }
 
-  // De QUEM se volta. Sem nome dito e sem alvo imediato (`call rax`), o
-  // x64dbg escreve "???" — e a resposta honesta: nao ha como saber.
-  const from =
-    reference.name || (reference.target !== null ? hex(reference.target, digits) : "???");
-
+  // De QUEM se volta fica em branco de proposito: descobrir a origem do
+  // endereco de retorno e o exercicio: o "???" marca o lugar da resposta em
+  // vez de entrega-la.
   return (
-    <span
-      className="min-w-0 truncate text-[11px] text-[#d16969]"
-      title={reference.call?.text}
-    >
+    <span className="min-w-0 truncate text-[11px] text-[#d16969]">
       {t("sim.returnTo", "return to")} {where}
-      {line ? ` (${t("sim.line", "line")} ${line})` : ""} {t("sim.returnFrom", "from")} {from}
+      {line ? ` (${t("sim.line", "line")} ${line})` : ""} ???
     </span>
   );
 }

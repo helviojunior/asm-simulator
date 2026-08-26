@@ -35,19 +35,24 @@ MAX_OUTPUT_BYTES = 1024 * 1024
 # Linhas sem codigo gerado (rotulo, comentario, directive) nao trazem offset, e
 # sequencias longas continuam em linhas seguintes repetindo o mesmo numero — as
 # duas coisas o padrao abaixo acomoda.
-# O sufixo cobre as tres continuacoes que o nasm escreve:
+#
+# A coluna de bytes nao e so hexadecimal: o nasm intercala nela marcas que
+# dizem que aquele pedaco ainda nao e um byte literal, e elas podem aparecer
+# NO MEIO da sequencia, nao so no fim (`C705[04000000]0102-`):
 #
 #   `-`            a sequencia segue na proxima linha
 #   `<rep 4h>`     os bytes vem de um `times` (com espaco dentro, dai o `[^>]*`)
 #   `(00000000)`   deslocamento resolvido depois, como no `lea rcx, [rel msg]`
+#   `[00000000]`   endereco de um rotulo, como no `mov edx, [mydata]`
 #
 # Sem aceitar cada uma delas, a linha inteira era descartada — e com ela o mapa
-# de linhas e a marcacao de dados daquele trecho. A terceira forma e o caso de
-# TODO acesso RIP-relativo a `.data`: sem ela, justamente a instrucao que le a
-# variavel ficava sem linha no editor.
+# de linhas e a marcacao de dados daquele trecho. As duas ultimas formas sao
+# TODO acesso a variavel declarada na `.data`, absoluto ou RIP-relativo: sem
+# elas, justamente a instrucao que le a variavel ficava sem linha no editor.
 _LISTING_LINE = re.compile(
     r'^\s*(?P<line>\d+)\s+(?P<offset>[0-9A-Fa-f]{8})\s+'
-    r'(?P<bytes>[0-9A-Fa-f]+)(?:-|<[^>]*>|\([0-9A-Fa-f]*\))*(?:\s|$)'
+    r'(?P<bytes>[0-9A-Fa-f](?:[0-9A-Fa-f]|\[[0-9A-Fa-f]*\]|\([0-9A-Fa-f]*\)|<[^>]*>)*)'
+    r'-?(?:\s|$)'
 )
 
 # Directives que RESERVAM OU EMITEM DADOS, e nao instrucoes.
@@ -75,6 +80,9 @@ _NASM_MESSAGE = re.compile(
 # Directives que o aluno pode ja ter escrito; nao sobrescrevemos as dele.
 _HAS_BITS = re.compile(r'^\s*\[?\s*bits\s+(16|32|64)\b', re.IGNORECASE | re.MULTILINE)
 _HAS_ORG = re.compile(r'^\s*\[?\s*org\s+', re.IGNORECASE | re.MULTILINE)
+_HAS_DEFAULT = re.compile(
+    r'^\s*\[?\s*default\s+(?:rel|abs)\b', re.IGNORECASE | re.MULTILINE
+)
 
 BITS_FOR_ARCH = {'x86': 32, 'x86_64': 64}
 
@@ -432,6 +440,24 @@ def _preamble(arch, base_address, source, map_file, data_at=None):
     como se o codigo comecasse em 0 e todo endereco absoluto sai errado em
     relacao ao endereco em que o simulador carrega o binario.
 
+    `default rel` em 64 bits, e a razao merece o paragrafo.
+
+    O deslocamento de um endereco ABSOLUTO cabe em 32 bits — e so. Com a base
+    tipica de um programa de 64 bits (0x00007FF700001000), `mov rdx, [mydata]`
+    pede um deslocamento de 0x00007FF700002000, que nao cabe: no formato
+    `bin` o nasm TRUNCA em silencio, sem erro e sem aviso, e a instrucao passa
+    a ler 0x2000 — um endereco onde nao ha nada. O programa monta, roda e le
+    lixo, e o aluno nao tem como perceber olhando o fonte.
+
+    Nenhum toolchain de verdade deixa isso passar: com um linker, a mesma
+    referencia vira "relocation truncated to fit R_X86_64_32S". O que codigo
+    x86-64 real faz e enderecar em relacao ao RIP, e e o que `default rel`
+    liga. Assim `[mydata]` alcanca a variavel de qualquer base, que e o que o
+    aluno espera ao escrever isso.
+
+    Continua valendo escrever `default abs` (ou `[abs mydata]`) no fonte: a
+    directive so entra se o aluno nao tiver dito o que quer.
+
     O `map` e sempre nosso: e a unica forma de saber onde cada secao caiu na
     imagem final (ver `_parse_map`).
 
@@ -444,6 +470,8 @@ def _preamble(arch, base_address, source, map_file, data_at=None):
     lines = []
     if not _HAS_BITS.search(source):
         lines.append(f'bits {BITS_FOR_ARCH[arch]}')
+    if BITS_FOR_ARCH[arch] == 64 and not _HAS_DEFAULT.search(source):
+        lines.append('default rel')
     if not _HAS_ORG.search(source):
         lines.append(f'org 0x{base_address:X}')
     lines.append(f'[map sections {map_file}]')

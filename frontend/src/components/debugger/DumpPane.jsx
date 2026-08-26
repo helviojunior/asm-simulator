@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Copy, CornerDownLeft } from "lucide-react";
+import { ArrowUpToLine, Copy, CornerDownLeft } from "lucide-react";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 import { asciiCell, hex, parseAddress } from "lib/cpu/format";
@@ -140,6 +140,20 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
     const value = BigInt(address);
     setOrigin(value);
     setSelection({ anchor: value, focus: value });
+    pendingReveal.current = value;
+  }, []);
+
+  /**
+   * Recomeca a grade no endereco pedido: ele vira o PRIMEIRO byte da primeira
+   * linha visivel.
+   *
+   * Sem tocar na selecao, ao contrario de `focusAddress`: quem pede isso com
+   * uma faixa marcada quer reenquadrar o dump ao redor dela, e recolher a
+   * selecao a um byte so desfaria o que estava sendo medido.
+   */
+  const startAtAddress = useCallback((address) => {
+    const value = BigInt(address);
+    setOrigin(value);
     pendingReveal.current = value;
   }, []);
 
@@ -396,7 +410,7 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
     );
   }
 
-  const menuItems = buildMenuItems(t, range, copySelection);
+  const menuItems = buildMenuItems(t, range, copySelection, menu?.payload, startAtAddress);
 
   return (
     <section className="flex h-full flex-col overflow-hidden bg-[#1e1e1e]">
@@ -572,9 +586,27 @@ function revealSoon(scrollRef, start, rowBytes, address) {
   });
 }
 
-function buildMenuItems(t, range, copySelection) {
+function buildMenuItems(t, range, copySelection, address, onStartHere) {
+  // O byte sob o cursor sempre da para servir de inicio, mesmo sem selecao —
+  // mas sem selecao nao ha o que copiar, e o resto do menu nao se aplica.
+  const startHere =
+    address === null || address === undefined
+      ? []
+      : [
+          {
+            key: "startHere",
+            label: t("dump.startHere", "Start here"),
+            icon: ArrowUpToLine,
+            onSelect: () => onStartHere(address),
+          },
+        ];
+
   if (!range) {
-    return [{ key: "empty", label: t("dump.noSelection", "Nothing selected"), disabled: true, onSelect: () => {} }];
+    return [
+      ...startHere,
+      ...(startHere.length ? [{ separator: true }] : []),
+      { key: "empty", label: t("dump.noSelection", "Nothing selected"), disabled: true, onSelect: () => {} },
+    ];
   }
 
   const labels = {
@@ -593,6 +625,7 @@ function buildMenuItems(t, range, copySelection) {
       onSelect: () => copySelection(format),
     })),
     { separator: true },
+    ...startHere,
     {
       key: "address",
       label: t("dump.copyAddress", "Copy address"),

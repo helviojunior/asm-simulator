@@ -90,6 +90,64 @@ for (let i = 8; i <= 15; i += 1) {
 // Ponteiro de instrucao: eip e a metade baixa de rip.
 defineRegister("rip", { qword: "rip", dword: "eip" });
 
+/**
+ * Numero de cada registrador na CODIFICACAO das instrucoes.
+ *
+ * E de onde vem o "RAX ou R0": os oito classicos nao estao em ordem
+ * alfabetica nem na ordem em que o x64dbg os mostra — o campo de 3 bits do
+ * ModR/M numera AX, CX, DX, BX, SP, BP, SI, DI nessa ordem, herdada do 8086.
+ * O x86-64 apenas continuou a contagem em R8..R15, e por isso RAX e R0.
+ */
+const REGISTER_NUMBER = {
+  rax: 0, rcx: 1, rdx: 2, rbx: 3, rsp: 4, rbp: 5, rsi: 6, rdi: 7,
+};
+for (let i = 8; i <= 15; i += 1) REGISTER_NUMBER[`r${i}`] = i;
+
+// Sufixo do nome numerado por largura: r0, r0d, r0w, r0b.
+const NUMBERED_SUFFIX = { 8: "", 4: "d", 2: "w", 1: "b" };
+
+/**
+ * Nome numerado de uma view: `("rax", 4)` -> `"r0d"`.
+ *
+ * null para quem nao tem numero — `rip` nao entra na contagem do ModR/M.
+ */
+export function numberedName(canonical, size) {
+  const number = REGISTER_NUMBER[canonical];
+  if (number === undefined) return null;
+  const suffix = NUMBERED_SUFFIX[size];
+  return suffix === undefined ? null : `r${number}${suffix}`;
+}
+
+/**
+ * As views de um registrador canonico, da mais larga para a mais estreita:
+ * `[{ size, name, numbered }]`.
+ *
+ * `bits` corta o que a arquitetura ativa nao expoe: num programa de 32 bits o
+ * registrador se chama EAX e nao ha RAX para mostrar — e `numbered` vem nulo,
+ * porque a numeracao r0..r15 nasceu COM o x86-64. Num programa de 32 bits nao
+ * existe "r1d": mostrar esse nome ensinaria uma equivalencia que so vale na
+ * outra arquitetura.
+ *
+ * Os nomes de byte ALTO (ah, bh...) ficam de fora: eles nao sao um degrau da
+ * mesma escada — AL e os bits 0..7 e AH os bits 8..15, entao empilha-los na
+ * cascata sugeriria um encaixe que nao existe.
+ */
+export function registerViews(canonical, bits = 64) {
+  const maxSize = bits === 64 ? 8 : 4;
+  const bySize = new Map();
+  Object.entries(REGISTER_VIEWS).forEach(([name, view]) => {
+    if (view.canonical !== canonical || view.high || view.size > maxSize) return;
+    if (!bySize.has(view.size)) bySize.set(view.size, name);
+  });
+  return [...bySize.entries()]
+    .sort((a, b) => b[0] - a[0])
+    .map(([size, name]) => ({
+      size,
+      name,
+      numbered: bits === 64 ? numberedName(canonical, size) : null,
+    }));
+}
+
 /** Descreve um nome de registrador, ou null se nao for reconhecido. */
 export function resolveRegister(name) {
   if (!name) return null;

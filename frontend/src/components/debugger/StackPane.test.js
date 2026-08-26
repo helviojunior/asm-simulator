@@ -72,8 +72,10 @@ test("valor que aponta para depois de um call e lido como endereco de retorno", 
 
   const text = container.textContent;
   expect(text).toContain("return to code+0x5");
-  // De quem se volta: o alvo do `call` que empilhou o endereco.
-  expect(text).toContain("from 7F200110");
+  // De quem se volta fica como "???": e o que o aluno tem de deduzir, entao o
+  // painel nao pode nomear a funcao nem mostrar o alvo do `call`.
+  expect(text).toContain("???");
+  expect(text).not.toContain("7F200110");
   // A linha do fonte fecha a leitura para quem esta olhando o codigo.
   expect(text).toContain("line 8");
 });

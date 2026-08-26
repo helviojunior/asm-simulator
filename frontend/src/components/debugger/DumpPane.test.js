@@ -343,6 +343,24 @@ describe("posicionamento ao seguir um endereço", () => {
     expect(container.querySelector("[role=grid]").scrollTop).toBe(before + 18);
   });
 
+  test('"start here" recomeça a grade no byte clicado, sem desfazer a seleção', async () => {
+    await mount();
+    await fire(cell(CODE_BASE), "mousedown", { button: 0 });
+    await fire(cell(CODE_BASE + 3n), "mouseover");
+    await fire(window, "mouseup");
+    // Dentro da seleção: o clique direito não a recolhe, e o item também não.
+    await fire(cell(ODD - 4n), "contextmenu", { button: 2 });
+
+    const item = [...document.querySelectorAll("[role=menuitem]")]
+      .find((node) => node.textContent.includes("Start here"));
+    expect(item).toBeTruthy();
+    await act(async () => { item.click(); });
+    await settle();
+
+    expect(rowAddresses()).toContain("7F200102");
+    expect(footer()).toContain("4 bytes");
+  });
+
   test("trocar a largura da linha mantém o endereço no começo", async () => {
     await mount({ target: { address: ODD, nonce: 1 } });
     const select = container.querySelector("select");
