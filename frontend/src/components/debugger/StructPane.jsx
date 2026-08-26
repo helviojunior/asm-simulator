@@ -5,6 +5,7 @@ import { cn } from "lib/utils";
 import { hex } from "lib/cpu/format";
 import { parseStruct, previewBytes, variantOf } from "lib/cpu/parseStruct";
 import { isParseable, layoutOf, loadType } from "lib/types";
+import { useDumpMenu } from "components/debugger/useDumpMenu";
 
 /**
  * Um ponteiro lido como estrutura.
@@ -37,8 +38,9 @@ function resolveLayout(machine, os, arch, typeName, address) {
     : { layout: base, derived: null, pending: name };
 }
 
-export default function StructPane({ machine, target, onClose, tick }) {
+export default function StructPane({ machine, target, onClose, tick, onViewInDump }) {
   const { t } = useI18n();
+  const { openDumpMenu, dumpMenu } = useDumpMenu(machine, onViewInDump);
   const [expanded, setExpanded] = useState(() => new Set());
   const [, setLoaded] = useState(0);
 
@@ -119,14 +121,16 @@ export default function StructPane({ machine, target, onClose, tick }) {
             digits={digits}
             expanded={expanded}
             onToggle={toggle}
+            onMenu={openDumpMenu}
           />
         ))}
       </div>
+      {dumpMenu}
     </section>
   );
 }
 
-function Field({ node, depth, machine, digits, expanded, onToggle }) {
+function Field({ node, depth, machine, digits, expanded, onToggle, onMenu }) {
   const os = machine.osId;
   const arch = machine.archId;
 
@@ -163,6 +167,13 @@ function Field({ node, depth, machine, digits, expanded, onToggle }) {
         className="flex items-baseline gap-2 whitespace-pre px-2 hover:bg-[#2d2d2d]"
         style={{ paddingLeft: 8 + depth * 12 }}
         title={node.description || undefined}
+        // Onde o campo MORA e, quando ele e ponteiro, para onde aponta.
+        onContextMenu={(event) =>
+          onMenu?.(event, [
+            { label: node.name, address: node.address },
+            node.value ? { label: `*${node.name}`, address: node.value } : null,
+          ])
+        }
       >
         <button
           type="button"
@@ -201,6 +212,7 @@ function Field({ node, depth, machine, digits, expanded, onToggle }) {
             digits={digits}
             expanded={expanded}
             onToggle={onToggle}
+            onMenu={onMenu}
           />
         ))}
     </>

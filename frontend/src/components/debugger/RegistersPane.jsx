@@ -1,6 +1,7 @@
 import React from "react";
 import { hex, signedDecimal } from "lib/cpu/format";
 import { pointerString } from "lib/cpu/inspect";
+import { useDumpMenu } from "components/debugger/useDumpMenu";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 
@@ -8,8 +9,9 @@ import { cn } from "lib/utils";
  * Painel de registradores, no formato do x64dbg: nome, valor em hexadecimal
  * e — o que mais importa numa aula — o que mudou no ultimo passo destacado.
  */
-export default function RegistersPane({ machine, changed = [] }) {
+export default function RegistersPane({ machine, changed = [], onViewInDump }) {
   const { t } = useI18n();
+  const { openDumpMenu, dumpMenu } = useDumpMenu(machine, onViewInDump);
   if (!machine) return null;
 
   const { arch, cpu } = machine;
@@ -45,18 +47,24 @@ export default function RegistersPane({ machine, changed = [] }) {
       </header>
       <div className="flex-1 overflow-auto p-2 font-mono text-[12px] leading-[1.45]">
         {rows.map((row) => (
-          <RegisterRow key={row.name} row={row} digits={digits} />
+          <RegisterRow key={row.name} row={row} digits={digits} onMenu={openDumpMenu} />
         ))}
         <div className="my-1.5 border-t border-[#3c3c3c]" />
-        <RegisterRow row={pointer} digits={digits} />
+        <RegisterRow row={pointer} digits={digits} onMenu={openDumpMenu} />
       </div>
+      {dumpMenu}
     </section>
   );
 }
 
-function RegisterRow({ row, digits }) {
+function RegisterRow({ row, digits, onMenu }) {
   return (
-    <div className="flex items-baseline gap-2 px-1">
+    <div
+      className="flex items-baseline gap-2 px-1"
+      onContextMenu={(event) =>
+        onMenu?.(event, [{ label: row.name.toUpperCase(), address: row.value }])
+      }
+    >
       <span className="w-10 shrink-0 uppercase text-[#c586c0]">{row.name}</span>
       <span
         className={cn(

@@ -21,7 +21,7 @@ import { loadPrototype } from "lib/prototypes";
  * `int 0x80` e 1 em `syscall`. Por isso a resolucao numero -> nome fica na
  * primeira linha, e nao escondida num tooltip.
  */
-export default function SyscallPane({ machine, count, tick, onImportNtdll, onNameChange, onParse }) {
+export default function SyscallPane({ machine, count, tick, onImportNtdll, onNameChange, onParse, onViewInDump }) {
   const { t, tf } = useI18n();
 
   // A maquina muda por mutacao; `tick` forca o recalculo a cada passo.
@@ -120,6 +120,7 @@ export default function SyscallPane({ machine, count, tick, onImportNtdll, onNam
             name={call.known ? arg.name : null}
             type={arg.type}
             description={arg.description}
+            onViewInDump={onViewInDump}
           />
         ))}
 

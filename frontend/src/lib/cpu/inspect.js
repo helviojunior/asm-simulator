@@ -139,6 +139,10 @@ export function inspectOperands(machine) {
         label: operand.reg.toUpperCase(),
         size: operand.size,
         value: hex(value, operand.size * 2),
+        // `raw` acompanha o texto ja formatado: o painel precisa do numero
+        // para oferecer "ver no dump", e reconverter a string seria refazer o
+        // trabalho de tras para frente.
+        raw: value,
         notes: annotateValue(machine, value),
       };
     }
@@ -168,6 +172,10 @@ export function inspectOperands(machine) {
         expression: memoryExpression(machine, operand),
         size: operand.size,
         value: hex(value, operand.size * 2),
+        // O operando de memoria tem DOIS enderecos de interesse: onde ele
+        // esta (o endereco efetivo) e para onde aponta (o valor lido).
+        address,
+        raw: value,
         notes,
       };
     }
@@ -207,6 +215,78 @@ export function describePointer(machine, value) {
     // Sem string legivel, mostramos a palavra que esta no destino — que pode
     // ser, por sua vez, outro ponteiro.
     target: text ? null : machine.readMemory(address, size),
+  };
+}
+
+/**
+ * O endereco tem memoria de verdade atras dele?
+ *
+ * Mesmo criterio conservador de `describePointer`, isolado para quem so
+ * precisa da resposta sim/nao — o menu "ver no dump" nao pode oferecer o
+ * salto para um inteiro que por acaso estava num registrador.
+ */
+export function isMappedAddress(machine, value) {
+  if (!machine || value === null || value === undefined) return false;
+  try {
+    const address = BigInt(value);
+    if (address === 0n) return false;
+    const { region } = describeRegion(machine, address);
+    return Boolean(region) || machine.memory.isDefined(address);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * O que um valor aponta DENTRO da regiao de codigo — e, quando ele e um
+ * endereco de retorno, de que chamada ele veio.
+ *
+ * Um endereco de retorno na pilha e um numero como outro qualquer; e o `call`
+ * que o empilhou que lhe da sentido. Reconhece-lo e mecanico: o `call` que
+ * empilhou o endereco X e a instrucao que TERMINA exatamente em X. Sem esta
+ * leitura, o aluno ve `00007FF700001012` na pilha sem ter como saber que
+ * aquilo e o caminho de volta — justamente o valor que o shellcode
+ * sobrescreve.
+ *
+ * Devolve null quando o valor nao aponta para o codigo carregado.
+ */
+export function codeReference(machine, value) {
+  if (!machine) return null;
+
+  let address;
+  try {
+    address = BigInt(value ?? 0);
+  } catch {
+    return null;
+  }
+  if (!machine.isCodeAddress(address)) return null;
+
+  const at = machine.byAddress?.get(address.toString()) || null;
+  const from = (machine.instructions || []).find(
+    (insn) =>
+      !insn.data &&
+      insn.groups?.includes("call") &&
+      BigInt(insn.address) + BigInt(insn.size) === address
+  );
+
+  if (!from) {
+    return { address, offset: address - machine.codeBase, isReturn: false, instruction: at };
+  }
+
+  // De QUEM se volta: o alvo do `call`. Chamada indireta nao tem alvo
+  // imediato, e ai o nome so existe se alguem o tiver dito.
+  const immediate = (from.operands || []).find((operand) => operand.type === "imm");
+  const target = immediate ? BigInt(immediate.value) : null;
+  const name = callNameOverride(machine.osId, machine.archId, callKey(target, from.address));
+
+  return {
+    address,
+    offset: address - machine.codeBase,
+    isReturn: true,
+    instruction: at,
+    call: from,
+    target,
+    name,
   };
 }
 

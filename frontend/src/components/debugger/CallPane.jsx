@@ -20,7 +20,7 @@ import { loadPrototype } from "lib/prototypes";
  * dele, e cada linha ganha tipo e descricao. E o unico caminho para as Rtl* e
  * Ldr* da ntdll, que nunca aparecem num `syscall`.
  */
-export default function CallPane({ machine, count, convention, onConventionChange, tick, onParse, onNameChange }) {
+export default function CallPane({ machine, count, convention, onConventionChange, tick, onParse, onNameChange, onViewInDump }) {
   const { t } = useI18n();
 
   // A maquina muda por mutacao; `tick` forca o recalculo a cada passo.
@@ -108,7 +108,7 @@ export default function CallPane({ machine, count, convention, onConventionChang
         {call.args.map((arg) => (
           <ArgumentRow key={arg.index} machine={machine} arg={arg} digits={digits}
                        type={arg.type} name={arg.name} description={arg.description}
-                       onParse={onParse} />
+                       onParse={onParse} onViewInDump={onViewInDump} />
         ))}
 
         {/* Sem nome, a quantidade de posicoes e escolha da barra superior — e

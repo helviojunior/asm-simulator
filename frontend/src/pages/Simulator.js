@@ -126,6 +126,16 @@ export default function Simulator() {
   const [focusSource, setFocusSource] = useState(0);
   const showSource = useCallback(() => setFocusSource((value) => value + 1), []);
   const [changes, setChanges] = useState({ registers: [], flags: [], memory: [] });
+  // Endereco que o dump deve mostrar, pedido por outro painel. O `nonce` faz
+  // parte do valor de proposito: pedir DUAS vezes o mesmo endereco tem de
+  // rolar as duas, e um estado que nao muda nao dispara efeito nenhum.
+  const [dumpTarget, setDumpTarget] = useState(null);
+  const viewInDump = useCallback((address) => {
+    setDumpTarget((current) => ({
+      address: BigInt(address),
+      nonce: (current?.nonce ?? 0) + 1,
+    }));
+  }, []);
 
   // A maquina e mutavel por natureza (e um modelo de CPU). Guardamos a
   // instancia numa ref e usamos `tick` apenas para pedir novo render — assim
@@ -1066,7 +1076,7 @@ export default function Simulator() {
             onResize={(delta) => resizePane("operands", -delta, { min: 48, max: 600 })}
           />
           <div style={{ height: paneSizes.operands }} className="shrink-0 overflow-hidden">
-            <OperandsPane machine={machine} tick={tick} />
+            <OperandsPane machine={machine} tick={tick} onViewInDump={viewInDump} />
           </div>
 
           {/* Ponteiro lido como estrutura. Fica na coluna da esquerda, dividindo
@@ -1084,6 +1094,7 @@ export default function Simulator() {
                   target={parsed}
                   tick={tick}
                   onClose={() => setParsed(null)}
+                  onViewInDump={viewInDump}
                 />
               </div>
             </>
@@ -1115,6 +1126,10 @@ export default function Simulator() {
               currentLine={currentLine}
               openFile={openFile}
               onOpenFileChange={setOpenFile}
+              machine={machine}
+              changedMemory={changes.memory}
+              dumpTarget={dumpTarget}
+              tick={tick}
             />
           </div>
         </div>
@@ -1131,7 +1146,11 @@ export default function Simulator() {
           className="flex shrink-0 flex-col overflow-hidden"
         >
           <div className="min-h-0 flex-1 overflow-hidden">
-            <RegistersPane machine={machine} changed={changes.registers} />
+            <RegistersPane
+              machine={machine}
+              changed={changes.registers}
+              onViewInDump={viewInDump}
+            />
           </div>
           <FlagsPane machine={machine} changed={changes.flags} />
           {/* So aparece quando a instrucao atual e um `call`. */}
@@ -1152,6 +1171,7 @@ export default function Simulator() {
                   tick={tick}
                   onNameChange={refresh}
                   onParse={setParsed}
+                  onViewInDump={viewInDump}
                 />
               </div>
             </>
@@ -1173,6 +1193,7 @@ export default function Simulator() {
                   onImportNtdll={() => setNtdllOpen(true)}
                   onNameChange={refresh}
                   onParse={setParsed}
+                  onViewInDump={viewInDump}
                 />
               </div>
             </>
@@ -1183,7 +1204,7 @@ export default function Simulator() {
             onResize={(delta) => resizePane("stack", -delta, { min: 80, max: 1200 })}
           />
           <div style={{ height: paneSizes.stack }} className="shrink-0 overflow-hidden">
-            <StackPane machine={machine} changed={changes.memory} />
+            <StackPane machine={machine} changed={changes.memory} onViewInDump={viewInDump} />
           </div>
         </div>
       </div>

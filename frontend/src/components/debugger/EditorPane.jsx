@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Code2, Library, Save, X } from "lucide-react";
+import { Code2, Library, MemoryStick, Save, X } from "lucide-react";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
 import SourcePane from "components/debugger/SourcePane";
 import LibraryPane from "components/debugger/LibraryPane";
+import DumpPane from "components/debugger/DumpPane";
 
 // Rotulo do atalho: no macOS o modificador e o Cmd.
 const SAVE_SHORTCUT =
@@ -29,6 +30,9 @@ export default function EditorPane({
   focusSource = 0,
   // Guarda assincrona: a biblioteca a consulta ANTES de ler o arquivo.
   onBeforeOpen, onCloseFile, onImportBinary,
+  // Dump de memoria: a maquina, os bytes escritos no ultimo passo e o pedido
+  // de "ver no dump" vindo dos outros paineis.
+  machine, changedMemory = [], dumpTarget = null, tick = 0,
 }) {
   const { t } = useI18n();
   // A biblioteca abre primeiro: com o editor vazio, o caminho natural de quem
@@ -43,8 +47,12 @@ export default function EditorPane({
 
   // Comeca em 0 e so cresce: na montagem o efeito nao faz nada, e cada passo
   // (ou montagem, ou reinicio) depois disso traz o codigo para a frente.
+  //
+  // So SAI da biblioteca: quem esta no dump acompanhando a memoria mudar
+  // escolheu aquela aba, e devolve-lo ao codigo a cada passo tiraria da vista
+  // justamente o que ele foi olhar.
   useEffect(() => {
-    if (focusSource) setTab("source");
+    if (focusSource) setTab((current) => (current === "library" ? "source" : current));
   }, [focusSource]);
 
   // "Salvar como" precisa da arvore: e la que se escolhe a pasta e se digita o
@@ -60,6 +68,14 @@ export default function EditorPane({
     if (hasMessages) setTab("source");
   }, [hasMessages, messages]);
 
+  // "Ver no dump" pedido de outro painel: a aba vem para a frente sozinha.
+  // Sem isto o salto aconteceria numa aba escondida e pareceria nao ter
+  // acontecido. O `nonce` faz o mesmo endereco poder ser pedido duas vezes.
+  const dumpNonce = dumpTarget?.nonce ?? 0;
+  useEffect(() => {
+    if (dumpNonce) setTab("dump");
+  }, [dumpNonce]);
+
   return (
     <section className="flex h-full flex-col overflow-hidden bg-[#1e1e1e]">
       <div className="flex shrink-0 items-center border-b border-[#3c3c3c]">
@@ -74,6 +90,12 @@ export default function EditorPane({
           label={t("sim.source", "Source (NASM)")}
           active={tab === "source"}
           onClick={() => setTab("source")}
+        />
+        <Tab
+          icon={MemoryStick}
+          label={t("dump.title", "Dump")}
+          active={tab === "dump"}
+          onClick={() => setTab("dump")}
         />
 
         {/* O arquivo aberto vale nas duas abas: e o destino do "salvar". */}
@@ -133,7 +155,14 @@ export default function EditorPane({
       </div>
 
       <div className="min-h-0 flex-1 overflow-hidden">
-        {tab === "source" ? (
+        {tab === "dump" ? (
+          <DumpPane
+            machine={machine}
+            changed={changedMemory}
+            target={dumpTarget}
+            tick={tick}
+          />
+        ) : tab === "source" ? (
           <SourcePane
             source={source}
             onChange={onSourceChange}

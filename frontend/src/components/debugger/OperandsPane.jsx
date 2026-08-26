@@ -6,6 +6,7 @@ import { hex } from "lib/cpu/format";
 import { annotateValue, inspectOperands } from "lib/cpu/inspect";
 import { displayName } from "lib/cpu/registers";
 import { ToastArea } from "components/ui/toast";
+import { useDumpMenu } from "components/debugger/useDumpMenu";
 
 /**
  * Painel de informacao da instrucao atual — o equivalente da barra abaixo da
@@ -16,8 +17,9 @@ import { ToastArea } from "components/ui/toast";
  * escrever. Para `mov byte ptr [ecx+0x19], al` isso da exatamente tres linhas:
  * o destino em memoria, o registrador de origem, e o valor novo.
  */
-export default function OperandsPane({ machine, tick }) {
+export default function OperandsPane({ machine, tick, onViewInDump }) {
   const { t } = useI18n();
+  const { openDumpMenu, dumpMenu } = useDumpMenu(machine, onViewInDump);
 
   // `tick` nao e usado no corpo: existe para o React recalcular quando a
   // maquina muda por mutacao (a identidade do objeto nao muda a cada passo).
@@ -62,6 +64,11 @@ export default function OperandsPane({ machine, tick }) {
           detail={operand.expression}
           value={operand.value}
           notes={operand.notes}
+          onMenu={openDumpMenu}
+          entries={[
+            operand.address ? { label: t("dump.thisAddress", "this address"), address: operand.address } : null,
+            operand.raw !== undefined ? { label: t("dump.thisValue", "this value"), address: operand.raw } : null,
+          ]}
         />
       ))}
 
@@ -76,12 +83,18 @@ export default function OperandsPane({ machine, tick }) {
           value={hex(write.next, write.size * 2)}
           previous={hex(write.previous, write.size * 2)}
           notes={annotateValue(machine, write.next, { asPointer: write.size >= 4 })}
+          onMenu={openDumpMenu}
+          entries={[
+            write.address ? { label: t("dump.thisAddress", "this address"), address: write.address } : null,
+            { label: t("dump.thisValue", "this value"), address: write.next },
+          ]}
         />
       ))}
 
       {/* Flags que a instrucao vai alterar. Em `cmp`/`test` elas sao o UNICO
           efeito — sem esta linha o painel pareceria dizer que nada acontece. */}
       <FlagRow writes={preview?.writes} />
+      {dumpMenu}
     </Shell>
   );
 }
@@ -143,6 +156,7 @@ function groupWrites(writes, machine) {
     if (!run) return;
     memory.push({
       label: `[${hex(run.address, digits)}]`,
+      address: run.address,
       size: run.previous.length,
       // Little-endian: o primeiro byte do bloco e o menos significativo.
       previous: run.previous.reduceRight((acc, b) => (acc << 8n) | b, 0n),
@@ -191,11 +205,14 @@ function Shell({ title, subtitle, children }) {
  * `arrow` distingue leitura de escrita: a seta marca o valor que AINDA nao
  * existe — e o resultado previsto, nao o estado atual.
  */
-function Row({ arrow, label, detail, value, previous, notes }) {
+function Row({ arrow, label, detail, value, previous, notes, onMenu, entries }) {
   // O tamanho da movimentacao continua visivel pela LARGURA do valor: um byte
   // sai com 2 digitos hexadecimais, uma dword com 8.
   return (
-    <div className="flex items-baseline gap-2 whitespace-pre px-2 hover:bg-[#2d2d2d]">
+    <div
+      className="flex items-baseline gap-2 whitespace-pre px-2 hover:bg-[#2d2d2d]"
+      onContextMenu={entries ? (event) => onMenu?.(event, entries) : undefined}
+    >
       <span className="w-4 shrink-0 text-center text-[#569cd6]">
         {arrow ? <ArrowRight size={11} className="inline" /> : " "}
       </span>

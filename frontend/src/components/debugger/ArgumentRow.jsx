@@ -3,6 +3,7 @@ import { Braces, Link2 } from "lucide-react";
 import { useI18n } from "i18n";
 import { hex } from "lib/cpu/format";
 import { describePointer } from "lib/cpu/inspect";
+import { useDumpMenu } from "components/debugger/useDumpMenu";
 import { isParseable } from "lib/types";
 
 /**
@@ -17,10 +18,11 @@ import { isParseable } from "lib/types";
  * syscalls), e ai a coluna mostra `buf` em vez de so o registrador.
  */
 export default function ArgumentRow({
-  machine, arg, digits, name, type, description, onParse,
+  machine, arg, digits, name, type, description, onParse, onViewInDump,
 }) {
   const { t } = useI18n();
   const pointer = describePointer(machine, arg.value);
+  const { openDumpMenu, dumpMenu } = useDumpMenu(machine, onViewInDump);
 
   // So oferece "ler como tipo" quando ha layout para aquele tipo E o valor
   // aponta para algum lugar. Um `ULONG` nao tem o que expandir, e um ponteiro
@@ -35,6 +37,14 @@ export default function ArgumentRow({
       // A descricao inteira no title: a linha e estreita, e truncar o texto
       // util seria pior que escondê-lo atras do ponteiro do mouse.
       title={description || undefined}
+      // O valor do argumento e, quando ele veio da pilha, o endereco de onde
+      // foi lido: os dois sao lugares que se quer abrir no dump.
+      onContextMenu={(event) =>
+        openDumpMenu(event, [
+          { label: name || arg.source, address: arg.value },
+          arg.address ? { label: arg.source, address: arg.address } : null,
+        ])
+      }
     >
       <span className="w-6 shrink-0 text-[#6b6b6b]">{arg.index + 1}:</span>
       <span className="w-[14ch] shrink-0 text-[#c586c0]">{arg.source}</span>
@@ -75,6 +85,7 @@ export default function ArgumentRow({
           {BigInt.asIntN(machine.arch.bits, BigInt(arg.value)).toString(10)}
         </span>
       )}
+      {dumpMenu}
     </div>
   );
 }

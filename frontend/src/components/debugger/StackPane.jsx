@@ -1,6 +1,7 @@
 import React from "react";
 import { asciiCell, hex } from "lib/cpu/format";
-import { pointerString } from "lib/cpu/inspect";
+import { codeReference, pointerString } from "lib/cpu/inspect";
+import { useDumpMenu } from "components/debugger/useDumpMenu";
 import { Switch } from "components/ui/switch";
 import { useI18n } from "i18n";
 import { cn } from "lib/utils";
@@ -25,8 +26,9 @@ const ASCII_COLOR = {
  * passo vem destacadas — e a mesma leitura dos slides, em que a celula nova
  * aparece em branco sobre o fundo escuro.
  */
-export default function StackPane({ machine, changed = [] }) {
+export default function StackPane({ machine, changed = [], onViewInDump }) {
   const { t } = useI18n();
+  const { openDumpMenu, dumpMenu } = useDumpMenu(machine, onViewInDump);
   // Ligado por padrao: numa aula de shellcode a pilha quase sempre carrega
   // texto, e o dump e o que revela isso sem precisar abrir outro painel.
   const [showAscii, setShowAscii] = React.useState(true);
@@ -62,6 +64,10 @@ export default function StackPane({ machine, changed = [] }) {
       // little-endian ao lado.
       bytes: memory.readBytes(address, arch.wordSize),
       string: pointerString(machine, value),
+      // Valor que aponta para dentro do codigo carregado. E quase sempre um
+      // endereco de retorno, e dize-lo e o que transforma um numero solto na
+      // pilha no caminho de volta da chamada.
+      code: codeReference(machine, value),
     });
   }
 
@@ -92,6 +98,14 @@ export default function StackPane({ machine, changed = [] }) {
         {rows.map((row) => (
           <div
             key={row.address.toString()}
+            // Dois destinos possiveis por linha: o endereco da propria celula
+            // e o valor guardado nela, quando ele aponta para algum lugar.
+            onContextMenu={(event) =>
+              openDumpMenu(event, [
+                { label: t("dump.thisAddress", "this address"), address: row.address },
+                { label: t("dump.thisValue", "this value"), address: row.value },
+              ])
+            }
             className={cn(
               "flex items-baseline gap-3 whitespace-pre px-2",
               row.isPointer && "bg-[#094771]"
@@ -118,16 +132,60 @@ export default function StackPane({ machine, changed = [] }) {
               {hex(row.value, digits)}
             </span>
             {showAscii && <AsciiDump bytes={row.bytes} />}
-            {row.string && (
-              <span className="min-w-0 truncate text-[11px] text-[#ce9178]" title={row.string}>
-                <span className="text-[#6b6b6b]">{"→ "}</span>
-                {`"${row.string}"`}
-              </span>
+            {row.code ? (
+              <CodeLabel reference={row.code} digits={digits} />
+            ) : (
+              row.string && (
+                <span className="min-w-0 truncate text-[11px] text-[#ce9178]" title={row.string}>
+                  <span className="text-[#6b6b6b]">{"→ "}</span>
+                  {`"${row.string}"`}
+                </span>
+              )
             )}
           </div>
         ))}
       </div>
+      {dumpMenu}
     </section>
+  );
+}
+
+/**
+ * O que uma celula da pilha que aponta para o CODIGO esta guardando.
+ *
+ * Um endereco de retorno e o valor mais importante da pilha e o mais mudo: um
+ * numero como qualquer outro. O rotulo diz de onde ele veio e para onde leva,
+ * como o "return to … from …" do x64dbg — que e a leitura que faz o estouro
+ * de buffer deixar de ser abstrato.
+ */
+function CodeLabel({ reference, digits }) {
+  const { t } = useI18n();
+  const where = `code+0x${reference.offset.toString(16).toUpperCase()}`;
+  const line = reference.instruction?.line;
+
+  if (!reference.isReturn) {
+    return (
+      <span className="min-w-0 truncate text-[11px] text-[#4ec9b0]">
+        <span className="text-[#6b6b6b]">{"→ "}</span>
+        {where}
+        {line ? ` (${t("sim.line", "line")} ${line})` : ""}
+      </span>
+    );
+  }
+
+  // De QUEM se volta. Sem nome dito e sem alvo imediato (`call rax`), o
+  // x64dbg escreve "???" — e a resposta honesta: nao ha como saber.
+  const from =
+    reference.name || (reference.target !== null ? hex(reference.target, digits) : "???");
+
+  return (
+    <span
+      className="min-w-0 truncate text-[11px] text-[#d16969]"
+      title={reference.call?.text}
+    >
+      {t("sim.returnTo", "return to")} {where}
+      {line ? ` (${t("sim.line", "line")} ${line})` : ""} {t("sim.returnFrom", "from")} {from}
+    </span>
   );
 }
 
