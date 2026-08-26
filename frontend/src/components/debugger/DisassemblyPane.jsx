@@ -183,7 +183,10 @@ function SectionRule({ name }) {
       >
         {name}
       </span>
-      <span className="h-px flex-1 bg-[#3c3c3c]" />
+      {/* Bem apagada: ela separa, e nao compete com o codigo. Na mesma cor
+          das bordas do sistema, mas a 45% — cheia, virava mais uma regua
+          horizontal disputando a atencao com a linha em execucao. */}
+      <span className="h-px flex-1 bg-[#3c3c3c]/45" />
     </div>
   );
 }
