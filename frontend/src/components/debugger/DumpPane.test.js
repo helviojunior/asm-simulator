@@ -66,6 +66,11 @@ beforeEach(() => {
     observe() {}
     disconnect() {}
   };
+  // jsdom nao calcula layout: sem isto toda altura e 0 e nao ha o que rolar.
+  Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+    configurable: true,
+    get() { return this.getAttribute("role") === "grid" ? 180 : 0; },
+  });
 });
 
 afterEach(async () => {
@@ -276,5 +281,52 @@ describe("atalhos de navegação", () => {
 
     await act(async () => { button.click(); });
     expect(footer()).toContain("7F200108");
+  });
+});
+
+describe("posicionamento ao seguir um endereço", () => {
+  // 0x7F200106 nao e multiplo de 16: com a grade alinhada a faixa, ele cairia
+  // no MEIO de uma linha.
+  const ODD = CODE_BASE + 6n;
+
+  /** Endereço da primeira coluna de cada linha desenhada, de cima para baixo. */
+  const rowAddresses = () =>
+    [...container.querySelectorAll("[role=grid] .flex")]
+      .map((row) => row.firstChild?.textContent)
+      .filter((text) => /^[0-9A-F]{8}$/.test(text || ""));
+
+  test("o endereço pedido vira o primeiro byte da linha", async () => {
+    await mount({ target: { address: ODD, nonce: 1 } });
+    expect(rowAddresses()).toContain("7F200106");
+  });
+
+  test("e as linhas seguintes continuam a partir dele", async () => {
+    await mount({ target: { address: ODD, nonce: 1 } });
+    const rows = rowAddresses();
+    const index = rows.indexOf("7F200106");
+    expect(rows[index + 1]).toBe("7F200116");
+  });
+
+  test("a linha fica no topo da área visível", async () => {
+    await mount({ target: { address: ODD, nonce: 1 } });
+    const grid = container.querySelector("[role=grid]");
+
+    // A rolagem é medida em linhas de 18px a partir do começo da grade. Com o
+    // endereço no topo, o que rolou é exatamente o que está acima dele:
+    // a grade começa em 7F2000B6 e 7F200106 é a sexta linha (0x50 / 16 = 5).
+    const gridStart = BigInt(`0x${rowAddresses()[0]}`);
+    expect(grid.scrollTop).toBe(Number((ODD - gridStart) / 16n) * 18);
+    // Sanidade: rolagem de verdade, não o topo por acaso.
+    expect(grid.scrollTop).toBeGreaterThan(0);
+  });
+
+  test("trocar a largura da linha mantém o endereço no começo", async () => {
+    await mount({ target: { address: ODD, nonce: 1 } });
+    const select = container.querySelector("select");
+    await act(async () => {
+      select.value = "32";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(rowAddresses()).toContain("7F200106");
   });
 });

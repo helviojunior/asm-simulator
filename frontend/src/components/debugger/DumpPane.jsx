@@ -54,6 +54,9 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
   // abaixo: a maquina muda por MUTACAO e nao troca de identidade, entao sem
   // ele o dump mostraria os bytes do primeiro render para sempre.
   const scrollRef = useRef(null);
+  // Endereco que ainda precisa ser trazido ao topo, ou null. Ver o efeito de
+  // rolagem mais abaixo.
+  const pendingReveal = useRef(null);
   const [width, setWidth] = useState(16);
   // Endereco de referencia: define QUAL faixa o painel navega. Muda ao seguir
   // um ponteiro ou ao digitar um endereco, nao ao rolar.
@@ -79,7 +82,32 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
   const window_ = useMemo(() => dumpWindow(machine, at), [machine, at]);
 
   const rowBytes = BigInt(width);
-  const totalRows = Number((window_.end - window_.start) / rowBytes);
+
+  /**
+   * Inicio da grade de linhas.
+   *
+   * Nao e o inicio da faixa: e o maior endereco <= ele que deixa `at` como
+   * PRIMEIRO byte de uma linha. Quem clica em "ver no dump" quer o endereco
+   * pedido a vista, e um endereco no meio de uma linha se procura com o dedo
+   * na tela — perde-se justamente a leitura por coluna que o dump existe para
+   * dar.
+   *
+   * A fase acompanha a largura: trocar de 16 para 32 bytes por linha mantem o
+   * endereco no comeco da linha.
+   */
+  const gridStart = useMemo(() => {
+    const phase = ((at - window_.start) % rowBytes + rowBytes) % rowBytes;
+    const start = window_.start - ((rowBytes - phase) % rowBytes);
+    return start < 0n ? window_.start : start;
+  }, [at, window_.start, rowBytes]);
+
+  const totalRows = Number((window_.end - gridStart + rowBytes - 1n) / rowBytes);
+
+  // Espaco vazio depois da ultima linha, do tamanho da area visivel menos uma
+  // linha. E o "rolar alem do fim" de qualquer editor, e aqui ele tem funcao:
+  // sem isso, uma linha perto do fim da faixa nunca chegaria ao topo.
+  const tail = Math.max(0, viewport - ROW_HEIGHT);
+  const scrollHeight = totalRows * ROW_HEIGHT + tail;
 
   const changedSet = useMemo(() => new Set(changed.map(String)), [changed]);
 
@@ -91,27 +119,28 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
   }, [machine]);
 
   const addressAtRow = useCallback(
-    (index) => window_.start + BigInt(index) * rowBytes,
-    [window_.start, rowBytes]
+    (index) => gridStart + BigInt(index) * rowBytes,
+    [gridStart, rowBytes]
   );
 
-  /** Rola ate a linha que contem `address`, deixando-a no meio da area. */
+  /** Rola ate deixar a linha de `address` como a PRIMEIRA visivel. */
   const revealAddress = useCallback(
     (address) => {
       const element = scrollRef.current;
       if (!element) return;
-      const row = Number((BigInt(address) - window_.start) / rowBytes);
-      const top = row * ROW_HEIGHT - element.clientHeight / 2 + ROW_HEIGHT;
-      element.scrollTop = Math.max(0, Math.min(top, totalRows * ROW_HEIGHT - element.clientHeight));
+      const row = Number((BigInt(address) - gridStart) / rowBytes);
+      const limit = Math.max(0, scrollHeight - element.clientHeight);
+      element.scrollTop = Math.max(0, Math.min(row * ROW_HEIGHT, limit));
     },
-    [window_.start, rowBytes, totalRows]
+    [gridStart, rowBytes, scrollHeight]
   );
 
-  /** Leva o painel a um endereco e o deixa selecionado. */
+  /** Leva o painel a um endereco, o seleciona e pede a rolagem ate ele. */
   const focusAddress = useCallback((address) => {
     const value = BigInt(address);
     setOrigin(value);
     setSelection({ anchor: value, focus: value });
+    pendingReveal.current = value;
   }, []);
 
   // Pedido vindo de outro painel ("ver no dump"). O `nonce` faz o mesmo
@@ -123,15 +152,32 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
     focusAddress(requested);
   }, [requested, nonce, focusAddress]);
 
-  // A rolagem ate o endereco pedido acontece DEPOIS do render: a faixa pode
-  // ter mudado junto, e a altura total so existe com ela ja aplicada.
+  /**
+   * Rola ate o endereco pedido, DEPOIS do render.
+   *
+   * Sem lista de dependencias de proposito: a altura total da area depende da
+   * altura visivel, que so e medida pelo ResizeObserver depois da montagem —
+   * ate la o navegador limita a rolagem e a linha pode nao alcancar o topo.
+   * Entao o pedido fica pendente e e retentado a cada render, ate a linha
+   * realmente chegar la (ou a rolagem bater no fim).
+   *
+   * Um pedido pendente, e nao `origin` nas dependencias: assim redimensionar o
+   * painel depois nao desfaz a rolagem que o usuario fez a mao.
+   */
   useLayoutEffect(() => {
-    if (origin === null) return;
-    revealAddress(origin);
-    // De proposito sem `revealAddress` nas dependencias: ela muda a cada troca
-    // de faixa, e reexecutar aqui desfaria a rolagem manual do usuario.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [origin, window_.start, rowBytes]);
+    const wanted = pendingReveal.current;
+    if (wanted === null) return;
+
+    revealAddress(wanted);
+
+    const element = scrollRef.current;
+    if (!element) return;
+    const top = Number((wanted - gridStart) / rowBytes) * ROW_HEIGHT;
+    const limit = Math.max(0, scrollHeight - element.clientHeight);
+    if (Math.round(element.scrollTop) === Math.min(top, limit)) {
+      pendingReveal.current = null;
+    }
+  });
 
   // Altura visivel: quantas linhas desenhar. Um ResizeObserver, e nao a altura
   // do primeiro render — a divisoria do painel e arrastavel.
@@ -255,9 +301,9 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
       if (next >= window_.end) next = window_.end - 1n;
 
       setSelection(extend && selection ? { ...selection, focus: next } : { anchor: next, focus: next });
-      revealSoon(scrollRef, window_.start, rowBytes, next);
+      revealSoon(scrollRef, gridStart, rowBytes, next);
     },
-    [selection, at, window_.start, window_.end, rowBytes]
+    [selection, at, gridStart, window_.start, window_.end, rowBytes]
   );
 
   const handleKeyDown = (event) => {
@@ -455,7 +501,7 @@ export default function DumpPane({ machine, changed = [], target = null, tick = 
       >
         {/* Espacador da altura TOTAL da faixa: e ele que dimensiona a barra de
             rolagem, ainda que so a janela visivel exista no DOM. */}
-        <div style={{ height: totalRows * ROW_HEIGHT }} className="relative w-max min-w-full">
+        <div style={{ height: scrollHeight }} className="relative w-max min-w-full">
           <div style={{ position: "absolute", top: first * ROW_HEIGHT, left: 0 }}>
             {rows.map((row) => (
               <Row
