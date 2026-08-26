@@ -443,10 +443,17 @@ export class Machine {
     let halt = null;
     let externalCall = null;
     let unsimulated = null;
+    let simulated = null;
 
     try {
       const outcome = execute(this, insn);
-      if (outcome && outcome.unsimulated) {
+      if (outcome && outcome.simulated) {
+        // Chamada de sistema ATENDIDA. A execucao segue normalmente; o aviso
+        // sobe junto para a interface dizer que o efeito veio do modelo, e
+        // nao de um kernel.
+        simulated = outcome.simulated;
+        this.cpu.ip = addressBefore + BigInt(insn.size);
+      } else if (outcome && outcome.unsimulated) {
         // Chamada de sistema sem simulacao: avisa e segue. Mesma decisao do
         // `call` para fora do programa — o que interessa na aula quase sempre
         // vem depois, e parar aqui a interromperia por algo que nem e o
@@ -501,6 +508,7 @@ export class Machine {
       halted: this.halted,
       externalCall,
       unsimulated,
+      simulated,
       changes: describeChanges(journal),
     };
   }

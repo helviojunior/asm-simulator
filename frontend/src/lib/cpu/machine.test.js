@@ -763,3 +763,86 @@ describe("chamada de sistema sem simulacao", () => {
     expect(m.halted).toBeNull();
   });
 });
+
+describe("chamada de sistema COM simulacao", () => {
+  const SYSCALL = { mnemonic: "syscall", size: 2 };
+  const x64 = (list) => build(list, { arch: "x86_64", codeBase: 0x400000n });
+
+  /** `write(1, "Oi", 2)` no x86-64 do Linux. */
+  function withWrite() {
+    const m = x64([SYSCALL, { mnemonic: "nop", size: 1 }]);
+    m.memory.writeBytes(0x500000n, [0x4f, 0x69]);
+    m.cpu.writeRegister("rax", 1n);
+    m.cpu.writeRegister("rdi", 1n);
+    m.cpu.writeRegister("rsi", 0x500000n);
+    m.cpu.writeRegister("rdx", 2n);
+    return m;
+  }
+
+  it("o passo anuncia que o efeito veio de um modelo", () => {
+    // O efeito ACONTECEU, entao nada na tela denunciaria que ali nao houve
+    // kernel nenhum — e quem lesse o retorno como real tiraria conclusao
+    // errada do proximo `cmp`.
+    const result = withWrite().step();
+
+    expect(result.simulated.name).toBe("write");
+    expect(result.simulated.returnRegister).toBe("rax");
+    expect(result.simulated.value).toBe(2n);
+    expect(result.simulated.text).toContain("write(");
+  });
+
+  it("o aviso nao substitui o efeito: a saida e o retorno continuam de pe", () => {
+    const m = withWrite();
+    m.step();
+
+    expect(m.output[0].text).toBe("Oi");
+    expect(m.cpu.readRegister("rax")).toBe(2n);
+    expect(m.halted).toBeNull();
+  });
+
+  it("`read` avisa igual, devolvendo o fim de entrada que ele sempre devolve", () => {
+    const m = x64([SYSCALL, { mnemonic: "nop", size: 1 }]);
+    m.cpu.writeRegister("rax", 0n);
+
+    const result = m.step();
+
+    expect(result.simulated.name).toBe("read");
+    expect(result.simulated.value).toBe(0n);
+  });
+
+  it("`exit` e `execve` nao avisam: onde o programa acaba nao ha retorno", () => {
+    const exit = x64([SYSCALL]);
+    exit.cpu.writeRegister("rax", 60n);
+    const result = exit.step();
+
+    expect(result.simulated).toBeFalsy();
+    expect(exit.halted.reason).toBe(HALT.EXITED);
+  });
+
+  it("syscall sem simulacao nao vira aviso de simulada", () => {
+    // Os dois avisos sao excludentes: um diz "aconteceu, mas por modelo" e o
+    // outro "nao aconteceu".
+    const m = x64([SYSCALL, { mnemonic: "nop", size: 1 }]);
+    m.cpu.writeRegister("rax", 2n);
+    const result = m.step();
+
+    expect(result.simulated).toBeFalsy();
+    expect(result.unsimulated.name).toBe("open");
+  });
+
+  it("no int 0x80 de 32 bits o registrador de retorno e o EAX", () => {
+    const m = build([{ mnemonic: "int", size: 2, operands: [{ type: "imm", value: "128", size: 1 }] },
+                     { mnemonic: "nop", size: 1 }],
+                    { arch: "x86", codeBase: 0x400000n });
+    m.memory.writeBytes(0x500000n, [0x41]);
+    m.cpu.writeRegister("eax", 4n);
+    m.cpu.writeRegister("ebx", 1n);
+    m.cpu.writeRegister("ecx", 0x500000n);
+    m.cpu.writeRegister("edx", 1n);
+
+    const result = m.step();
+
+    expect(result.simulated.name).toBe("write");
+    expect(result.simulated.returnRegister).toBe("eax");
+  });
+});

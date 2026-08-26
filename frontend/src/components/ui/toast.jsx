@@ -1,29 +1,41 @@
 import React from "react";
-import { AlertTriangle, Info, TriangleAlert } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, TriangleAlert } from "lucide-react";
 import { useI18n } from "i18n";
 import { useToast } from "contexts/ToastContext";
 import { cn } from "lib/utils";
 
-// Mesma paleta dos demais avisos do simulador: azul informa, ambar chama
-// atencao, vermelho e erro.
+/**
+ * A cor e o aviso.
+ *
+ * O fundo INTEIRO carrega a gravidade — azul informa, verde confirma, ambar
+ * chama atencao, vermelho e erro. Antes so uma borda de 2px dizia isso, e um
+ * aviso que aparece por cima de um painel denso de hexadecimal se perdia no
+ * cinza do resto: era preciso LER para saber se era grave.
+ *
+ * Os tons sao escuros de proposito. O simulador inteiro e escuro, e um verde
+ * de notificacao de site claro ofuscaria a listagem atras; estes ficam com o
+ * texto branco acima de 4.5:1, que e o minimo legivel.
+ */
 const VARIANTS = {
   info: {
     Icon: Info,
-    border: "border-[#0e639c]",
-    accent: "text-[#4fc1ff]",
-    button: "bg-[#0e639c] text-white hover:bg-[#1177bb]",
+    surface: "bg-[#0e5a86] border-[#1177bb]",
+    button: "bg-white/15 text-white hover:bg-white/25",
+  },
+  success: {
+    Icon: CheckCircle2,
+    surface: "bg-[#1e6b3a] border-[#2f8a4f]",
+    button: "bg-white/15 text-white hover:bg-white/25",
   },
   warning: {
     Icon: AlertTriangle,
-    border: "border-[#dcdcaa]",
-    accent: "text-[#dcdcaa]",
-    button: "bg-[#5a4d1d] text-[#dcdcaa] hover:bg-[#6b5c22]",
+    surface: "bg-[#8a6d1f] border-[#b08c2a]",
+    button: "bg-black/25 text-white hover:bg-black/35",
   },
   danger: {
     Icon: TriangleAlert,
-    border: "border-[#f14c4c]",
-    accent: "text-[#f14c4c]",
-    button: "bg-[#5a1d1d] text-[#ff6b6b] hover:bg-[#6b2222]",
+    surface: "bg-[#8b2635] border-[#b03546]",
+    button: "bg-white/15 text-white hover:bg-white/25",
   },
 };
 
@@ -64,19 +76,19 @@ export function ToastArea({ className }) {
             // cabe ali — o botao era empurrado para fora e atravessava a borda.
             // Em linha, a altura da caixa e a do texto, e o aviso cabe onde for.
             className={cn(
-              "flex shrink-0 items-start gap-2 rounded border-l-2 bg-[#252526] px-3 py-2",
-              variant.border
+              "flex shrink-0 items-start gap-2 rounded border px-3 py-2",
+              variant.surface
             )}
           >
-            <variant.Icon size={15} className={cn("mt-px shrink-0", variant.accent)} />
+            <variant.Icon size={15} className="mt-px shrink-0 text-white/90" />
             <div className="min-w-0 flex-1">
               {item.title && (
-                <p className={cn("text-[12px] font-semibold", variant.accent)}>
-                  {item.title}
-                </p>
+                <p className="text-[12px] font-semibold text-white">{item.title}</p>
               )}
+              {/* Um pouco menos que branco: separa o detalhe do titulo sem
+                  precisar de outra cor sobre um fundo que ja e colorido. */}
               {item.description && (
-                <div className="mt-1 text-[11px] leading-[1.6] text-[#d4d4d4]">
+                <div className="mt-1 text-[11px] leading-[1.6] text-white/85">
                   {item.description}
                 </div>
               )}

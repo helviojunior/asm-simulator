@@ -725,7 +725,7 @@ export default function Simulator() {
               "sim.externalCallHint",
               "There is no loaded code at that address, so the call was skipped and execution continued at the next instruction."
             )}{" "}
-            <span className="text-[#9a9a9a]">
+            <span className="text-white/70">
               {t(
                 "sim.externalCallEffect",
                 "Nothing was pushed and no register changed — the value the function would return does not exist here."
@@ -736,6 +736,47 @@ export default function Simulator() {
       });
     },
     [t, toast]
+  );
+
+  /**
+   * Avisa que a chamada de sistema foi ATENDIDA — por um modelo.
+   *
+   * O contraponto do aviso abaixo, e igualmente necessario: o efeito
+   * aconteceu, entao nada na tela denuncia que ali nao houve kernel nenhum. O
+   * valor que ficou no registrador de retorno e convencao nossa — aqui todo
+   * `write` da certo e todo `read` devolve fim de arquivo, o que num sistema
+   * de verdade dependeria do descritor, da permissao e do que ha do outro
+   * lado. Quem levar esse retorno como real tira conclusao errada do proximo
+   * `cmp`.
+   */
+  const announceSimulated = useCallback(
+    ({ name, text, returnRegister, value }) => {
+      toast({
+        key: `syscall:simulated:${name}`,
+        variant: "info",
+        title: t("sim.syscallSimulatedTitle", "This system call was simulated"),
+        description: (
+          <>
+            <span className="font-mono">{text}</span> —{" "}
+            {t(
+              "sim.syscallSimulatedHint",
+              "No kernel ran here: what you see is this simulator's model of the call."
+            )}{" "}
+            <span className="text-white/70">
+              {tf(
+                "sim.syscallSimulatedEffect",
+                {
+                  register: returnRegister.toUpperCase(),
+                  value: `0x${BigInt(value).toString(16).toUpperCase()}`,
+                },
+                "{register} was left with {value} by convention, not by a real result — here every write succeeds and every read reports end of input."
+              )}
+            </span>
+          </>
+        ),
+      });
+    },
+    [t, tf, toast]
   );
 
   /**
@@ -766,7 +807,7 @@ export default function Simulator() {
                   "sim.syscallSkippedHint",
                   "The simulator reproduces write, read, exit and execve; the others have no plausible effect to reproduce here."
                 )}{" "}
-            <span className="text-[#9a9a9a]">
+            <span className="text-white/70">
               {t(
                 "sim.syscallSkippedEffect",
                 "Execution continued at the next instruction. No register changed — the value the call would return does not exist here."
@@ -797,14 +838,15 @@ export default function Simulator() {
       if (current.codeDirty) refreshDisassembly();
       if (result && result.externalCall) announceExternalCall(result.externalCall);
       if (result && result.unsimulated) announceUnsimulated(result.unsimulated);
+      if (result && result.simulated) announceSimulated(result.simulated);
       if (!wasHalted && current.halted) announceHalt(current.halted);
       // O destaque da linha atual so serve se o fonte estiver a vista — e o
       // fonte a vista e, por construcao, o do programa em execucao: abrir
       // outro arquivo descarta o programa montado.
       showSource();
     },
-    [announceExternalCall, announceHalt, announceUnsimulated, dismissAll, refresh,
-     refreshDisassembly, showSource]
+    [announceExternalCall, announceHalt, announceSimulated, announceUnsimulated, dismissAll,
+     refresh, refreshDisassembly, showSource]
   );
 
   const stepInto = useCallback(() => runCommand((m) => m.step()), [runCommand]);

@@ -89,3 +89,36 @@ test("nao bloqueia: nao ha backdrop nem portal", async () => {
   expect(document.body.querySelector(".fixed.inset-0")).toBeNull();
   expect(container.textContent).toContain("aviso");
 });
+
+describe("a cor do aviso", () => {
+  /** A caixa do aviso — a que carrega o fundo da variante. */
+  const box = () =>
+    [...container.querySelectorAll("div")].find((node) =>
+      node.getAttribute("role") === "status"
+    );
+
+  test("cada gravidade tem seu próprio fundo", async () => {
+    // Antes só uma borda de 2px dizia a gravidade, e o aviso se perdia no
+    // cinza do painel atrás: era preciso LER para saber se era grave.
+    const seen = new Set();
+    for (const variant of ["info", "success", "warning", "danger"]) {
+      await show({ title: variant, variant });
+      const background = box().className.match(/bg-\[#[0-9a-f]{6}\]/i)[0];
+      expect(seen.has(background)).toBe(false);
+      seen.add(background);
+      await act(async () => { okButton().click(); });
+    }
+    expect(seen.size).toBe(4);
+  });
+
+  test("o texto é branco, para ler sobre o fundo colorido", async () => {
+    await show({ title: "erro", description: "detalhe", variant: "danger" });
+    expect(box().textContent).toContain("erro");
+    expect(box().innerHTML).toContain("text-white");
+  });
+
+  test("variante desconhecida cai em `info`, e não sem cor nenhuma", async () => {
+    await show({ title: "?", variant: "seja-la-o-que-for" });
+    expect(box().className).toMatch(/bg-\[#[0-9a-f]{6}\]/i);
+  });
+});

@@ -106,7 +106,7 @@ export default function SyscallPane({ machine, count, tick, onImportNtdll, onNam
           >
             {call.simulated
               ? t("sim.syscallSimulated", "simulated")
-              : t("sim.syscallNotSimulated", "stops execution")}
+              : t("sim.syscallNotSimulated", "not simulated")}
           </span>
         </div>
 
@@ -153,6 +153,28 @@ export default function SyscallPane({ machine, count, tick, onImportNtdll, onNam
               {t("ntdll.offerConfirm", "Import ntdll.dll")}
             </button>
           </div>
+        )}
+
+        {/* O que vai acontecer quando esta instrucao executar.
+            Dito ANTES, e nao so no aviso depois do passo: o aluno que le o
+            painel precisa saber que o retorno nao vai existir — senao olha o
+            registrador em seguida e conclui que a chamada devolveu o que ja
+            estava la. E o mesmo servico que o bloco do Windows presta ali em
+            cima; sem ele, so o Linux ficava sem explicacao.
+            Windows sem ntdll fica de fora: `needsNtdll` ja explicou. */}
+        {call.resolvable && !call.simulated && (
+          <p className="px-2 pt-1 text-[10px] text-[#dcdcaa]">
+            {t(
+              "sim.syscallSkippedHint",
+              "The simulator reproduces write, read, exit and execve; the others have no plausible effect to reproduce here."
+            )}{" "}
+            <span className="text-[#9a9a9a]">
+              {t(
+                "sim.syscallSkippedEffect",
+                "Execution continued at the next instruction. No register changed — the value the call would return does not exist here."
+              )}
+            </span>
+          </p>
         )}
 
         {call.resolvable && !call.known && call.name && (

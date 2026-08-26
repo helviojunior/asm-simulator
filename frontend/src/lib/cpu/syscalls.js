@@ -307,10 +307,29 @@ export function performSyscall(machine, { via }) {
   }
 
   const result = handler(machine, args);
+  // `exit` e `execve` acabam o programa: a parada ja fala por si, e um aviso
+  // sobre "o retorno nao e real" nao faz sentido onde nao ha retorno.
   if (result.halt) return { halt: result.halt };
 
   machine.cpu.writeRegister(abi.returnRegister, result.value);
-  return undefined;
+
+  // Reproduzida, sim — mas por um MODELO. O valor que ficou no registrador e
+  // convencao nossa, e quem o le em seguida precisa saber disso: aqui todo
+  // `write` "da certo" e todo `read` devolve fim de arquivo, o que num sistema
+  // de verdade dependeria do descritor, da permissao e do que ha do outro lado.
+  return {
+    simulated: {
+      via,
+      number,
+      name,
+      returnRegister: abi.returnRegister,
+      value: result.value,
+      text: `${via}: ${name}(${args
+        .slice(0, 3)
+        .map((value) => `0x${value.toString(16)}`)
+        .join(", ")})`,
+    },
+  };
 }
 
 
